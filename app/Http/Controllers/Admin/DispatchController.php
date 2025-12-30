@@ -7,6 +7,8 @@ use Illuminate\Http\Request;
 use App\Models\Dispatch;
 use App\Models\Driver;
 use App\Models\Ambulance;
+use App\Models\DispatchLog;
+use PDF;
 
 class DispatchController extends Controller
 {
@@ -15,84 +17,98 @@ class DispatchController extends Controller
      */
     public function index()
     {
-        $dispatches = Dispatch::with(['driver', 'ambulance'])
-            ->orderByRaw("
-                CASE 
-                    WHEN status = 'assigned' THEN 1
-                    WHEN status = 'enroute_pickup' THEN 2
-                    WHEN status = 'on_scene' THEN 3
-                    WHEN status = 'enroute_hospital' THEN 4
-                    ELSE 5
-                END
-            ")
-            ->orderByDesc('created_at')
+        $dispatches = Dispatch::with(['driver','ambulance'])
+            ->latest()
             ->get();
 
         return view('admin.dispatches.index', compact('dispatches'));
     }
 
     /**
-     * FORM DISPATCH BARU
+     * FORM CREATE
      */
     public function create()
     {
-        $drivers = Driver::where('status', 'available')->get();
-        $ambulances = Ambulance::where('status', 'ready')->get();
-
-        return view('admin.dispatches.create', compact('drivers', 'ambulances'));
+        return view('admin.dispatches.create', [
+            'drivers' => Driver::where('status','available')->get(),
+            'ambulances' => Ambulance::where('status','ready')->get(),
+        ]);
     }
 
     /**
-     * SIMPAN DISPATCH
+     * STORE DISPATCH
      */
     public function store(Request $request)
     {
-        $request->validate([
-            'patient_name'      => 'required|string',
-            'patient_condition' => 'required|in:emergency,kontrol,jenazah',
-            'patient_phone'     => 'nullable|string',
-            'pickup_address'    => 'required|string',
-            'destination'       => 'nullable|string',
-            'driver_id'         => 'required|exists:drivers,id',
-            'ambulance_id'      => 'required|exists:ambulances,id',
+        $dispatch = Dispatch::create($request->validate([
+            'patient_name' => 'required',
+            'patient_condition' => 'required',
+            'patient_phone' => 'nullable',
+            'pickup_address' => 'required',
+            'destination' => 'nullable',
+            'driver_id' => 'required',
+            'ambulance_id' => 'required',
+        ]) + [
+            'status' => 'assigned',
+            'assigned_at' => now(),
         ]);
 
-        $dispatch = Dispatch::create([
-            'patient_name'      => $request->patient_name,
-            'patient_condition' => $request->patient_condition,
-            'patient_phone'     => $request->patient_phone,
-            'pickup_address'    => $request->pickup_address,
-            'destination'       => $request->destination,
-            'driver_id'         => $request->driver_id,
-            'ambulance_id'      => $request->ambulance_id,
-            'status'            => 'assigned',
-            'assigned_at'       => now(),
-        ]);
+        Driver::where('id',$dispatch->driver_id)
+            ->update(['status'=>'on_duty']);
 
-        Driver::where('id', $request->driver_id)
-            ->update(['status' => 'on_duty']);
-
-        Ambulance::where('id', $request->ambulance_id)
-            ->update(['status' => 'on_duty']);
+        Ambulance::where('id',$dispatch->ambulance_id)
+            ->update(['status'=>'on_duty']);
 
         return redirect()
             ->route('admin.dispatches.index')
-            ->with('success', 'Dispatch berhasil dibuat');
+            ->with('success','Dispatch berhasil dibuat');
     }
 
     /**
-     * SELESAIKAN DISPATCH
+     * NEXT STATUS
      */
-    public function complete(Dispatch $dispatch)
+    public function next(Dispatch $dispatch)
     {
-        $dispatch->update([
-            'status' => 'completed',
-            'completed_at' => now(),
-        ]);
+        $flow = [
+            'assigned',
+            'enroute_pickup',
+            'on_scene',
+            'enroute_hospital',
+            'completed'
+        ];
 
-        $dispatch->driver?->update(['status' => 'available']);
-        $dispatch->ambulance?->update(['status' => 'ready']);
+        $currentIndex = array_search($dispatch->status, $flow);
+        $nextStatus = $flow[$currentIndex + 1] ?? null;
 
-        return back()->with('success', 'Dispatch selesai');
+        if ($nextStatus) {
+            $dispatch->update(['status'=>$nextStatus]);
+        }
+
+        return back();
+    }
+
+    /**
+     * DELETE DISPATCH
+     */
+    public function destroy(Dispatch $dispatch)
+    {
+        $dispatch->delete();
+        return back()->with('success','Dispatch dihapus');
+    }
+
+    /**
+     * EXPORT PDF
+     */
+    public function exportPdf()
+    {
+        $dispatches = Dispatch::with(['driver','ambulance'])
+            ->latest()
+            ->get();
+
+        $pdf = PDF::loadView('admin.dispatches.pdf', compact('dispatches'))
+            ->setPaper('a4','landscape');
+
+        return $pdf->download('laporan-dispatch.pdf');
     }
 }
+

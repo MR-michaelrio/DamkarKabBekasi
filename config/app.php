@@ -90,11 +90,8 @@ return [
     |
     */
 
-    'providers' => ServiceProvider::defaultProviders()->merge([
+    'PDF' => Barryvdh\DomPDF\Facade\Pdf::class,
 
-        App\Providers\AppServiceProvider::class,
-
-    ])->toArray(),
 
     /*
     |--------------------------------------------------------------------------

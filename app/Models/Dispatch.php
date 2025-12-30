@@ -4,10 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Dispatch extends Model
 {
-    use HasFactory;
+    use HasFactory, SoftDeletes;
 
     protected $table = 'dispatches';
 
@@ -16,6 +17,7 @@ class Dispatch extends Model
         'patient_condition',
         'patient_phone',
         'pickup_address',
+        'destination',
         'driver_id',
         'ambulance_id',
         'status',
@@ -25,6 +27,17 @@ class Dispatch extends Model
         'completed_at',
     ];
 
+    protected $dates = [
+        'deleted_at',
+        'assigned_at',
+        'pickup_at',
+        'hospital_at',
+        'completed_at',
+    ];
+
+    /* =====================
+     | RELATIONS
+     ===================== */
     public function driver()
     {
         return $this->belongsTo(Driver::class);
@@ -33,5 +46,10 @@ class Dispatch extends Model
     public function ambulance()
     {
         return $this->belongsTo(Ambulance::class);
+    }
+
+    public function logs()
+    {
+        return $this->hasMany(DispatchLog::class);
     }
 }

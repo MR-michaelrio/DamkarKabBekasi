@@ -12,27 +12,40 @@ class AdminDashboardController extends Controller
 {
     public function index()
     {
-        $today = Carbon::today();
+        // =====================
+        // DISPATCH
+        // =====================
+        $totalDispatch = Dispatch::count();
 
-        return view('admin.dashboard', [
-            'totalDispatchToday' => Dispatch::whereDate('created_at', $today)->count(),
+        $dispatchActive = Dispatch::whereNotIn('status', [
+            'completed',
+            'cancelled'
+        ])->count();
 
-            'activeDispatch' => Dispatch::whereIn('status', [
-                'assigned',
-                'enroute_pickup',
-                'on_scene',
-                'enroute_hospital'
-            ])->count(),
+        $dispatchEmergency = Dispatch::where('patient_condition', 'emergency')
+            ->whereNotIn('status', ['completed', 'cancelled'])
+            ->count();
 
-            'emergencyActive' => Dispatch::where('patient_condition', 'emergency')
-                ->whereNotIn('status', ['completed', 'cancelled'])
-                ->count(),
+        // =====================
+        // AMBULANCE
+        // =====================
+        $ambulanceReady = Ambulance::where('status', 'ready')->count();
+        $ambulanceOnDuty = Ambulance::where('status', 'on_duty')->count();
 
-            'ambulanceReady' => Ambulance::where('status', 'ready')->count(),
-            'ambulanceOnDuty' => Ambulance::where('status', 'on_duty')->count(),
+        // =====================
+        // DRIVER
+        // =====================
+        $driverAvailable = Driver::where('status', 'available')->count();
+        $driverOnDuty = Driver::where('status', 'on_duty')->count();
 
-            'driverAvailable' => Driver::where('status', 'available')->count(),
-            'driverOnDuty' => Driver::where('status', 'on_duty')->count(),
-        ]);
+        return view('admin.dashboard', compact(
+            'totalDispatch',
+            'dispatchActive',
+            'dispatchEmergency',
+            'ambulanceReady',
+            'ambulanceOnDuty',
+            'driverAvailable',
+            'driverOnDuty'
+        ));
     }
 }
