@@ -12,9 +12,15 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('dispatch_logs', function (Blueprint $table) {
-            $table->foreignId('dispatch_id')->constrained()->cascadeOnDelete()->after('id');
-            $table->string('status')->after('dispatch_id'); // Assuming status matches dispatch status or is a string
-            $table->text('note')->nullable()->after('status');
+            if (!Schema::hasColumn('dispatch_logs', 'dispatch_id')) {
+                $table->foreignId('dispatch_id')->constrained()->cascadeOnDelete()->after('id');
+            }
+            if (!Schema::hasColumn('dispatch_logs', 'status')) {
+                $table->string('status')->after('dispatch_id');
+            }
+            if (!Schema::hasColumn('dispatch_logs', 'note')) {
+                $table->text('note')->nullable()->after('status');
+            }
         });
     }
 
@@ -24,8 +30,16 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('dispatch_logs', function (Blueprint $table) {
-            $table->dropForeign(['dispatch_id']);
-            $table->dropColumn(['dispatch_id', 'status', 'note']);
+            if (Schema::hasColumn('dispatch_logs', 'dispatch_id')) {
+                $table->dropForeign(['dispatch_id']);
+                $table->dropColumn('dispatch_id');
+            }
+            if (Schema::hasColumn('dispatch_logs', 'status')) {
+                $table->dropColumn('status');
+            }
+            if (Schema::hasColumn('dispatch_logs', 'note')) {
+                $table->dropColumn('note');
+            }
         });
     }
 };

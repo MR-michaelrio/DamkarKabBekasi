@@ -12,7 +12,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('dispatches', function (Blueprint $table) {
-            $table->timestamp('assigned_at')->nullable()->after('status');
+            if (!Schema::hasColumn('dispatches', 'assigned_at')) {
+                $table->timestamp('assigned_at')->nullable()->after('status');
+            }
         });
     }
 
@@ -22,7 +24,9 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('dispatches', function (Blueprint $table) {
-            $table->dropColumn('assigned_at');
+            if (Schema::hasColumn('dispatches', 'assigned_at')) {
+                $table->dropColumn('assigned_at');
+            }
         });
     }
 };

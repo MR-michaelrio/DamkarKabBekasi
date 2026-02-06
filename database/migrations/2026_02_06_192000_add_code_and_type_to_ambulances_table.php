@@ -12,8 +12,11 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('ambulances', function (Blueprint $table) {
-            if (!Schema::hasColumn('ambulances', 'last_location_update')) {
-                $table->timestamp('last_location_update')->nullable()->after('longitude');
+            if (!Schema::hasColumn('ambulances', 'code')) {
+                $table->string('code')->nullable()->after('id');
+            }
+            if (!Schema::hasColumn('ambulances', 'type')) {
+                $table->string('type')->nullable()->after('code');
             }
         });
     }
@@ -24,8 +27,11 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('ambulances', function (Blueprint $table) {
-            if (Schema::hasColumn('ambulances', 'last_location_update')) {
-                $table->dropColumn('last_location_update');
+            if (Schema::hasColumn('ambulances', 'code')) {
+                $table->dropColumn('code');
+            }
+            if (Schema::hasColumn('ambulances', 'type')) {
+                $table->dropColumn('type');
             }
         });
     }
