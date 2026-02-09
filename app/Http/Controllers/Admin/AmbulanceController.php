@@ -30,18 +30,23 @@ class AmbulanceController extends Controller
      */
     public function store(Request $request)
     {
-        $request->validate([
+        $validated = $request->validate([
             'code'          => 'required|unique:ambulances,code',
             'plate_number'  => 'required',
             'type'          => 'required',
             'status'        => 'required',
         ]);
 
-        Ambulance::create($request->all());
+        // Use code as username for easier login
+        $username = $validated['code'];
+        
+        Ambulance::create($validated + [
+            'username' => $username,
+            'password' => bcrypt('password'), // Default password
+        ]);
 
-        return redirect()
-            ->route('admin.ambulances.index')
-            ->with('success', 'Ambulans berhasil ditambahkan');
+        return redirect()->route('admin.ambulances.index')
+            ->with('success', "Ambulans berhasil ditambahkan. Username: $username, Password: password");
     }
 
     /**
@@ -57,14 +62,21 @@ class AmbulanceController extends Controller
      */
     public function update(Request $request, Ambulance $ambulance)
     {
-        $request->validate([
+        $validated = $request->validate([
             'code'          => 'required|unique:ambulances,code,' . $ambulance->id,
             'plate_number'  => 'required',
             'type'          => 'required',
             'status'        => 'required',
+            'password'      => 'nullable|string|min:6',
         ]);
 
-        $ambulance->update($request->all());
+        if (!empty($validated['password'])) {
+            $validated['password'] = bcrypt($validated['password']);
+        } else {
+            unset($validated['password']);
+        }
+
+        $ambulance->update($validated);
 
         return redirect()
             ->route('admin.ambulances.index')

@@ -10,14 +10,14 @@ class DriverDashboardController extends Controller
 {
     public function index()
     {
-        $driver = auth()->user();
+        // Get authenticated ambulance
+        $ambulance = auth('ambulance')->user();
         
-        // Get active dispatch for this driver
-        $activeDispatch = Dispatch::where('driver_id', $driver->id)
+        // Get active dispatch for this ambulance
+        $activeDispatch = Dispatch::where('ambulance_id', $ambulance->id)
             ->whereIn('status', ['assigned', 'enroute_pickup', 'on_scene', 'enroute_hospital'])
-            ->with('ambulance')
             ->first();
 
-        return view('driver.dashboard', compact('activeDispatch'));
+        return view('driver.dashboard', compact('activeDispatch', 'ambulance'));
     }
 }

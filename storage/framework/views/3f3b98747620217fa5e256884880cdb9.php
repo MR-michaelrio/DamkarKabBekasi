@@ -34,21 +34,13 @@
 
             <!-- LOGO + NAME -->
             <div class="flex items-center gap-4">
-                <img src="/logo-gmci.png" alt="GMCI Logo" class="h-10">
-                <div>
-                    <div class="font-bold text-lg text-gray-900">
-                        Global Medical Care Indonesia
-                    </div>
-                    <div class="text-xs text-gray-500">
-                        Sistem Dispatch Ambulans
-                    </div>
-                </div>
+                <img src="/logo.png" alt="GMCI Logo" class="h-10">
             </div>
 
             <!-- LOGIN -->
-            <a href="<?php echo e(route('login')); ?>"
+            <a href="<?php echo e(route('portal')); ?>"
                class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-sm shadow">
-                🔐 Login Petugas
+                🔐 Portal Login
             </a>
         </div>
     </header>
@@ -78,9 +70,9 @@
             </p>
 
             <div class="flex flex-wrap gap-4">
-                <a href="<?php echo e(route('login')); ?>"
+                <a href="<?php echo e(route('patient-request.create')); ?>"
                    class="px-6 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold shadow">
-                    🚑 Masuk Sistem Dispatch
+                    🚑 Buat Permintaan Layanan
                 </a>
 
                 <a href="#tentang"
@@ -140,10 +132,10 @@
     <footer class="bg-slate-900 text-slate-300">
         <div class="max-w-7xl mx-auto px-6 py-8 text-center text-sm">
             © <?php echo e(date('Y')); ?> Global Medical Care Indonesia.<br>
-            Sistem Dispatch Ambulans — Untuk Kemanusiaan.
+            Sistem Dispatch Ambulans — Untuk Kemanusiaan.<br>
+            <div class="mt-4 font-bold text-slate-100">Layanan 24 Jam: +62 812-8685-8680</div>
         </div>
     </footer>
 
 </body>
-</html>
-<?php /**PATH /Applications/Dev/ambulance-dispatch/resources/views/home.blade.php ENDPATH**/ ?>
+</html><?php /**PATH /Applications/Dev/ambulance-dispatch/resources/views/home.blade.php ENDPATH**/ ?>

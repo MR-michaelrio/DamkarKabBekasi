@@ -94,6 +94,19 @@
                 </select>
             </div>
 
+            <!-- Password (Optional) -->
+            <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                <label class="block text-sm font-medium text-gray-700 mb-1">
+                    Ganti Password (Opsional)
+                </label>
+                <input type="password" name="password"
+                       class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                       placeholder="Kosongkan jika tidak ingin mengubah">
+                <p class="text-xs text-gray-500 mt-1 italic">
+                    Gunakan password ini jika staff unit lupa password atau ingin direset oleh Admin.
+                </p>
+            </div>
+
             <!-- Actions -->
             <div class="flex justify-between pt-4">
                 <a href="<?php echo e(route('admin.ambulances.index')); ?>"

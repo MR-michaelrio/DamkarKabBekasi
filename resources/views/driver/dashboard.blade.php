@@ -12,9 +12,22 @@
 <div class="max-w-md mx-auto px-4 py-6">
 
     <!-- Header -->
-    <div class="bg-white rounded-lg shadow p-4 mb-4">
-        <h1 class="text-xl font-bold text-gray-800">🚑 Driver Dashboard</h1>
-        <p class="text-sm text-gray-600">{{ auth()->user()->name }}</p>
+    <div class="bg-white shadow">
+        <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8 flex justify-between items-center">
+            <div>
+                <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+                    🚑 Dashboard Ambulans
+                </h2>
+                <p class="text-sm text-gray-500">{{ auth('ambulance')->user()->plate_number }} ({{ auth('ambulance')->user()->username }})</p>
+            </div>
+            
+            <form method="POST" action="{{ route('ambulance.logout') }}">
+                @csrf
+                <button type="submit" class="text-red-600 hover:text-red-800 font-semibold text-sm">
+                    Keluar Unit
+                </button>
+            </form>
+        </div>
     </div>
 
     <!-- Active Dispatch -->
@@ -79,10 +92,13 @@
 
 </div>
 
+<!-- Capacitor Library (Optional, usually injected by Capacitor but good for local dev/testing) -->
+<script src="https://unpkg.com/@capacitor/core@latest/dist/capacitor.js"></script>
+
 <script>
 let trackingActive = false;
 let watchId = null;
-const driverId = {{ auth()->user()->id }};
+const ambulanceId = {{ auth('ambulance')->id() }};
 
 const toggleBtn = document.getElementById('toggle-tracking');
 const statusIndicator = document.getElementById('status-indicator');
@@ -90,57 +106,123 @@ const statusText = document.getElementById('status-text');
 const lastUpdate = document.getElementById('last-update');
 const currentLocation = document.getElementById('current-location');
 
-toggleBtn?.addEventListener('click', function() {
-    if (trackingActive) {
-        stopTracking();
-    } else {
-        startTracking();
-    }
-});
+// Capacitor Check
+const isCapacitor = window.hasOwnProperty('Capacitor');
 
-function startTracking() {
-    if (!navigator.geolocation) {
-        alert('GPS tidak didukung di browser ini');
+async function initializeCapacitorTracking() {
+    if (!isCapacitor) return;
+
+    // We use a dynamic import or global check for the plugin
+    // In a real Capacitor build, the plugin is registered on window.Capacitor.Plugins
+    const { BackgroundGeolocation } = window.Capacitor.Plugins;
+
+    if (!BackgroundGeolocation) {
+        console.warn('Background Geolocation Plugin not found');
         return;
     }
 
-    watchId = navigator.geolocation.watchPosition(
-        (position) => {
-            const lat = position.coords.latitude;
-            const lng = position.coords.longitude;
-            
-            // Update UI
-            currentLocation.textContent = `Lat: ${lat.toFixed(6)}, Lng: ${lng.toFixed(6)}`;
-            statusIndicator.className = 'w-3 h-3 bg-green-500 rounded-full animate-pulse';
-            statusText.textContent = 'Tracking aktif';
-            
-            // Send to server
-            sendLocation(lat, lng);
-        },
-        (error) => {
-            console.error('GPS Error:', error);
-            statusIndicator.className = 'w-3 h-3 bg-red-500 rounded-full';
-            statusText.textContent = 'Error: ' + error.message;
-        },
-        {
-            enableHighAccuracy: true,
-            timeout: 5000,
-            maximumAge: 0
-        }
-    );
+    // Request permissions
+    await BackgroundGeolocation.requestPermissions();
+}
 
-    trackingActive = true;
+if (isCapacitor) {
+    statusText.textContent = 'Mobile App Mode: Ready';
+    initializeCapacitorTracking();
+}
+
+toggleBtn?.addEventListener('click', async function() {
+    if (trackingActive) {
+        await stopTracking();
+    } else {
+        await startTracking();
+    }
+});
+
+async function startTracking() {
+    if (isCapacitor) {
+        const { BackgroundGeolocation } = window.Capacitor.Plugins;
+        
+        try {
+            watchId = await BackgroundGeolocation.addWatcher(
+                {
+                    backgroundMessage: "GMCI sedang melacak lokasi ambulans...",
+                    backgroundTitle: "Tracking Aktif",
+                    requestPermissions: true,
+                    stale: false,
+                    distanceFilter: 10 // meters
+                },
+                (location, error) => {
+                    if (error) {
+                        console.error(error);
+                        return;
+                    }
+                    if (location) {
+                        updateUILocation(location.latitude, location.longitude);
+                        sendLocation(location.latitude, location.longitude);
+                    }
+                }
+            );
+            trackingActive = true;
+            updateUIStarted();
+        } catch (e) {
+            alert("Gagal memulai background tracking: " + e.message);
+        }
+    } else {
+        // Fallback to standard browser geolocation
+        if (!navigator.geolocation) {
+            alert('GPS tidak didukung di browser ini');
+            return;
+        }
+
+        watchId = navigator.geolocation.watchPosition(
+            (position) => {
+                const lat = position.coords.latitude;
+                const lng = position.coords.longitude;
+                updateUILocation(lat, lng);
+                sendLocation(lat, lng);
+            },
+            (error) => {
+                console.error('GPS Error:', error);
+                statusIndicator.className = 'w-3 h-3 bg-red-500 rounded-full';
+                statusText.textContent = 'Error: ' + error.message;
+            },
+            { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
+        );
+        trackingActive = true;
+        updateUIStarted();
+    }
+}
+
+async function stopTracking() {
+    if (isCapacitor) {
+        const { BackgroundGeolocation } = window.Capacitor.Plugins;
+        if (watchId) {
+            await BackgroundGeolocation.removeWatcher({ id: watchId });
+            watchId = null;
+        }
+    } else {
+        if (watchId) {
+            navigator.geolocation.clearWatch(watchId);
+            watchId = null;
+        }
+    }
+
+    trackingActive = false;
+    updateUIStopped();
+}
+
+function updateUILocation(lat, lng) {
+    currentLocation.textContent = `Lat: ${lat.toFixed(6)}, Lng: ${lng.toFixed(6)}`;
+    statusIndicator.className = 'w-3 h-3 bg-green-500 rounded-full animate-pulse';
+    statusText.textContent = isCapacitor ? 'Mobile Tracking Aktif' : 'Web Tracking Aktif';
+}
+
+function updateUIStarted() {
     toggleBtn.textContent = '⏸️ Stop Tracking';
     toggleBtn.className = 'w-full bg-red-600 hover:bg-red-700 text-white font-semibold py-3 px-6 rounded-lg shadow-lg transition duration-200';
 }
 
-function stopTracking() {
-    if (watchId) {
-        navigator.geolocation.clearWatch(watchId);
-        watchId = null;
-    }
-
-    trackingActive = false;
+function updateUIStopped() {
     statusIndicator.className = 'w-3 h-3 bg-gray-400 rounded-full';
     statusText.textContent = 'Tracking dihentikan';
     toggleBtn.textContent = '🚀 Mulai Tracking';
@@ -155,7 +237,7 @@ function sendLocation(latitude, longitude) {
             'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
         },
         body: JSON.stringify({
-            driver_id: driverId,
+            ambulance_id: ambulanceId,
             latitude: latitude,
             longitude: longitude
         })

@@ -20,15 +20,37 @@ Route::get('/', function () {
     return view('home');
 })->name('home');
 
+Route::get('/portal', function () {
+    return view('auth.portal');
+})->name('portal');
+
 // Public Patient Request Form
 Route::get('/request', [PatientRequestController::class, 'create'])
     ->name('patient-request.create');
 Route::post('/request', [PatientRequestController::class, 'store'])
     ->name('patient-request.store');
 
+// Public Monitoring (No Auth Required)
+Route::get('/monitoring', [\App\Http\Controllers\MonitoringController::class, 'index'])
+    ->name('monitoring');
+Route::get('/monitoring/data', [\App\Http\Controllers\MonitoringController::class, 'getData'])
+    ->name('monitoring.data');
+
 // API Routes (for driver GPS tracking)
 Route::post('/api/driver/location', [DriverLocationController::class, 'updateLocation'])
-    ->middleware('auth');
+    ->middleware('auth:ambulance');  // specific guard here if we want, or just 'auth' if we configure defaults properly
+
+// Ambulance Auth Routes
+Route::prefix('ambulance')->name('ambulance.')->group(function () {
+    Route::get('login', [App\Http\Controllers\Auth\AmbulanceAuthController::class, 'showLoginForm'])
+        ->middleware('guest:ambulance')
+        ->name('login');
+    Route::post('login', [App\Http\Controllers\Auth\AmbulanceAuthController::class, 'login'])
+        ->middleware('guest:ambulance');
+    Route::post('logout', [App\Http\Controllers\Auth\AmbulanceAuthController::class, 'logout'])
+        ->middleware('auth:ambulance')
+        ->name('logout');
+});
 
 require __DIR__ . '/auth.php';
 
@@ -40,17 +62,22 @@ require __DIR__ . '/auth.php';
 Route::middleware(['auth'])->group(function () {
 
     Route::get('/dashboard', function () {
-        // Redirect based on role
+        // Redirect based on role/guard
+        if (auth()->guard('ambulance')->check()) {
+            return redirect()->route('driver.dashboard');
+        }
+
         if (auth()->user()->role === 'admin') {
             return redirect()->route('admin.dashboard');
         } else {
-            return redirect()->route('driver.dashboard');
+            // Fallback (though drivers shouldn't use user auth anymore)
+            return redirect('/');
         }
     })->name('dashboard');
 
-    // Driver Dashboard
-    Route::get('/driver/dashboard', [DriverDashboardController::class, 'index'])
-        ->name('driver.dashboard');
+    // Driver Dashboard (moved to separate group below)
+    /* Route::get('/driver/dashboard', [DriverDashboardController::class, 'index'])
+        ->name('driver.dashboard'); */
 
     /*
     |--------------------------------------------------------------------------
@@ -60,32 +87,23 @@ Route::middleware(['auth'])->group(function () {
     Route::prefix('admin')->name('admin.')->group(function () {
 
         // Dashboard
-        Route::get('/dashboard', [AdminDashboardController::class, 'index'])
-            ->name('dashboard');
+        Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
 
-        // Master Data
+        // Resource Routes
         Route::resource('ambulances', AmbulanceController::class);
         Route::resource('drivers', DriverController::class);
-
-        // Dispatch
-        Route::get('dispatches', [DispatchController::class, 'index'])
-            ->name('dispatches.index');
-
-        Route::get('dispatches/create', [DispatchController::class, 'create'])
-            ->name('dispatches.create');
-
-        Route::post('dispatches', [DispatchController::class, 'store'])
-            ->name('dispatches.store');
-
+        
+        // Dispatch Management
+        Route::get('dispatches/export/pdf', [DispatchController::class, 'exportPdf'])
+            ->name('dispatches.export.pdf');
+            
+        Route::resource('dispatches', DispatchController::class);
+        
         Route::post('dispatches/{dispatch}/next', [DispatchController::class, 'next'])
             ->name('dispatches.next');
 
-        Route::delete('dispatches/{dispatch}', [DispatchController::class, 'destroy'])
-            ->name('dispatches.destroy');
-
-        // ✅ EXPORT PDF
-        Route::get('dispatches/export/pdf', [DispatchController::class, 'exportPdf'])
-            ->name('dispatches.export.pdf');
+        Route::post('dispatches/{dispatch}/status', [DispatchController::class, 'updateStatus'])
+             ->name('dispatches.update-status');
 
         // ✅ MAPS (INI YANG SEBELUMNYA HILANG)
         Route::get('maps', [MapController::class, 'index'])
@@ -103,4 +121,30 @@ Route::middleware(['auth'])->group(function () {
         Route::post('patient-requests/{patientRequest}/reject', [AdminPatientRequestController::class, 'reject'])
             ->name('patient-requests.reject');
     });
+});
+
+/*
+|--------------------------------------------------------------------------
+| AMBULANCE AUTHENTICATED
+|--------------------------------------------------------------------------
+*/
+Route::middleware(['auth:ambulance'])->group(function () {
+    Route::get('/driver/dashboard', [DriverDashboardController::class, 'index'])
+        ->name('driver.dashboard');
+});
+
+// Ambulance Auth Routes
+Route::middleware('guest:ambulance')->group(function () {
+    Route::get('ambulance/login', [\App\Http\Controllers\Auth\AmbulanceAuthController::class, 'showLoginForm'])
+        ->name('ambulance.login');
+    Route::post('ambulance/login', [\App\Http\Controllers\Auth\AmbulanceAuthController::class, 'login']);
+});
+
+Route::post('ambulance/logout', [\App\Http\Controllers\Auth\AmbulanceAuthController::class, 'logout'])
+    ->name('ambulance.logout')
+    ->middleware('auth:ambulance');
+
+// Driver Dashboard (Now uses ambulance auth)
+Route::middleware(['auth:ambulance'])->prefix('driver')->name('driver.')->group(function () {
+    Route::get('/dashboard', [DriverDashboardController::class, 'index'])->name('dashboard');
 });

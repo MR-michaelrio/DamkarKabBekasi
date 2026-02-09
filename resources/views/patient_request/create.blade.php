@@ -16,7 +16,7 @@
             🚑 Form Permintaan Layanan
         </h1>
         <p class="text-gray-600">
-            GMCI - Graha Mitra Cipta Indonesia
+            GMCI - Global Medical Care Indonesia
         </p>
     </div>
 
@@ -139,7 +139,7 @@
     <!-- Footer Info -->
     <div class="mt-8 text-center text-sm text-gray-600">
         <p>Kami akan menghubungi Anda secepatnya setelah permintaan diterima.</p>
-        <p class="mt-2">Untuk informasi lebih lanjut, hubungi: <strong>021-XXXXXXX</strong></p>
+        <p class="mt-2 text-lg font-bold">Layanan 24 Jam: <a href="tel:+6281286858680" class="text-emerald-600">+62 812-8685-8680</a></p>
     </div>
 
 </div>

@@ -12,9 +12,22 @@
 <div class="max-w-md mx-auto px-4 py-6">
 
     <!-- Header -->
-    <div class="bg-white rounded-lg shadow p-4 mb-4">
-        <h1 class="text-xl font-bold text-gray-800">🚑 Driver Dashboard</h1>
-        <p class="text-sm text-gray-600"><?php echo e(auth()->user()->name); ?></p>
+    <div class="bg-white shadow">
+        <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8 flex justify-between items-center">
+            <div>
+                <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+                    🚑 Dashboard Ambulans
+                </h2>
+                <p class="text-sm text-gray-500"><?php echo e(auth('ambulance')->user()->plate_number); ?> (<?php echo e(auth('ambulance')->user()->username); ?>)</p>
+            </div>
+            
+            <form method="POST" action="<?php echo e(route('ambulance.logout')); ?>">
+                <?php echo csrf_field(); ?>
+                <button type="submit" class="text-red-600 hover:text-red-800 font-semibold text-sm">
+                    Keluar Unit
+                </button>
+            </form>
+        </div>
     </div>
 
     <!-- Active Dispatch -->
@@ -83,7 +96,7 @@
 <script>
 let trackingActive = false;
 let watchId = null;
-const driverId = <?php echo e(auth()->user()->id); ?>;
+const ambulanceId = <?php echo e(auth('ambulance')->id()); ?>;
 
 const toggleBtn = document.getElementById('toggle-tracking');
 const statusIndicator = document.getElementById('status-indicator');
@@ -156,7 +169,7 @@ function sendLocation(latitude, longitude) {
             'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
         },
         body: JSON.stringify({
-            driver_id: driverId,
+            ambulance_id: ambulanceId,
             latitude: latitude,
             longitude: longitude
         })

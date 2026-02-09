@@ -66,9 +66,12 @@
                 <label class="block text-sm font-medium text-gray-700 mb-1">
                     Tipe Ambulans
                 </label>
-                <input type="text" name="type" required
-                       placeholder="ICU / BASIC / NICU"
-                       class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                <select name="type" required
+                        class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                    <option value="BASIC">BASIC</option>
+                    <option value="ICU">ICU</option>
+                    <option value="NICU">NICU</option>
+                </select>
             </div>
 
             <!-- Status -->
