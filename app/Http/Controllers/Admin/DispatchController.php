@@ -70,8 +70,9 @@ class DispatchController extends Controller
         $flow = [
             'assigned' => 'enroute_pickup',
             'enroute_pickup' => 'on_scene',
-            'on_scene' => 'enroute_hospital',
-            'enroute_hospital' => 'completed',
+            'on_scene' => 'enroute_destination',
+            'enroute_destination' => 'arrived_destination',
+            'arrived_destination' => 'completed',
         ];
 
         if (!isset($flow[$dispatch->status])) {

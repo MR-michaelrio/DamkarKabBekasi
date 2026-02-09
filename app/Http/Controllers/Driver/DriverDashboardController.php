@@ -15,9 +15,65 @@ class DriverDashboardController extends Controller
         
         // Get active dispatch for this ambulance
         $activeDispatch = Dispatch::where('ambulance_id', $ambulance->id)
-            ->whereIn('status', ['assigned', 'enroute_pickup', 'on_scene', 'enroute_hospital'])
+            ->whereIn('status', ['assigned', 'enroute_pickup', 'on_scene', 'enroute_destination', 'arrived_destination'])
             ->first();
 
         return view('driver.dashboard', compact('activeDispatch', 'ambulance'));
+    }
+
+    public function updateStatus(Request $request, Dispatch $dispatch)
+    {
+        // Security check: ensure this dispatch belongs to the authenticated ambulance
+        if ($dispatch->ambulance_id !== auth('ambulance')->id()) {
+            return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
+        }
+
+        $flow = [
+            'assigned' => 'enroute_pickup',
+            'enroute_pickup' => 'on_scene',
+            'on_scene' => 'enroute_destination',
+            'enroute_destination' => 'arrived_destination',
+            'arrived_destination' => 'completed',
+        ];
+
+        if (!isset($flow[$dispatch->status])) {
+            return response()->json(['success' => false, 'message' => 'Invalid status transition'], 400);
+        }
+
+        $newStatus = $flow[$dispatch->status];
+        
+        $updateData = ['status' => $newStatus];
+        
+        // Dynamic timestamps based on status
+        if ($newStatus === 'enroute_pickup') {
+            // Optional: record start time if needed
+        } elseif ($newStatus === 'on_scene') {
+            $updateData['pickup_at'] = now();
+        } elseif ($newStatus === 'arrived_destination') {
+            // Using existing hospital_at for generic destination arrival if needed, 
+            // or just rely on logs. For now let's keep it simple.
+            $updateData['hospital_at'] = now(); 
+        } elseif ($newStatus === 'completed') {
+            $updateData['completed_at'] = now();
+            
+            // Free up ambulance and driver
+            $dispatch->ambulance->update(['status' => 'ready']);
+            $dispatch->driver->update(['status' => 'available']);
+        }
+
+        $dispatch->update($updateData);
+
+        // Log the change
+        \App\Models\DispatchLog::create([
+            'dispatch_id' => $dispatch->id,
+            'status' => $newStatus,
+            'note' => 'Status diupdate oleh driver'
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'new_status' => $newStatus,
+            'message' => 'Status updated successfully'
+        ]);
     }
 }

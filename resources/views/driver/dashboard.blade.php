@@ -61,22 +61,51 @@
             </div>
         </div>
 
-        <!-- GPS Tracking Control -->
+        <!-- GPS Tracking & Journey Control -->
         <div class="bg-white rounded-lg shadow p-4 mb-4">
-            <h2 class="font-bold text-lg mb-3">📡 GPS Tracking</h2>
+            <h2 class="font-bold text-lg mb-1">📋 Journey Control</h2>
             
             <div id="tracking-status" class="mb-4">
                 <div class="flex items-center gap-2">
                     <div id="status-indicator" class="w-3 h-3 bg-gray-400 rounded-full"></div>
-                    <span id="status-text" class="text-sm text-gray-600">Tracking belum dimulai</span>
+                    <span id="status-text" class="text-sm text-gray-600 font-medium">Tracking belum dimulai</span>
                 </div>
                 <p id="last-update" class="text-xs text-gray-500 mt-1"></p>
             </div>
 
-            <button id="toggle-tracking" 
-                    class="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-6 rounded-lg shadow-lg transition duration-200">
-                🚀 Mulai Tracking
-            </button>
+            @php
+                $statusConfig = [
+                    'assigned' => [
+                        'label' => '🚀 Mulai Perjalanan',
+                        'color' => 'bg-green-600 hover:bg-green-700',
+                    ],
+                    'enroute_pickup' => [
+                        'label' => '📍 Sudah Sampai Lokasi Penjemputan / On Scene',
+                        'color' => 'bg-blue-600 hover:bg-blue-700',
+                    ],
+                    'on_scene' => [
+                        'label' => '🚚 OTW Titik Tuju',
+                        'color' => 'bg-orange-600 hover:bg-orange-700',
+                    ],
+                    'enroute_destination' => [
+                        'label' => '🏁 Sampai Titik Tuju',
+                        'color' => 'bg-indigo-600 hover:bg-indigo-700',
+                    ],
+                    'arrived_destination' => [
+                        'label' => '✅ Selesai',
+                        'color' => 'bg-red-600 hover:bg-red-700',
+                    ],
+                ];
+                $currentConfig = $statusConfig[$activeDispatch->status] ?? null;
+            @endphp
+
+            @if($currentConfig)
+                <button id="journey-btn" 
+                        data-status="{{ $activeDispatch->status }}"
+                        class="w-full {{ $currentConfig['color'] }} text-white font-bold py-4 px-6 rounded-xl shadow-lg transition duration-200 transform active:scale-95 flex items-center justify-center gap-2">
+                    {{ $currentConfig['label'] }}
+                </button>
+            @endif
         </div>
 
         <!-- Location Info -->
@@ -100,7 +129,7 @@ let trackingActive = false;
 let watchId = null;
 const ambulanceId = {{ auth('ambulance')->id() }};
 
-const toggleBtn = document.getElementById('toggle-tracking');
+const journeyBtn = document.getElementById('journey-btn');
 const statusIndicator = document.getElementById('status-indicator');
 const statusText = document.getElementById('status-text');
 const lastUpdate = document.getElementById('last-update');
@@ -112,8 +141,6 @@ const isCapacitor = window.hasOwnProperty('Capacitor');
 async function initializeCapacitorTracking() {
     if (!isCapacitor) return;
 
-    // We use a dynamic import or global check for the plugin
-    // In a real Capacitor build, the plugin is registered on window.Capacitor.Plugins
     const { BackgroundGeolocation } = window.Capacitor.Plugins;
 
     if (!BackgroundGeolocation) {
@@ -121,7 +148,6 @@ async function initializeCapacitorTracking() {
         return;
     }
 
-    // Request permissions
     await BackgroundGeolocation.requestPermissions();
 }
 
@@ -130,11 +156,50 @@ if (isCapacitor) {
     initializeCapacitorTracking();
 }
 
-toggleBtn?.addEventListener('click', async function() {
-    if (trackingActive) {
-        await stopTracking();
-    } else {
-        await startTracking();
+journeyBtn?.addEventListener('click', async function() {
+    const currentStatus = this.getAttribute('data-status');
+    
+    // UI Loading state
+    this.disabled = true;
+    this.classList.add('opacity-75', 'cursor-not-allowed');
+    const originalContent = this.innerHTML;
+    this.innerHTML = `<svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Processing...`;
+
+    try {
+        // Special actions based on status
+        if (currentStatus === 'assigned') {
+            await startTracking();
+        } else if (currentStatus === 'arrived_destination') {
+            await stopTracking();
+        }
+
+        // Update status via API
+        const response = await fetch(`{{ route('driver.dispatches.update-status', $activeDispatch->id ?? 0) }}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                'Accept': 'application/json'
+            }
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            // Refresh page to show next state
+            window.location.reload();
+        } else {
+            alert('Error: ' + data.message);
+            this.disabled = false;
+            this.classList.remove('opacity-75', 'cursor-not-allowed');
+            this.innerHTML = originalContent;
+        }
+    } catch (e) {
+        console.error(e);
+        alert('Terjadi kesalahan silakan coba lagi: ' + e.message);
+        this.disabled = false;
+        this.classList.remove('opacity-75', 'cursor-not-allowed');
+        this.innerHTML = originalContent;
     }
 });
 
@@ -165,10 +230,9 @@ async function startTracking() {
             trackingActive = true;
             updateUIStarted();
         } catch (e) {
-            alert("Gagal memulai background tracking: " + e.message);
+            console.error(e);
         }
     } else {
-        // Fallback to standard browser geolocation
         if (!navigator.geolocation) {
             alert('GPS tidak didukung di browser ini');
             return;
@@ -218,15 +282,14 @@ function updateUILocation(lat, lng) {
 }
 
 function updateUIStarted() {
-    toggleBtn.textContent = '⏸️ Stop Tracking';
-    toggleBtn.className = 'w-full bg-red-600 hover:bg-red-700 text-white font-semibold py-3 px-6 rounded-lg shadow-lg transition duration-200';
+    // No longer changing button here as page will reload
+    statusIndicator.className = 'w-3 h-3 bg-green-500 rounded-full animate-pulse';
+    statusText.textContent = 'Tracking Aktif';
 }
 
 function updateUIStopped() {
     statusIndicator.className = 'w-3 h-3 bg-gray-400 rounded-full';
     statusText.textContent = 'Tracking dihentikan';
-    toggleBtn.textContent = '🚀 Mulai Tracking';
-    toggleBtn.className = 'w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-6 rounded-lg shadow-lg transition duration-200';
 }
 
 function sendLocation(latitude, longitude) {
