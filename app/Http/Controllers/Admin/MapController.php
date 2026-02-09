@@ -13,7 +13,7 @@ class MapController extends Controller
         $ambulances = Ambulance::whereNotNull('latitude')
             ->whereNotNull('longitude')
             ->with(['dispatches' => function($query) {
-                $query->whereIn('status', ['assigned', 'enroute_pickup', 'on_scene', 'enroute_hospital'])
+                $query->whereIn('status', ['assigned', 'enroute_pickup', 'on_scene', 'enroute_destination', 'arrived_destination'])
                       ->latest()
                       ->limit(1);
             }])
@@ -28,7 +28,7 @@ class MapController extends Controller
         $ambulances = Ambulance::whereNotNull('latitude')
             ->whereNotNull('longitude')
             ->with(['dispatches' => function($query) {
-                $query->whereIn('status', ['assigned', 'enroute_pickup', 'on_scene', 'enroute_hospital'])
+                $query->whereIn('status', ['assigned', 'enroute_pickup', 'on_scene', 'enroute_destination', 'arrived_destination'])
                       ->latest()
                       ->limit(1);
             }])
