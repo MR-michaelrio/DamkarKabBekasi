@@ -3,13 +3,7 @@
 
         <div class="flex items-center space-x-6">
             <a href="{{ route('dashboard') }}" class="font-bold text-lg">🚑 GMCI Dispatch</a>
-
-            <a href="{{ route('dashboard') }}" class="{{ request()->routeIs('dashboard') ? 'text-blue-600' : '' }}">
-                Dashboard
-            </a>
-
             @if(auth()->user()->role === 'admin')
-                <a href="{{ route('admin.dashboard') }}">Admin</a>
                 <a href="{{ route('admin.ambulances.index') }}">Ambulance</a>
                 <a href="{{ route('admin.drivers.index') }}">Driver</a>
                 <a href="{{ route('admin.dispatches.index') }}">Dispatch</a>
