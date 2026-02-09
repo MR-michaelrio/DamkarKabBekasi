@@ -33,15 +33,23 @@
 <body class="bg-gray-50">
 
 <!-- Header -->
-<div class="bg-white shadow-sm border-b px-6 py-3 flex items-center justify-between">
-    <div class="flex items-center gap-3">
-        <a href="/portal" class="text-gray-600 hover:text-gray-800">← Kembali</a>
-        <div class="h-6 w-px bg-gray-300"></div>
-        <h1 class="text-xl font-bold text-gray-800">🗺️ Monitoring Real-Time</h1>
+<div class="bg-white shadow-sm border-b px-4 py-3 flex flex-col sm:flex-row items-center justify-between gap-4">
+    <div class="flex items-center gap-3 w-full sm:w-auto">
+        <a href="/portal" class="text-emerald-600 hover:text-emerald-800 font-semibold flex items-center gap-1">
+            <span class="text-lg">←</span> Portal
+        </a>
+        <div class="h-6 w-px bg-gray-300 hidden sm:block"></div>
+        <h1 class="text-lg font-bold text-gray-800 truncate">🗺️ Monitoring Unit</h1>
     </div>
-    <div class="flex items-center gap-2">
-        <div class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-        <span class="text-sm text-gray-600">Auto-refresh: <span id="countdown">10</span>s</span>
+    <div class="flex items-center gap-3 bg-slate-50 px-3 py-1.5 rounded-full border border-slate-200">
+        <div class="flex items-center gap-2">
+            <div class="w-2.5 h-2.5 bg-green-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(34,197,94,0.6)]"></div>
+            <span class="text-xs font-bold text-gray-700 uppercase tracking-wider">Live</span>
+        </div>
+        <div class="w-px h-4 bg-gray-300"></div>
+        <span class="text-sm font-medium text-gray-600">
+            Refresh: <span id="countdown" class="font-mono font-bold text-emerald-600">10</span>s
+        </span>
     </div>
 </div>
 
