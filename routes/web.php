@@ -7,6 +7,7 @@ use App\Http\Controllers\Admin\DriverController;
 use App\Http\Controllers\Admin\DispatchController;
 use App\Http\Controllers\Admin\MapController;
 use App\Http\Controllers\Admin\PatientRequestController as AdminPatientRequestController;
+use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\PatientRequestController;
 use App\Http\Controllers\Driver\DriverDashboardController;
 use App\Http\Controllers\Api\DriverLocationController;
@@ -82,6 +83,7 @@ Route::middleware(['auth'])->group(function () {
         // Resource Routes
         Route::resource('ambulances', AmbulanceController::class);
         Route::resource('drivers', DriverController::class);
+        Route::resource('users', UserController::class);
         
         // Dispatch Management
         Route::get('dispatches/export/pdf', [DispatchController::class, 'exportPdf'])

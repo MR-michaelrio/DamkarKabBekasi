@@ -15,6 +15,7 @@
                         <a href="{{ route('admin.drivers.index') }}" class="text-sm font-medium text-gray-700 hover:text-indigo-600 transition">Driver</a>
                         <a href="{{ route('admin.dispatches.index') }}" class="text-sm font-medium text-gray-700 hover:text-indigo-600 transition">Dispatch</a>
                         <a href="{{ route('admin.patient-requests.index') }}" class="text-sm font-medium text-gray-700 hover:text-indigo-600 transition">📋 Permintaan</a>
+                        <a href="{{ route('admin.users.index') }}" class="text-sm font-medium text-gray-700 hover:text-indigo-600 transition">👥 User</a>
                         <a href="{{ route('admin.maps') }}" class="text-sm font-medium text-gray-700 hover:text-indigo-600 transition">🗺️ Maps</a>
                     @endif
                 </div>
@@ -50,6 +51,7 @@
                 <a href="{{ route('admin.drivers.index') }}" class="block pl-3 pr-4 py-2 border-l-4 border-transparent text-base font-medium text-gray-600 hover:bg-gray-50 hover:border-gray-300 transition">Driver</a>
                 <a href="{{ route('admin.dispatches.index') }}" class="block pl-3 pr-4 py-2 border-l-4 border-transparent text-base font-medium text-gray-600 hover:bg-gray-50 hover:border-gray-300 transition">Dispatch</a>
                 <a href="{{ route('admin.patient-requests.index') }}" class="block pl-3 pr-4 py-2 border-l-4 border-transparent text-base font-medium text-gray-600 hover:bg-gray-50 hover:border-gray-300 transition">📋 Permintaan</a>
+                <a href="{{ route('admin.users.index') }}" class="block pl-3 pr-4 py-2 border-l-4 border-transparent text-base font-medium text-gray-600 hover:bg-gray-50 hover:border-gray-300 transition">👥 User</a>
                 <a href="{{ route('admin.maps') }}" class="block pl-3 pr-4 py-2 border-l-4 border-transparent text-base font-medium text-gray-600 hover:bg-gray-50 hover:border-gray-300 transition">🗺️ Maps</a>
             @endif
             
