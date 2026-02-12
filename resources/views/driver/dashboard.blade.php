@@ -160,6 +160,13 @@ const currentLocation = document.getElementById('current-location');
 // Capacitor Check
 const isCapacitor = window.hasOwnProperty('Capacitor');
 
+// HTTPS / Secure Context Check
+if (!window.isSecureContext && !isCapacitor && window.location.hostname !== 'localhost') {
+    statusIndicator.className = 'w-3 h-3 bg-red-500 rounded-full animate-ping';
+    statusText.innerHTML = '<span class="text-red-600 font-bold">⚠️ ERROR: Browser mewajibkan HTTPS untuk GPS.</span> Hubungi Admin untuk setup SSL.';
+    console.error('Geolocation requires a secure context (HTTPS)');
+}
+
 async function initializeCapacitorTracking() {
     if (!isCapacitor) return;
 
@@ -376,7 +383,8 @@ function sendLocation(latitude, longitude) {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+            'Accept': 'application/json'
         },
         body: JSON.stringify({
             ambulance_id: ambulanceId,
@@ -384,7 +392,13 @@ function sendLocation(latitude, longitude) {
             longitude: longitude
         })
     })
-    .then(response => response.json())
+    .then(async response => {
+        if (!response.ok) {
+            const errData = await response.json().catch(() => ({}));
+            throw new Error(errData.message || `Server Error ${response.status}`);
+        }
+        return response.json();
+    })
     .then(data => {
         if (data.success) {
             const now = new Date().toLocaleTimeString('id-ID');
@@ -393,6 +407,8 @@ function sendLocation(latitude, longitude) {
     })
     .catch(error => {
         console.error('Error sending location:', error);
+        statusText.innerHTML = `<span class="text-red-500 font-bold">⚠️ Gagal Kirim GPS:</span> ${error.message}`;
+        statusIndicator.className = 'w-3 h-3 bg-red-500 rounded-full';
     });
 }
 </script>
