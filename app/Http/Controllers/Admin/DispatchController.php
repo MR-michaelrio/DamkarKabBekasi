@@ -9,7 +9,7 @@ use App\Models\Driver;
 use App\Models\Ambulance;
 use App\Models\DispatchLog;
 use Barryvdh\DomPDF\Facade\Pdf;
-use Carbon;
+use Carbon\Carbon;
 
 class DispatchController extends Controller
 {
