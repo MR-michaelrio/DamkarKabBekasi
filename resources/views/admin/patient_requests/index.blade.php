@@ -74,6 +74,10 @@
                                     <span class="px-2 py-1 bg-green-100 text-green-700 rounded text-xs font-bold">
                                         ✅ Dispatched
                                     </span>
+                                @elseif ($request->status === 'completed')
+                                    <span class="px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs font-bold">
+                                        🏁 Selesai
+                                    </span>
                                 @else
                                     <span class="px-2 py-1 bg-red-100 text-red-700 rounded text-xs font-bold">
                                         ❌ Rejected
