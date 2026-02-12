@@ -158,7 +158,9 @@ const lastUpdate = document.getElementById('last-update');
 const currentLocation = document.getElementById('current-location');
 
 // Capacitor Check
-const isCapacitor = window.hasOwnProperty('Capacitor');
+// Capacitor Check
+const isCapacitor = window.hasOwnProperty('Capacitor') && window.Capacitor.hasOwnProperty('Plugins');
+const CapacitorPlugins = isCapacitor ? window.Capacitor.Plugins : {};
 
 // HTTPS / Secure Context Check
 if (!window.isSecureContext && !isCapacitor && window.location.hostname !== 'localhost') {
@@ -168,16 +170,15 @@ if (!window.isSecureContext && !isCapacitor && window.location.hostname !== 'loc
 }
 
 async function initializeCapacitorTracking() {
-    if (!isCapacitor) return;
+    if (!isCapacitor || !CapacitorPlugins.BackgroundGeolocation) return;
 
-    const { BackgroundGeolocation } = window.Capacitor.Plugins;
+    const { BackgroundGeolocation } = CapacitorPlugins;
 
-    if (!BackgroundGeolocation) {
-        console.warn('Background Geolocation Plugin not found');
-        return;
+    try {
+        await BackgroundGeolocation.requestPermissions();
+    } catch (e) {
+        console.error('Failed to request Capacitor permissions:', e);
     }
-
-    await BackgroundGeolocation.requestPermissions();
 }
 
 if (isCapacitor) {
@@ -277,8 +278,8 @@ journeyBtn?.addEventListener('click', async function() {
 });
 
 async function startTracking() {
-    if (isCapacitor) {
-        const { BackgroundGeolocation } = window.Capacitor.Plugins;
+    if (isCapacitor && CapacitorPlugins.BackgroundGeolocation) {
+        const { BackgroundGeolocation } = CapacitorPlugins;
         
         try {
             watchId = await BackgroundGeolocation.addWatcher(
@@ -303,38 +304,48 @@ async function startTracking() {
             trackingActive = true;
             updateUIStarted();
         } catch (e) {
-            console.error(e);
+            console.error('Capacitor Tracking Error:', e);
+            // Fallback to browser geolocation if capacitor fails
+            startBrowserTracking();
         }
     } else {
-        if (!navigator.geolocation) {
-            alert('GPS tidak didukung di browser ini');
-            return;
-        }
-
-        watchId = navigator.geolocation.watchPosition(
-            (position) => {
-                const lat = position.coords.latitude;
-                const lng = position.coords.longitude;
-                updateUILocation(lat, lng);
-                sendLocation(lat, lng);
-            },
-            (error) => {
-                console.error('GPS Error:', error);
-                statusIndicator.className = 'w-3 h-3 bg-red-500 rounded-full';
-                statusText.textContent = 'Error: ' + error.message;
-            },
-            { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
-        );
-        trackingActive = true;
-        updateUIStarted();
+        startBrowserTracking();
     }
 }
 
+function startBrowserTracking() {
+    if (!navigator.geolocation) {
+        alert('GPS tidak didukung di browser ini');
+        return;
+    }
+
+    watchId = navigator.geolocation.watchPosition(
+        (position) => {
+            const lat = position.coords.latitude;
+            const lng = position.coords.longitude;
+            updateUILocation(lat, lng);
+            sendLocation(lat, lng);
+        },
+        (error) => {
+            console.error('GPS Error:', error);
+            statusIndicator.className = 'w-3 h-3 bg-red-500 rounded-full';
+            statusText.textContent = 'Error GPS: ' + error.message;
+        },
+        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+    );
+    trackingActive = true;
+    updateUIStarted();
+}
+
 async function stopTracking() {
-    if (isCapacitor) {
-        const { BackgroundGeolocation } = window.Capacitor.Plugins;
+    if (isCapacitor && CapacitorPlugins.BackgroundGeolocation) {
+        const { BackgroundGeolocation } = CapacitorPlugins;
         if (watchId) {
-            await BackgroundGeolocation.removeWatcher({ id: watchId });
+            try {
+                await BackgroundGeolocation.removeWatcher({ id: watchId });
+            } catch (e) {
+                console.error('Error removing Capacitor watcher:', e);
+            }
             watchId = null;
         }
     } else {
