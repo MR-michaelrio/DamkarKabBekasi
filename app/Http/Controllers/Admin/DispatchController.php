@@ -117,37 +117,44 @@ class DispatchController extends Controller
         $endDate = null;
 
         if ($range === 'today') {
-            $query->whereDate('created_at', now());
+            $query->whereDate('created_at', Carbon\Carbon::today());
             $title .= " Hari Ini";
-            $startDate = now()->startOfDay();
-            $endDate = now()->endOfDay();
+            $startDate = Carbon\Carbon::today()->startOfDay();
+            $endDate = Carbon\Carbon::today()->endOfDay();
         } elseif ($range === 'week') {
-            $query->whereBetween('created_at', [now()->startOfWeek(), now()->endOfWeek()]);
+            $query->whereBetween('created_at', [Carbon::Carbon::now()->startOfWeek(), Carbon::Carbon::now()->endOfWeek()]);
             $title .= " Minggu Ini";
-            $startDate = now()->startOfWeek();
-            $endDate = now()->endOfWeek();
+            $startDate = Carbon\Carbon::now()->startOfWeek();
+            $endDate = Carbon\Carbon::now()->endOfWeek();
         } elseif ($range === 'month') {
-            $query->whereBetween('created_at', [now()->startOfMonth(), now()->endOfMonth()]);
+            $query->whereMonth('created_at', Carbon::Carbon::now()->month)
+                  ->whereYear('created_at', Carbon::Carbon::now()->year);
             $title .= " Bulan Ini";
-            $startDate = now()->startOfMonth();
-            $endDate = now()->endOfMonth();
+            $startDate = Carbon\Carbon::now()->startOfMonth();
+            $endDate = Carbon\Carbon::now()->endOfMonth();
         }
 
-        $dispatches = $query->orderByDesc('created_at')->get();
+        $dispatches = $query->withTrashed()->orderByDesc('created_at')->get();
 
         // Ambulance Analytics for the period
         $analytics = Ambulance::withCount(['dispatches' => function ($q) use ($startDate, $endDate) {
+            $q->withTrashed();
             if ($startDate && $endDate) {
                 $q->whereBetween('created_at', [$startDate, $endDate]);
+            } else {
+                // If no range, default to month for analytics consistency
+                $q->whereMonth('created_at', Carbon::Carbon::now()->month)
+                  ->whereYear('created_at', Carbon::Carbon::now()->year);
             }
         }])->get();
 
         // Sunday Analytics (requested: "untuk yang pdf analitiknya buat perbulan hari minggu juga")
         $sundayDispatches = collect();
         if ($range === 'month') {
-            $sundayDispatches = Dispatch::with(['ambulance'])
-                ->whereBetween('created_at', [now()->startOfMonth(), now()->endOfMonth()])
-                ->whereRaw('DAYOFWEEK(created_at) = 1') // 1 is Sunday in many SQL dialects (Laravel's MySQL default)
+            $sundayDispatches = Dispatch::withTrashed()->with(['ambulance'])
+                ->whereMonth('created_at', Carbon::Carbon::now()->month)
+                ->whereYear('created_at', Carbon::Carbon::now()->year)
+                ->whereRaw('DAYOFWEEK(created_at) = 1') 
                 ->get();
         }
 
