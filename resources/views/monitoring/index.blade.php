@@ -17,9 +17,15 @@
         #map {
             height: 100%;
         }
+        /* Mobile height adjustments */
         .data-table {
-            max-height: calc(50vh - 80px);
+            max-height: 40vh;
             overflow-y: auto;
+        }
+        @media (min-width: 1024px) {
+            .data-table {
+                max-height: calc(50vh - 80px);
+            }
         }
         .data-table::-webkit-scrollbar {
             width: 6px;
@@ -30,65 +36,65 @@
         }
     </style>
 </head>
-<body class="bg-gray-50">
+<body class="bg-gray-50 flex flex-col h-screen overflow-hidden">
 
 <!-- Header -->
-<div class="bg-white shadow-sm border-b px-4 py-3 flex flex-col sm:flex-row items-center justify-between gap-4">
-    <div class="flex items-center gap-3 w-full sm:w-auto">
-        <a href="/portal" class="text-emerald-600 hover:text-emerald-800 font-semibold flex items-center gap-1">
-            <span class="text-lg">←</span> Portal
+<div class="bg-white shadow-sm border-b px-4 py-3 flex items-center justify-between gap-4 flex-shrink-0">
+    <div class="flex items-center gap-3">
+        <a href="/portal" class="text-emerald-600 hover:text-emerald-800 font-bold flex items-center gap-1">
+            <span class="text-lg">←</span> <span class="hidden sm:inline">Portal</span>
         </a>
-        <div class="h-6 w-px bg-gray-300 hidden sm:block"></div>
-        <h1 class="text-lg font-bold text-gray-800 truncate">🗺️ Monitoring Unit</h1>
+        <div class="h-6 w-px bg-gray-300"></div>
+        <h1 class="text-lg font-extrabold text-gray-800 truncate">🗺️ Monitoring</h1>
     </div>
     <div class="flex items-center gap-3 bg-slate-50 px-3 py-1.5 rounded-full border border-slate-200">
         <div class="flex items-center gap-2">
-            <div class="w-2.5 h-2.5 bg-green-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(34,197,94,0.6)]"></div>
-            <span class="text-xs font-bold text-gray-700 uppercase tracking-wider">Live</span>
+            <div class="w-2 h-2 bg-green-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(34,197,94,0.6)]"></div>
+            <span class="text-[10px] font-black text-gray-700 uppercase tracking-tighter">Live</span>
         </div>
-        <div class="w-px h-4 bg-gray-300"></div>
-        <span class="text-sm font-medium text-gray-600">
-            Refresh: <span id="countdown" class="font-mono font-bold text-emerald-600">10</span>s
+        <div class="w-px h-3 bg-gray-300"></div>
+        <span class="text-xs font-bold text-gray-600">
+            <span id="countdown" class="font-mono font-black text-emerald-600">10</span>s
         </span>
     </div>
 </div>
 
 <!-- Main Content -->
-<div class="flex h-[calc(100vh-60px)]">
+<div class="flex flex-col lg:flex-row flex-1 overflow-hidden">
     
-    <!-- Map Section (60%) -->
-    <div class="w-3/5 relative">
+    <!-- Map Section (Top on mobile, 60% on desktop) -->
+    <div class="h-[40vh] lg:h-full lg:w-3/5 relative border-b lg:border-b-0">
         <div id="map"></div>
     </div>
 
-    <!-- Data Section (40%) -->
-    <div class="w-2/5 bg-white border-l flex flex-col">
+    <!-- Data Section (Bottom on mobile, 40% on desktop) -->
+    <div class="flex-1 lg:w-2/5 bg-white lg:border-l flex flex-col overflow-y-auto lg:overflow-hidden">
         
-        <!-- Active Dispatches (Top Half) -->
-        <div class="flex-1 border-b">
-            <div class="bg-blue-50 px-4 py-3 border-b">
+        <!-- Active Dispatches -->
+        <div class="flex-1 flex flex-col min-h-[300px] lg:min-h-0 border-b">
+            <div class="bg-blue-50 px-4 py-3 border-b flex justify-between items-center sticky top-0 z-10">
                 <h2 class="font-bold text-gray-800 flex items-center gap-2">
                     🚨 Dispatch Aktif
-                    <span id="dispatch-count" class="text-xs bg-blue-600 text-white px-2 py-1 rounded-full">0</span>
                 </h2>
+                <span id="dispatch-count" class="text-xs font-black bg-blue-600 text-white px-2 py-0.5 rounded-full shadow-sm">0</span>
             </div>
-            <div class="data-table p-4">
-                <div id="dispatches-list" class="space-y-2">
+            <div class="data-table p-4 flex-1">
+                <div id="dispatches-list" class="space-y-3">
                     <p class="text-gray-400 text-sm text-center py-8">Memuat data...</p>
                 </div>
             </div>
         </div>
 
-        <!-- Patient Requests (Bottom Half) -->
-        <div class="flex-1">
-            <div class="bg-green-50 px-4 py-3 border-b">
+        <!-- Patient Requests -->
+        <div class="flex-1 flex flex-col min-h-[300px] lg:min-h-0">
+            <div class="bg-green-50 px-4 py-3 border-b flex justify-between items-center sticky top-0 z-10">
                 <h2 class="font-bold text-gray-800 flex items-center gap-2">
                     📋 Permintaan Pasien
-                    <span id="request-count" class="text-xs bg-green-600 text-white px-2 py-1 rounded-full">0</span>
                 </h2>
+                <span id="request-count" class="text-xs font-black bg-green-600 text-white px-2 py-0.5 rounded-full shadow-sm">0</span>
             </div>
-            <div class="data-table p-4">
-                <div id="requests-list" class="space-y-2">
+            <div class="data-table p-4 flex-1">
+                <div id="requests-list" class="space-y-3">
                     <p class="text-gray-400 text-sm text-center py-8">Memuat data...</p>
                 </div>
             </div>
