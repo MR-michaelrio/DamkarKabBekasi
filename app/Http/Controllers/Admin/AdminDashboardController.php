@@ -34,9 +34,12 @@ class AdminDashboardController extends Controller
         // =====================
         // AMBULANCE ANALYTICS (Current Month)
         // =====================
-        $ambulanceAnalytics = Ambulance::withCount(['dispatches' => function ($query) {
-            $query->whereMonth('created_at', Carbon::now()->month)
-                  ->whereYear('created_at', Carbon::now()->year);
+        $startOfMonth = Carbon::now()->startOfMonth();
+        $endOfMonth = Carbon::now()->endOfMonth();
+
+        $ambulanceAnalytics = Ambulance::withCount(['dispatches' => function ($query) use ($startOfMonth, $endOfMonth) {
+            $query->withTrashed()
+                  ->whereBetween('created_at', [$startOfMonth, $endOfMonth]);
         }])->get();
 
         // =====================
