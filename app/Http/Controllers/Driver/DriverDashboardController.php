@@ -56,8 +56,13 @@ class DriverDashboardController extends Controller
         } elseif ($newStatus === 'completed') {
             $updateData['completed_at'] = now();
             
-            // Free up ambulance and driver
-            $dispatch->ambulance->update(['status' => 'ready']);
+            // Free up ambulance and driver, and clear location
+            $dispatch->ambulance->update([
+                'status' => 'ready',
+                'latitude' => null,
+                'longitude' => null,
+                'last_location_update' => null
+            ]);
             $dispatch->driver->update(['status' => 'available']);
         }
 
