@@ -144,8 +144,8 @@ class DispatchController extends Controller
                 $q->whereBetween('created_at', [$startDate, $endDate]);
             } else {
                 // If no range, default to month for analytics consistency
-                $q->whereMonth('created_at', Carbon::Carbon::now()->month)
-                  ->whereYear('created_at', Carbon::Carbon::now()->year);
+                $q->whereMonth('created_at', Carbon::now()->month)
+                  ->whereYear('created_at', Carbon::now()->year);
             }
         }])->get();
 
@@ -153,8 +153,8 @@ class DispatchController extends Controller
         $sundayDispatches = collect();
         if ($range === 'month') {
             $sundayDispatches = Dispatch::withTrashed()->with(['ambulance'])
-                ->whereMonth('created_at', Carbon::Carbon::now()->month)
-                ->whereYear('created_at', Carbon::Carbon::now()->year)
+                ->whereMonth('created_at', Carbon::now()->month)
+                ->whereYear('created_at', Carbon::now()->year)
                 ->whereRaw('DAYOFWEEK(created_at) = 1') 
                 ->get();
         }
