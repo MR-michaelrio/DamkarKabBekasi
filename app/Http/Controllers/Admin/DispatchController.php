@@ -107,12 +107,52 @@ class DispatchController extends Controller
     }
 
     // ✅ EXPORT PDF
-    public function exportPdf()
+    public function exportPdf(Request $request)
     {
-        $dispatches = Dispatch::with(['driver','ambulance'])->get();
+        $range = $request->get('range', 'all');
+        $query = Dispatch::with(['driver', 'ambulance']);
+        
+        $title = "Laporan Dispatch Ambulans";
+        $startDate = null;
+        $endDate = null;
 
-        $pdf = Pdf::loadView('admin.dispatches.pdf', compact('dispatches'));
+        if ($range === 'today') {
+            $query->whereDate('created_at', now());
+            $title .= " Hari Ini";
+            $startDate = now()->startOfDay();
+            $endDate = now()->endOfDay();
+        } elseif ($range === 'week') {
+            $query->whereBetween('created_at', [now()->startOfWeek(), now()->endOfWeek()]);
+            $title .= " Minggu Ini";
+            $startDate = now()->startOfWeek();
+            $endDate = now()->endOfWeek();
+        } elseif ($range === 'month') {
+            $query->whereBetween('created_at', [now()->startOfMonth(), now()->endOfMonth()]);
+            $title .= " Bulan Ini";
+            $startDate = now()->startOfMonth();
+            $endDate = now()->endOfMonth();
+        }
 
-        return $pdf->download('dispatch-report.pdf');
+        $dispatches = $query->orderByDesc('created_at')->get();
+
+        // Ambulance Analytics for the period
+        $analytics = Ambulance::withCount(['dispatches' => function ($q) use ($startDate, $endDate) {
+            if ($startDate && $endDate) {
+                $q->whereBetween('created_at', [$startDate, $endDate]);
+            }
+        }])->get();
+
+        // Sunday Analytics (requested: "untuk yang pdf analitiknya buat perbulan hari minggu juga")
+        $sundayDispatches = collect();
+        if ($range === 'month') {
+            $sundayDispatches = Dispatch::with(['ambulance'])
+                ->whereBetween('created_at', [now()->startOfMonth(), now()->endOfMonth()])
+                ->whereRaw('DAYOFWEEK(created_at) = 1') // 1 is Sunday in many SQL dialects (Laravel's MySQL default)
+                ->get();
+        }
+
+        $pdf = Pdf::loadView('admin.dispatches.dashboard_pdf', compact('dispatches', 'analytics', 'title', 'range', 'sundayDispatches'));
+
+        return $pdf->download('dispatch-report-' . $range . '-' . date('Y-m-d') . '.pdf');
     }
 }
