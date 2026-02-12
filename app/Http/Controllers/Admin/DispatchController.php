@@ -9,7 +9,7 @@ use App\Models\Driver;
 use App\Models\Ambulance;
 use App\Models\DispatchLog;
 use Barryvdh\DomPDF\Facade\Pdf;
-use Carbon\Carbon;
+use Carbon;
 
 class DispatchController extends Controller
 {
@@ -118,21 +118,21 @@ class DispatchController extends Controller
         $endDate = null;
 
         if ($range === 'today') {
-            $query->whereDate('created_at', Carbon\Carbon::today());
+            $query->whereDate('created_at', Carbon::today());
             $title .= " Hari Ini";
-            $startDate = Carbon\Carbon::today()->startOfDay();
-            $endDate = Carbon\Carbon::today()->endOfDay();
+            $startDate = Carbon::today()->startOfDay();
+            $endDate = Carbon::today()->endOfDay();
         } elseif ($range === 'week') {
             $query->whereBetween('created_at', [Carbon::Carbon::now()->startOfWeek(), Carbon::Carbon::now()->endOfWeek()]);
             $title .= " Minggu Ini";
-            $startDate = Carbon\Carbon::now()->startOfWeek();
-            $endDate = Carbon\Carbon::now()->endOfWeek();
+            $startDate = Carbon::now()->startOfWeek();
+            $endDate = Carbon::now()->endOfWeek();
         } elseif ($range === 'month') {
             $query->whereMonth('created_at', Carbon::Carbon::now()->month)
                   ->whereYear('created_at', Carbon::Carbon::now()->year);
             $title .= " Bulan Ini";
-            $startDate = Carbon\Carbon::now()->startOfMonth();
-            $endDate = Carbon\Carbon::now()->endOfMonth();
+            $startDate = Carbon::now()->startOfMonth();
+            $endDate = Carbon::now()->endOfMonth();
         }
 
         $dispatches = $query->withTrashed()->orderByDesc('created_at')->get();
