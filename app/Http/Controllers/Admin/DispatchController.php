@@ -89,6 +89,10 @@ class DispatchController extends Controller
         if ($dispatch->status === 'completed') {
             $dispatch->ambulance->update(['status'=>'ready']);
             $dispatch->driver->update(['status'=>'available']);
+
+            // Sync PatientRequest status if exists
+            \App\Models\PatientRequest::where('dispatch_id', $dispatch->id)
+                ->update(['status' => 'completed']);
         }
 
         return back();

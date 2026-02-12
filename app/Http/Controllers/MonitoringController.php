@@ -16,14 +16,16 @@ class MonitoringController extends Controller
 
     public function getData()
     {
+        $activeDispatchStatuses = ['assigned', 'enroute_pickup', 'on_scene', 'enroute_destination', 'arrived_destination'];
+
         // Get active ambulances with GPS data and an active dispatch
         $ambulances = Ambulance::whereNotNull('latitude')
             ->whereNotNull('longitude')
-            ->whereHas('dispatches', function($query) {
-                $query->whereIn('status', ['assigned', 'enroute_pickup', 'on_scene', 'enroute_hospital']);
+            ->whereHas('dispatches', function($query) use ($activeDispatchStatuses) {
+                $query->whereIn('status', $activeDispatchStatuses);
             })
-            ->with(['dispatches' => function($query) {
-                $query->whereIn('status', ['assigned', 'enroute_pickup', 'on_scene', 'enroute_hospital'])
+            ->with(['dispatches' => function($query) use ($activeDispatchStatuses) {
+                $query->whereIn('status', $activeDispatchStatuses)
                       ->latest()
                       ->limit(1);
             }])
@@ -46,7 +48,7 @@ class MonitoringController extends Controller
             });
 
         // Get active dispatches
-        $dispatches = Dispatch::whereIn('status', ['assigned', 'enroute_pickup', 'on_scene', 'enroute_hospital'])
+        $dispatches = Dispatch::whereIn('status', $activeDispatchStatuses)
             ->with(['ambulance', 'driver'])
             ->latest()
             ->limit(10)
@@ -62,7 +64,7 @@ class MonitoringController extends Controller
                 ];
             });
 
-        // Get recent patient requests
+        // Get recent patient requests (ONLY active ones: pending or dispatched)
         $requests = PatientRequest::whereIn('status', ['pending', 'dispatched'])
             ->latest()
             ->limit(10)

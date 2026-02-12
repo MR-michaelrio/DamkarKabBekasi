@@ -64,6 +64,10 @@ class DriverDashboardController extends Controller
                 'last_location_update' => null
             ]);
             $dispatch->driver->update(['status' => 'available']);
+
+            // Sync PatientRequest status if exists
+            \App\Models\PatientRequest::where('dispatch_id', $dispatch->id)
+                ->update(['status' => 'completed']);
         }
 
         $dispatch->update($updateData);
