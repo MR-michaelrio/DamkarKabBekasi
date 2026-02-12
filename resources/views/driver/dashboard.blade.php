@@ -136,10 +136,31 @@
             <p id="current-location" class="text-sm text-gray-600">Menunggu GPS...</p>
         </div>
     @else
-        <div class="bg-white rounded-lg shadow p-6 text-center">
-            <p class="text-gray-600">Tidak ada dispatch aktif</p>
+        <div class="bg-white rounded-lg shadow p-8 text-center">
+            <div class="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4 text-4xl">
+                📭
+            </div>
+            <h3 class="font-bold text-gray-800 text-lg">Tidak Ada Dispatch Aktif</h3>
+            <p class="text-gray-500 text-sm mt-1 mb-6">Unit ambulans Anda sedang tidak dalam tugas. Silakan cek permintaan pasien yang masuk.</p>
+            
+            <a href="{{ route('driver.dispatching') }}" 
+               class="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-xl shadow-lg transition transform active:scale-95">
+                📋 Lihat Permintaan Pasien
+            </a>
         </div>
     @endif
+
+    <!-- Menu Section (Optional extra shortcut) -->
+     <div class="mt-6 grid grid-cols-2 gap-4">
+        <a href="{{ route('driver.dispatching') }}" class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex flex-col items-center gap-2 text-center transition hover:bg-gray-50 active:scale-95">
+            <span class="text-2xl">📋</span>
+            <span class="text-xs font-bold text-gray-700">Terima Tugas</span>
+        </a>
+        <button onclick="window.location.reload()" class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex flex-col items-center gap-2 text-center transition hover:bg-gray-50 active:scale-95">
+            <span class="text-2xl">🔄</span>
+            <span class="text-xs font-bold text-gray-700">Refresh</span>
+        </button>
+     </div>
 
 </div>
 

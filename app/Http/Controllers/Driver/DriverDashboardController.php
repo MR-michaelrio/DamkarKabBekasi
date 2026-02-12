@@ -4,6 +4,9 @@ namespace App\Http\Controllers\Driver;
 
 use App\Http\Controllers\Controller;
 use App\Models\Dispatch;
+use App\Models\Driver;
+use App\Models\PatientRequest;
+use App\Models\DispatchLog;
 use Illuminate\Http\Request;
 
 class DriverDashboardController extends Controller
@@ -108,5 +111,80 @@ class DriverDashboardController extends Controller
             'is_paused' => $dispatch->is_paused,
             'message' => $dispatch->is_paused ? 'Perjalanan diistirahatkan' : 'Perjalanan dilanjutkan'
         ]);
+    }
+
+    public function dispatching()
+    {
+        $requests = PatientRequest::where('status', 'pending')
+            ->orderByDesc('created_at')
+            ->get();
+            
+        return view('driver.dispatching.index', compact('requests'));
+    }
+
+    public function createSelfDispatch(PatientRequest $patientRequest)
+    {
+        // Check if ambulance is already on duty
+        $ambulance = auth('ambulance')->user();
+        $activeDispatch = Dispatch::where('ambulance_id', $ambulance->id)
+            ->whereIn('status', ['assigned', 'enroute_pickup', 'on_scene', 'enroute_destination', 'arrived_destination'])
+            ->first();
+
+        if ($activeDispatch) {
+            return redirect()->route('driver.dashboard')->with('error', 'Unit ambulans ini masih dalam penugasan aktif.');
+        }
+
+        $drivers = Driver::where('status', 'available')->get();
+        
+        return view('driver.dispatching.create', compact('patientRequest', 'drivers', 'ambulance'));
+    }
+
+    public function storeSelfDispatch(Request $request, PatientRequest $patientRequest)
+    {
+        $request->validate([
+            'driver_id' => 'required|exists:drivers,id',
+        ]);
+
+        $ambulance = auth('ambulance')->user();
+
+        // Double check penugasan aktif
+        $activeDispatch = Dispatch::where('ambulance_id', $ambulance->id)
+            ->whereIn('status', ['assigned', 'enroute_pickup', 'on_scene', 'enroute_destination', 'arrived_destination'])
+            ->first();
+
+        if ($activeDispatch) {
+            return redirect()->route('driver.dashboard')->with('error', 'Unit ambulans ini masih dalam penugasan aktif.');
+        }
+
+        $dispatch = Dispatch::create([
+            'patient_name' => $patientRequest->patient_name,
+            'patient_phone' => $patientRequest->phone,
+            'patient_condition' => $patientRequest->patient_condition ?? ($patientRequest->service_type === 'jenazah' ? 'jenazah' : 'emergency'),
+            'pickup_address' => $patientRequest->pickup_address,
+            'destination' => $patientRequest->destination,
+            'driver_id' => $request->driver_id,
+            'ambulance_id' => $ambulance->id,
+            'status' => 'assigned',
+            'assigned_at' => now(),
+        ]);
+
+        // Update statuses
+        Driver::where('id', $request->driver_id)->update(['status' => 'on_duty']);
+        $ambulance->update(['status' => 'on_duty']);
+
+        // Log
+        DispatchLog::create([
+            'dispatch_id' => $dispatch->id,
+            'status' => 'assigned',
+            'note' => 'Dispatch dibuat sendiri oleh unit ambulans'
+        ]);
+
+        // Link to patient request
+        $patientRequest->update([
+            'status' => 'dispatched',
+            'dispatch_id' => $dispatch->id,
+        ]);
+
+        return redirect()->route('driver.dashboard')->with('success', 'Penugasan berhasil dibuat!');
     }
 }

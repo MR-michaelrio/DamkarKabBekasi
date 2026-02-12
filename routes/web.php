@@ -146,4 +146,9 @@ Route::middleware(['auth:ambulance'])->prefix('driver')->name('driver.')->group(
     Route::get('/dashboard', [DriverDashboardController::class, 'index'])->name('dashboard');
     Route::post('/dispatches/{dispatch}/status', [DriverDashboardController::class, 'updateStatus'])->name('dispatches.update-status');
     Route::post('/dispatches/{dispatch}/toggle-pause', [DriverDashboardController::class, 'togglePause'])->name('dispatches.toggle-pause');
+    
+    // New Dispatching Routes for Drivers
+    Route::get('/dispatching', [DriverDashboardController::class, 'dispatching'])->name('dispatching');
+    Route::get('/dispatching/{patientRequest}', [DriverDashboardController::class, 'createSelfDispatch'])->name('patient-requests.create-dispatch');
+    Route::post('/dispatching/{patientRequest}', [DriverDashboardController::class, 'storeSelfDispatch'])->name('patient-requests.store-dispatch');
 });
