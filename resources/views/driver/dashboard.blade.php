@@ -9,7 +9,7 @@
 </head>
 <body class="bg-gray-100 min-h-screen">
 
-<div class="max-w-md mx-auto px-4 py-6">
+<div class="max-w-xl mx-auto px-4 py-6">
 
     <!-- Header -->
     <div class="bg-white shadow">
@@ -71,7 +71,7 @@
                 </div>
             @endif
 
-            <div class="flex justify-between items-center mb-3">
+            <div class="flex justify-between items-center mb-3 relative z-20">
                 <h2 class="font-bold text-lg">📋 Journey Control</h2>
                 <button id="pause-btn" 
                         data-paused="{{ $activeDispatch->is_paused ? 'true' : 'false' }}"
@@ -341,10 +341,23 @@ async function stopTracking() {
     updateUIStopped();
 }
 
+// Auto-start tracking if journey is already in progress
+const autoStartStatuses = ['enroute_pickup', 'on_scene', 'enroute_destination'];
+const currentDispatchStatus = "{{ $activeDispatch->status ?? '' }}";
+const isPaused = {{ ($activeDispatch && $activeDispatch->is_paused) ? 1 : 0 }};
+
+if (autoStartStatuses.includes(currentDispatchStatus) && !isPaused) {
+    // Small delay to ensure everything is ready
+    setTimeout(() => {
+        console.log('Resuming tracking automatically...');
+        startTracking();
+    }, 1000);
+}
+
 function updateUILocation(lat, lng) {
     currentLocation.textContent = `Lat: ${lat.toFixed(6)}, Lng: ${lng.toFixed(6)}`;
-    statusIndicator.className = 'w-3 h-3 bg-green-500 rounded-full animate-pulse';
-    statusText.textContent = isCapacitor ? 'Mobile Tracking Aktif' : 'Web Tracking Aktif';
+    statusIndicator.className = 'w-3 h-3 bg-green-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(34,197,94,0.6)]';
+    statusText.textContent = isCapacitor ? 'Mobile (App) Tracking Aktif' : 'Browser (Web) Tracking Aktif';
 }
 
 function updateUIStarted() {
