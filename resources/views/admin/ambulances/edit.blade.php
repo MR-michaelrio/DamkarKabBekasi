@@ -61,8 +61,6 @@
                 <select name="type" required
                         class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500">
                     <option value="BASIC" {{ old('type', $ambulance->type) === 'BASIC' ? 'selected' : '' }}>BASIC</option>
-                    <option value="ICU" {{ old('type', $ambulance->type) === 'ICU' ? 'selected' : '' }}>ICU</option>
-                    <option value="NICU" {{ old('type', $ambulance->type) === 'NICU' ? 'selected' : '' }}>NICU</option>
                     <option value="Jenazah" {{ old('type', $ambulance->type) === 'Jenazah' ? 'selected' : '' }}>Jenazah</option>
                     <option value="POSKO" {{ old('type', $ambulance->type) === 'POSKO' ? 'selected' : '' }}>MOBIL POSKO KESEHATAN</option>
                 </select>
