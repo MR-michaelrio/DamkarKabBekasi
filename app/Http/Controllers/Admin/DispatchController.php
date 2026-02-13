@@ -40,6 +40,8 @@ class DispatchController extends Controller
             'destination' => 'nullable',
             'driver_id' => 'required',
             'ambulance_id' => 'required',
+            'trip_type' => 'nullable|in:one_way,round_trip',
+            'return_address' => 'nullable',
         ]) + [
             'status' => 'assigned',
             'assigned_at' => now(),
@@ -74,13 +76,21 @@ class DispatchController extends Controller
             'on_scene' => 'enroute_destination',
             'enroute_destination' => 'arrived_destination',
             'arrived_destination' => 'completed',
+            'enroute_return' => 'completed',
         ];
 
         if (!isset($flow[$dispatch->status])) {
             return back();
         }
 
-        $dispatch->update(['status' => $flow[$dispatch->status]]);
+        $nextStatus = $flow[$dispatch->status];
+
+        // Handle Round Trip logic
+        if ($dispatch->status === 'arrived_destination' && $dispatch->trip_type === 'round_trip') {
+            $nextStatus = 'enroute_return';
+        }
+
+        $dispatch->update(['status' => $nextStatus]);
 
         DispatchLog::create([
             'dispatch_id' => $dispatch->id,

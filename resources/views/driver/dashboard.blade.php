@@ -113,7 +113,11 @@
                         'color' => 'bg-indigo-600 hover:bg-indigo-700',
                     ],
                     'arrived_destination' => [
-                        'label' => '✅ Selesai',
+                        'label' => $activeDispatch->trip_type === 'round_trip' ? '🚗 OTW Balik / Pulang' : '✅ Selesai',
+                        'color' => $activeDispatch->trip_type === 'round_trip' ? 'bg-blue-600 hover:bg-blue-700' : 'bg-red-600 hover:bg-red-700',
+                    ],
+                    'enroute_return' => [
+                        'label' => '🏠 Sampai di Rumah',
                         'color' => 'bg-red-600 hover:bg-red-700',
                     ],
                 ];
@@ -129,6 +133,32 @@
                 </button>
             @endif
         </div>
+
+        @if($activeDispatch->trip_type === 'round_trip' && $activeDispatch->return_address)
+            <div class="px-6 pb-6 pt-2 border-t border-gray-50">
+                <div class="flex gap-4">
+                    <div class="flex flex-col items-center">
+                        <div class="w-2 h-2 bg-blue-500 rounded-full my-4"></div>
+                        <div class="w-0.5 h-full bg-blue-100 mb-4"></div>
+                        <div class="w-3 h-3 bg-emerald-500 rounded-full"></div>
+                    </div>
+                    <div class="flex-1 space-y-4 pt-2">
+                        <div>
+                            <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Tujuan Utama</p>
+                            <p class="text-sm font-bold text-gray-700 leading-tight">
+                                {{ $activeDispatch->destination }}
+                            </p>
+                        </div>
+                        <div>
+                            <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Alamat Pulang</p>
+                            <p class="text-sm font-bold text-gray-700 leading-tight">
+                                {{ $activeDispatch->return_address }}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        @endif
 
         <!-- Location Info -->
         <div class="bg-white rounded-lg shadow p-4">

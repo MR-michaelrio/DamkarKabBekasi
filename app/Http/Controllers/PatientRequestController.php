@@ -21,7 +21,9 @@ class PatientRequestController extends Controller
             'phone' => 'required|string|max:20',
             'pickup_address' => 'required|string',
             'destination' => 'required|string',
-            'patient_condition' => 'nullable|in:emergency,kontrol',
+            'patient_condition' => 'nullable|in:emergency,kontrol,pasien_pulang',
+            'trip_type' => 'nullable|in:one_way,round_trip',
+            'return_address' => 'nullable|string',
         ]);
 
         PatientRequest::create($validated);

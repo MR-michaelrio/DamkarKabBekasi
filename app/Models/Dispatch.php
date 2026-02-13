@@ -26,6 +26,8 @@ class Dispatch extends Model
         'pickup_at',
         'hospital_at',
         'completed_at',
+        'trip_type',
+        'return_address',
     ];
 
     protected $dates = [

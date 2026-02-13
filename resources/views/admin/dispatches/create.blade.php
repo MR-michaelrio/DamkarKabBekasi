@@ -38,12 +38,39 @@
 
         <div>
             <label class="block text-sm font-bold text-gray-700 mb-1">Kondisi Pasien</label>
-            <select name="patient_condition" required 
+            <select name="patient_condition" id="patient_condition" required 
                     class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-red-500 focus:border-red-500">
                 <option value="emergency" {{ old('patient_condition', $patientRequest->patient_condition ?? '') === 'emergency' ? 'selected' : '' }}>🚨 Emergency</option>
                 <option value="kontrol" {{ old('patient_condition', $patientRequest->patient_condition ?? '') === 'kontrol' ? 'selected' : '' }}>🩺 Kontrol</option>
+                <option value="pasien_pulang" {{ old('patient_condition', $patientRequest->patient_condition ?? '') === 'pasien_pulang' ? 'selected' : '' }}>🏘️ Pasien Pulang</option>
                 <option value="jenazah" {{ (old('patient_condition') === 'jenazah' || (isset($patientRequest) && $patientRequest->service_type === 'jenazah')) ? 'selected' : '' }}>⚰️ Jenazah</option>
             </select>
+        </div>
+
+        <!-- Trip Type (Conditional for Kontrol) -->
+        <div id="trip_type_wrapper" style="display: none;" class="border-t border-gray-50 pt-6">
+            <label class="block text-sm font-bold text-gray-700 mb-2">Tipe Perjalanan</label>
+            <div class="flex gap-6">
+                <label class="flex items-center gap-2 cursor-pointer">
+                    <input type="radio" name="trip_type" value="one_way" 
+                           {{ old('trip_type', $patientRequest->trip_type ?? 'one_way') === 'one_way' ? 'checked' : '' }}
+                           class="text-red-600 focus:ring-red-500">
+                    <span class="text-sm font-medium text-gray-700">Pergi Saja</span>
+                </label>
+                <label class="flex items-center gap-2 cursor-pointer">
+                    <input type="radio" name="trip_type" value="round_trip"
+                           {{ old('trip_type', $patientRequest->trip_type ?? 'one_way') === 'round_trip' ? 'checked' : '' }}
+                           class="text-red-600 focus:ring-red-500">
+                    <span class="text-sm font-medium text-gray-700">Pulang Pergi</span>
+                </label>
+            </div>
+        </div>
+
+        <!-- Return Address (Conditional for Round Trip) -->
+        <div id="return_address_wrapper" style="display: none;" class="pb-6">
+            <label class="block text-sm font-bold text-gray-700 mb-1">Alamat Pulang</label>
+            <textarea name="return_address" id="return_address" rows="3"
+                      class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-red-500 focus:border-red-500">{{ old('return_address', $patientRequest->return_address ?? '') }}</textarea>
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 border-t border-gray-50 pt-6">
@@ -96,4 +123,44 @@
 
     </form>
 </div>
+
+<script>
+    const patientCondition = document.getElementById('patient_condition');
+    const tripTypeWrapper = document.getElementById('trip_type_wrapper');
+    const returnAddressWrapper = document.getElementById('return_address_wrapper');
+    const tripTypeRadios = document.getElementsByName('trip_type');
+
+    function toggleTripFields() {
+        if (patientCondition.value === 'kontrol') {
+            tripTypeWrapper.style.display = 'block';
+            updateReturnVisibility();
+        } else {
+            tripTypeWrapper.style.display = 'none';
+            returnAddressWrapper.style.display = 'none';
+        }
+    }
+
+    function updateReturnVisibility() {
+        let isRoundTrip = false;
+        tripTypeRadios.forEach(radio => {
+            if (radio.checked && radio.value === 'round_trip') {
+                isRoundTrip = true;
+            }
+        });
+
+        if (isRoundTrip && patientCondition.value === 'kontrol') {
+            returnAddressWrapper.style.display = 'block';
+        } else {
+            returnAddressWrapper.style.display = 'none';
+        }
+    }
+
+    patientCondition.addEventListener('change', toggleTripFields);
+    tripTypeRadios.forEach(radio => {
+        radio.addEventListener('change', updateReturnVisibility);
+    });
+
+    // Initial run
+    toggleTripFields();
+</script>
 @endsection

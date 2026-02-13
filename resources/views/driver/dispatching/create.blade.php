@@ -59,10 +59,19 @@
 
             <div>
                 <label class="text-xs font-bold text-gray-400 uppercase tracking-widest flex items-center gap-1">
-                    <span>🏁</span> Tujuan
+                    <span>🏁</span> Tujuan Utama
                 </label>
                 <p class="text-gray-700 mt-1 leading-relaxed">{{ $patientRequest->destination }}</p>
             </div>
+
+            @if($patientRequest->trip_type === 'round_trip' && $patientRequest->return_address)
+                <div>
+                    <label class="text-xs font-bold text-gray-400 uppercase tracking-widest flex items-center gap-1">
+                        <span>🔄</span> Pengantaran Pulang
+                    </label>
+                    <p class="text-gray-700 mt-1 leading-relaxed">{{ $patientRequest->return_address }}</p>
+                </div>
+            @endif
         </div>
     </div>
 

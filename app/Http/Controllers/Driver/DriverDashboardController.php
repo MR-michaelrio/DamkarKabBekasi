@@ -37,6 +37,7 @@ class DriverDashboardController extends Controller
             'on_scene' => 'enroute_destination',
             'enroute_destination' => 'arrived_destination',
             'arrived_destination' => 'completed',
+            'enroute_return' => 'completed',
         ];
 
         if (!isset($flow[$dispatch->status])) {
@@ -44,6 +45,11 @@ class DriverDashboardController extends Controller
         }
 
         $newStatus = $flow[$dispatch->status];
+
+        // Handle Round Trip logic: If arrived at destination and it's a round trip, go to enroute_return instead of completed
+        if ($dispatch->status === 'arrived_destination' && $dispatch->trip_type === 'round_trip') {
+            $newStatus = 'enroute_return';
+        }
         
         $updateData = ['status' => $newStatus];
         
@@ -53,9 +59,10 @@ class DriverDashboardController extends Controller
         } elseif ($newStatus === 'on_scene') {
             $updateData['pickup_at'] = now();
         } elseif ($newStatus === 'arrived_destination') {
-            // Using existing hospital_at for generic destination arrival if needed, 
-            // or just rely on logs. For now let's keep it simple.
             $updateData['hospital_at'] = now(); 
+        } elseif ($newStatus === 'enroute_return') {
+            // Arrived at primary destination, now heading back
+            $updateData['hospital_at'] = now();
         } elseif ($newStatus === 'completed') {
             $updateData['completed_at'] = now();
             
@@ -166,6 +173,8 @@ class DriverDashboardController extends Controller
             'ambulance_id' => $ambulance->id,
             'status' => 'assigned',
             'assigned_at' => now(),
+            'trip_type' => $patientRequest->trip_type ?? 'one_way',
+            'return_address' => $patientRequest->return_address,
         ]);
 
         // Update statuses

@@ -19,6 +19,8 @@ class PatientRequest extends Model
         'patient_condition',
         'status',
         'dispatch_id',
+        'trip_type',
+        'return_address',
     ];
 
     protected $casts = [

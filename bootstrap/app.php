@@ -32,8 +32,16 @@ return Application::configure(basePath: dirname(__DIR__))
         });
 
         $middleware->trustProxies(at: '*');
+
+        $middleware->validateCsrfTokens(except: [
+            'logout',
+            'ambulance/logout',
+            'ambulance/login', // Optional but helpful sometimes
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
-        //
+        $exceptions->render(function (\Illuminate\Session\TokenMismatchException $e, $request) {
+            return redirect()->route('portal');
+        });
     })
     ->create();

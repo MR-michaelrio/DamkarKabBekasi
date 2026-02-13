@@ -85,7 +85,39 @@
                     <option value="kontrol" <?php echo e(old('patient_condition') === 'kontrol' ? 'selected' : ''); ?>>
                         🏥 Kontrol
                     </option>
+                    <option value="pasien_pulang" <?php echo e(old('patient_condition') === 'pasien_pulang' ? 'selected' : ''); ?>>
+                        🏘️ Pasien Pulang
+                    </option>
                 </select>
+            </div>
+
+            <!-- Trip Type (Conditional for Kontrol) -->
+            <div id="trip_type_wrapper" style="display: none;">
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                    Tipe Perjalanan <span class="text-red-500">*</span>
+                </label>
+                <div class="flex gap-4">
+                    <label class="flex items-center gap-2 cursor-pointer">
+                        <input type="radio" name="trip_type" value="one_way" checked
+                               class="text-blue-600 focus:ring-blue-500">
+                        <span class="text-sm text-gray-700">Pergi Saja</span>
+                    </label>
+                    <label class="flex items-center gap-2 cursor-pointer">
+                        <input type="radio" name="trip_type" value="round_trip"
+                               class="text-blue-600 focus:ring-blue-500">
+                        <span class="text-sm text-gray-700">Pulang Pergi</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Return Address (Conditional for Round Trip) -->
+            <div id="return_address_wrapper" style="display: none;">
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                    Alamat Pulang <span class="text-red-500">*</span>
+                </label>
+                <textarea name="return_address" id="return_address" rows="3"
+                          class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                          placeholder="Masukkan alamat pengantaran pulang"><?php echo e(old('return_address')); ?></textarea>
             </div>
 
             <!-- Request Date -->
@@ -110,11 +142,11 @@
             <!-- Pickup Address -->
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">
-                    Alamat Jemput <span class="text-red-500">*</span>
+                    Lokasi Jemput <span class="text-red-500">*</span>
                 </label>
                 <textarea name="pickup_address" rows="3" required
                           class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500"
-                          placeholder="Masukkan alamat lengkap"><?php echo e(old('pickup_address')); ?></textarea>
+                          placeholder="Masukkan alamat penjemputan"><?php echo e(old('pickup_address')); ?></textarea>
             </div>
 
             <!-- Destination -->
@@ -149,8 +181,13 @@
     const serviceType = document.getElementById('service_type');
     const patientConditionWrapper = document.getElementById('patient_condition_wrapper');
     const patientConditionSelect = document.getElementById('patient_condition');
+    const tripTypeWrapper = document.getElementById('trip_type_wrapper');
+    const returnAddressWrapper = document.getElementById('return_address_wrapper');
+    const returnAddressInput = document.getElementById('return_address');
+    const tripTypeRadios = document.getElementsByName('trip_type');
 
-    function togglePatientCondition() {
+    function toggleFormFields() {
+        // Condition Visibility
         if (serviceType.value === 'ambulance') {
             patientConditionWrapper.style.display = 'block';
             patientConditionSelect.required = true;
@@ -159,13 +196,46 @@
             patientConditionSelect.required = false;
             patientConditionSelect.value = '';
         }
+
+        // Trip Type Visibility (only for Kontrol)
+        if (patientConditionSelect.value === 'kontrol') {
+            tripTypeWrapper.style.display = 'block';
+        } else {
+            tripTypeWrapper.style.display = 'none';
+            // Reset to one_way
+            tripTypeRadios[0].checked = true;
+        }
+
+        updateReturnAddressVisibility();
+    }
+
+    function updateReturnAddressVisibility() {
+        let isRoundTrip = false;
+        tripTypeRadios.forEach(radio => {
+            if (radio.checked && radio.value === 'round_trip') {
+                isRoundTrip = true;
+            }
+        });
+
+        if (isRoundTrip && patientConditionSelect.value === 'kontrol') {
+            returnAddressWrapper.style.display = 'block';
+            returnAddressInput.required = true;
+        } else {
+            returnAddressWrapper.style.display = 'none';
+            returnAddressInput.required = false;
+            returnAddressInput.value = '';
+        }
     }
 
     // Initial check
-    togglePatientCondition();
+    toggleFormFields();
 
     // Listen for changes
-    serviceType.addEventListener('change', togglePatientCondition);
+    serviceType.addEventListener('change', toggleFormFields);
+    patientConditionSelect.addEventListener('change', toggleFormFields);
+    tripTypeRadios.forEach(radio => {
+        radio.addEventListener('change', updateReturnAddressVisibility);
+    });
 </script>
 
 </body>
