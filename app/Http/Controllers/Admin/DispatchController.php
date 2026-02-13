@@ -135,11 +135,10 @@ class DispatchController extends Controller
             $endDate = Carbon::now()->endOfMonth();
         }
 
-        $dispatches = $query->withTrashed()->orderByDesc('created_at')->get();
+        $dispatches = $query->orderByDesc('created_at')->get();
 
         // Ambulance Analytics for the period
         $analytics = Ambulance::withCount(['dispatches' => function ($q) use ($startDate, $endDate) {
-            $q->withTrashed();
             if ($startDate && $endDate) {
                 $q->whereBetween('created_at', [$startDate, $endDate]);
             } else {
@@ -152,7 +151,7 @@ class DispatchController extends Controller
         // Sunday Analytics (requested: "untuk yang pdf analitiknya buat perbulan hari minggu juga")
         $sundayDispatches = collect();
         if ($range === 'month') {
-            $sundayDispatches = Dispatch::withTrashed()->with(['ambulance'])
+            $sundayDispatches = Dispatch::with(['ambulance'])
                 ->whereMonth('created_at', Carbon::now()->month)
                 ->whereYear('created_at', Carbon::now()->year)
                 ->whereRaw('DAYOFWEEK(created_at) = 1') 

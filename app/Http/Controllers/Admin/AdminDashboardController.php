@@ -15,17 +15,17 @@ class AdminDashboardController extends Controller
         // =====================
         // TIMEFRAME DISPATCHES
         // =====================
-        $todayDispatches = Dispatch::withTrashed()->with(['driver', 'ambulance'])
+        $todayDispatches = Dispatch::with(['driver', 'ambulance'])
             ->whereDate('created_at', Carbon::today())
             ->orderByDesc('created_at')
             ->get();
 
-        $weekDispatches = Dispatch::withTrashed()->with(['driver', 'ambulance'])
+        $weekDispatches = Dispatch::with(['driver', 'ambulance'])
             ->whereBetween('created_at', [Carbon::now()->startOfWeek(), Carbon::now()->endOfWeek()])
             ->orderByDesc('created_at')
             ->get();
 
-        $monthDispatches = Dispatch::withTrashed()->with(['driver', 'ambulance'])
+        $monthDispatches = Dispatch::with(['driver', 'ambulance'])
             ->whereMonth('created_at', Carbon::now()->month)
             ->whereYear('created_at', Carbon::now()->year)
             ->orderByDesc('created_at')
@@ -38,8 +38,7 @@ class AdminDashboardController extends Controller
         $endOfMonth = Carbon::now()->endOfMonth();
 
         $ambulanceAnalytics = Ambulance::withCount(['dispatches' => function ($query) use ($startOfMonth, $endOfMonth) {
-            $query->withTrashed()
-                  ->whereBetween('created_at', [$startOfMonth, $endOfMonth]);
+            $query->whereBetween('created_at', [$startOfMonth, $endOfMonth]);
         }])->get();
 
         // =====================

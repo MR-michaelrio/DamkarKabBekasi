@@ -71,7 +71,7 @@
 
         <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 space-y-5">
             <div>
-                <label class="block text-sm font-bold text-gray-700 mb-2">Pilih Driver Pendamping</label>
+                <label class="block text-sm font-bold text-gray-700 mb-2">Pilih Driver</label>
                 <select name="driver_id" required 
                         class="w-full bg-gray-50 border-gray-200 rounded-xl focus:ring-blue-500 focus:border-blue-500 py-3 text-sm font-medium">
                     <option value="">-- Pilih Driver --</option>
