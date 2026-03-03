@@ -24,9 +24,12 @@ class PatientRequest extends Model
         'return_address',
     ];
 
-    protected $casts = [
-        'request_date' => 'date',
-    ];
+    protected function casts(): array
+    {
+        return [
+            'request_date' => 'date',
+        ];
+    }
 
     public function dispatch(): BelongsTo
     {

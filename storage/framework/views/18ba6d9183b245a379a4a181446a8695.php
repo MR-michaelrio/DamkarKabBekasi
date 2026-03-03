@@ -1,108 +1,112 @@
-@extends('layouts.app')
-
-@section('content')
+<?php $__env->startSection('content'); ?>
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
     <div class="mb-6 flex justify-between items-center">
         <h1 class="text-2xl font-bold text-gray-800">
             📅 Jadwal Layanan
         </h1>
         <div class="flex items-center gap-4">
-            <a href="{{ route('admin.schedules.index', ['month' => $currentDate->copy()->subMonth()->month, 'year' => $currentDate->copy()->subMonth()->year]) }}" 
+            <a href="<?php echo e(route('admin.schedules.index', ['month' => $currentDate->copy()->subMonth()->month, 'year' => $currentDate->copy()->subMonth()->year])); ?>" 
                class="p-2 hover:bg-gray-100 rounded-full">
                 &larr;
             </a>
             <span class="font-bold text-lg text-gray-700">
-                {{ $currentDate->translatedFormat('F Y') }}
+                <?php echo e($currentDate->translatedFormat('F Y')); ?>
+
             </span>
-            <a href="{{ route('admin.schedules.index', ['month' => $currentDate->copy()->addMonth()->month, 'year' => $currentDate->copy()->addMonth()->year]) }}" 
+            <a href="<?php echo e(route('admin.schedules.index', ['month' => $currentDate->copy()->addMonth()->month, 'year' => $currentDate->copy()->addMonth()->year])); ?>" 
                class="p-2 hover:bg-gray-100 rounded-full">
                 &rarr;
             </a>
         </div>
     </div>
 
-    @php
+    <?php
         $daysInMonth = $currentDate->daysInMonth;
         $firstDayOfMonth = $currentDate->copy()->startOfMonth()->dayOfWeek; // 0 (Sun) to 6 (Sat)
         // Adjust if your week starts on Monday? default is 0 for Sunday.
-    @endphp
+    ?>
 
     <div class="bg-white rounded-xl shadow border border-gray-100 overflow-hidden">
         <!-- Calendar Grid -->
         <div class="grid grid-cols-7 border-b bg-gray-50">
-            @foreach(['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'] as $dayName)
+            <?php $__currentLoopData = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab']; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $dayName): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                 <div class="py-2 text-center text-xs font-bold text-gray-500 uppercase tracking-wider">
-                    {{ $dayName }}
+                    <?php echo e($dayName); ?>
+
                 </div>
-            @endforeach
+            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
         </div>
 
         <div class="grid grid-cols-7">
             <!-- Blank days for the first week -->
-            @for($i = 0; $i < $firstDayOfMonth; $i++)
+            <?php for($i = 0; $i < $firstDayOfMonth; $i++): ?>
                 <div class="h-32 border-r border-b bg-gray-50/50"></div>
-            @endfor
+            <?php endfor; ?>
 
             <!-- Days of the month -->
-            @for($day = 1; $day <= $daysInMonth; $day++)
-                @php
+            <?php for($day = 1; $day <= $daysInMonth; $day++): ?>
+                <?php
                     $dateStr = $currentDate->copy()->day($day)->format('Y-m-d');
                     $dayDispatches = $dispatches->get($dateStr, collect());
-                @endphp
+                ?>
                 <div class="h-32 border-r border-b p-1 overflow-y-auto hover:bg-gray-50 transition">
                     <div class="text-right text-xs font-bold text-gray-400 mb-1">
-                        {{ $day }}
+                        <?php echo e($day); ?>
+
                     </div>
                     <div class="space-y-1">
-                        @foreach($dayDispatches as $d)
-                            @php
+                        <?php $__currentLoopData = $dayDispatches; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $d): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                            <?php
                                 $isPending = !($d instanceof \App\Models\Dispatch);
                                 $isJenazah = $isPending 
                                     ? ($d->service_type === 'jenazah') 
                                     : ($d->patient_condition === 'jenazah');
                                 $title = $isPending ? 'MENUNGGU DISPATCH' : strtoupper($d->patient_condition);
-                            @endphp
+                            ?>
                             <div class="text-[9px] p-1 rounded-md leading-tight border shadow-sm
-                                @if($isJenazah) 
+                                <?php if($isJenazah): ?> 
                                     bg-black border-gray-900 text-white
-                                @else
+                                <?php else: ?>
                                     bg-red-600 border-red-700 text-white
-                                @endif">
+                                <?php endif; ?>">
                                 <div class="font-bold flex justify-between">
-                                    <span>{{ \Carbon\Carbon::parse($d->pickup_time)->format('H:i') }}</span>
-                                    <span>{{ $title }}</span>
+                                    <span><?php echo e(\Carbon\Carbon::parse($d->pickup_time)->format('H:i')); ?></span>
+                                    <span><?php echo e($title); ?></span>
                                 </div>
                                 <div class="truncate font-semibold mt-0.5">
-                                    @if($isPending)
+                                    <?php if($isPending): ?>
                                         🕒 Belum Ada Armada
-                                    @else
-                                        {{ $d->ambulance?->code ?? '?' }} - {{ $d->ambulance?->plate_number ?? '-' }}
-                                    @endif
+                                    <?php else: ?>
+                                        <?php echo e($d->ambulance?->code ?? '?'); ?> - <?php echo e($d->ambulance?->plate_number ?? '-'); ?>
+
+                                    <?php endif; ?>
                                 </div>
                                 <div class="truncate opacity-90">
-                                    @if($isPending)
+                                    <?php if($isPending): ?>
                                         👤 Belum Ada Driver
-                                    @else
-                                        👤 {{ $d->driver?->name ?? 'No Driver' }}
-                                    @endif
+                                    <?php else: ?>
+                                        👤 <?php echo e($d->driver?->name ?? 'No Driver'); ?>
+
+                                    <?php endif; ?>
                                 </div>
                                 <div class="truncate italic opacity-75 mt-0.5">
-                                    {{ $d->patient_name }}
+                                    <?php echo e($d->patient_name); ?>
+
                                 </div>
                             </div>
-                        @endforeach
+                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                     </div>
                 </div>
-            @endfor
+            <?php endfor; ?>
 
             <!-- Blank days for the last week -->
-            @php
+            <?php
                 $lastDayOfMonth = $currentDate->copy()->endOfMonth()->dayOfWeek;
                 $remainingDays = 6 - $lastDayOfMonth;
-            @endphp
-            @for($i = 0; $i < $remainingDays; $i++)
+            ?>
+            <?php for($i = 0; $i < $remainingDays; $i++): ?>
                 <div class="h-32 border-r border-b bg-gray-50/50"></div>
-            @endfor
+            <?php endfor; ?>
         </div>
     </div>
 
@@ -116,4 +120,6 @@
         </div>
     </div>
 </div>
-@endsection
+<?php $__env->stopSection(); ?>
+
+<?php echo $__env->make('layouts.app', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH /Applications/Dev/ambulance-dispatch/resources/views/admin/schedules/calendar.blade.php ENDPATH**/ ?>

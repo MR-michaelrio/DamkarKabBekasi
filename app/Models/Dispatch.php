@@ -32,14 +32,16 @@ class Dispatch extends Model
         'return_address',
     ];
 
-    protected $dates = [
-        'deleted_at',
-        'request_date',
-        'assigned_at',
-        'pickup_at',
-        'hospital_at',
-        'completed_at',
-    ];
+    protected function casts(): array
+    {
+        return [
+            'request_date' => 'date',
+            'assigned_at' => 'datetime',
+            'pickup_at' => 'datetime',
+            'hospital_at' => 'datetime',
+            'completed_at' => 'datetime',
+        ];
+    }
 
     /* =====================
      | RELATIONS

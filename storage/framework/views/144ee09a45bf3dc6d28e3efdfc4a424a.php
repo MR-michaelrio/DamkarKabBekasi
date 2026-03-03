@@ -120,13 +120,22 @@
                           placeholder="Masukkan alamat pengantaran pulang"><?php echo e(old('return_address')); ?></textarea>
             </div>
 
-            <!-- Request Date -->
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">
-                    Tanggal <span class="text-red-500">*</span>
-                </label>
-                <input type="date" name="request_date" value="<?php echo e(old('request_date')); ?>" required
-                       class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500">
+            <!-- Request Date & Time -->
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Tanggal <span class="text-red-500">*</span>
+                    </label>
+                    <input type="date" name="request_date" value="<?php echo e(old('request_date')); ?>" required
+                           class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Jam Penjemputan <span class="text-red-500">*</span>
+                    </label>
+                    <input type="time" name="pickup_time" value="<?php echo e(old('pickup_time')); ?>" required
+                           class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                </div>
             </div>
 
             <!-- Phone -->
