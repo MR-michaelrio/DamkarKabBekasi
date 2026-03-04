@@ -126,6 +126,8 @@ Route::middleware(['auth'])->group(function () {
             ->name('event-requests.reject');
         Route::post('event-requests/{eventRequest}/assign-unit', [\App\Http\Controllers\Admin\EventRequestController::class, 'assignUnit'])
             ->name('event-requests.assign-unit');
+        Route::post('event-requests/{eventRequest}/finish', [\App\Http\Controllers\Admin\EventRequestController::class, 'finish'])
+            ->name('event-requests.finish');
         Route::post('event-requests/{eventRequest}/replace-unit/{dispatch}', [\App\Http\Controllers\Admin\EventRequestController::class, 'replaceUnit'])
             ->name('event-requests.replace-unit');
 

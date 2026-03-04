@@ -196,7 +196,45 @@ class EventRequestController extends Controller
                          ->with('success', 'Perubahan berhasil disimpan. Update akan aktif mulai ' . $request->replacement_date);
     }
 
-    // PUBLIC PORTAL METHODS
+    /**
+     * Complete the event manually.
+     */
+    public function finish(EventRequest $eventRequest)
+    {
+        // Update Event status and end_date
+        $eventRequest->update([
+            'status'   => 'approved', // Or 'completed' if you want a new status, 
+                                   // but 'approved' is used for active. 
+                                   // Let's stick to updating the end_date to TODAY to stop it from appearing in future calendar days.
+            'end_date' => now()->startOfDay(), 
+        ]);
+
+        // Find and free all active dispatches for this event
+        $activeDispatches = $eventRequest->dispatches->whereNotIn('status', ['completed']);
+
+        foreach ($activeDispatches as $dispatch) {
+            $dispatch->update([
+                'status'       => 'completed',
+                'completed_at' => now(),
+            ]);
+
+            if ($dispatch->ambulance) {
+                $dispatch->ambulance->update(['status' => 'ready']);
+            }
+            if ($dispatch->driver) {
+                $dispatch->driver->update(['status' => 'available']);
+            }
+
+            DispatchLog::create([
+                'dispatch_id' => $dispatch->id,
+                'status'      => 'completed',
+                'note'        => 'Event selesai secara manual.',
+            ]);
+        }
+
+        return redirect()->route('admin.event-requests.index')
+                         ->with('success', 'Event ' . $eventRequest->event_name . ' telah diselesaikan secara manual.');
+    }
 
     public function publicCreate()
     {
