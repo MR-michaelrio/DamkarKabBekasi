@@ -61,7 +61,19 @@
                                 $isJenazah = $isPending 
                                     ? ($d->service_type === 'jenazah') 
                                     : ($d->patient_condition === 'jenazah');
-                                $title = $isPending ? 'MENUNGGU DISPATCH' : strtoupper($d->patient_condition);
+                                
+                                $title = '';
+                                if ($isPending) {
+                                    $title = 'MENUNGGU';
+                                } else {
+                                    if ($d->status === 'completed') {
+                                        $title = 'SELESAI';
+                                    } elseif ($d->status === 'assigned') {
+                                        $title = 'DITUGASKAN';
+                                    } else {
+                                        $title = strtoupper($d->status);
+                                    }
+                                }
                             ?>
                             <div class="text-[9px] p-1 rounded-md leading-tight border shadow-sm
                                 <?php if($isJenazah): ?> 
@@ -70,7 +82,15 @@
                                     bg-red-600 border-red-700 text-white
                                 <?php endif; ?>">
                                 <div class="font-bold flex justify-between">
-                                    <span><?php echo e(\Carbon\Carbon::parse($d->pickup_time)->format('H:i')); ?></span>
+                                    <span>
+                                        <?php if($d->pickup_time): ?>
+                                            <?php echo e(\Carbon\Carbon::parse($d->pickup_time)->format('H:i')); ?>
+
+                                        <?php else: ?>
+                                            <?php echo e($d->created_at->format('H:i')); ?>
+
+                                        <?php endif; ?>
+                                    </span>
                                     <span><?php echo e($title); ?></span>
                                 </div>
                                 <div class="truncate font-semibold mt-0.5">

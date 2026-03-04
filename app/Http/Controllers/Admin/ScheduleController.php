@@ -17,46 +17,46 @@ class ScheduleController extends Controller
         $currentDate = Carbon::createFromDate($year, $month, 1);
         
         // Fetch All Dispatches
+        // We use whereMonth on either request_date OR created_at (as fallback if request_date is null)
         $dispatches = Dispatch::with(['ambulance', 'driver'])
-            ->whereMonth('request_date', $month)
-            ->whereYear('request_date', $year)
+            ->where(function($q) use ($month, $year) {
+                $q->whereMonth('request_date', $month)->whereYear('request_date', $year)
+                  ->orWhere(function($sq) use ($month, $year) {
+                      $sq->whereNull('request_date')
+                         ->whereMonth('created_at', $month)
+                         ->whereYear('created_at', $year);
+                  });
+            })
             ->get();
 
         // Fetch Requests (not rejected)
         $requests = \App\Models\PatientRequest::where('status', '!=', 'rejected')
-            ->whereMonth('request_date', $month)
-            ->whereYear('request_date', $year)
+            ->where(function($q) use ($month, $year) {
+                $q->whereMonth('request_date', $month)->whereYear('request_date', $year)
+                  ->orWhere(function($sq) use ($month, $year) {
+                      $sq->whereNull('request_date')
+                         ->whereMonth('created_at', $month)
+                         ->whereYear('created_at', $year);
+                  });
+            })
             ->get();
 
-        // Deduplicate: If a request has a dispatch_id, and that ID is in the dispatches collection, 
-        // we prefer the dispatch record (as it has more operational info).
-        $dispatchIdsInRequests = $requests->pluck('dispatch_id')->filter()->toArray();
-        $dispatchedRequestsToSkip = $requests->filter(function($r) {
-            return !empty($r->dispatch_id);
-        });
+        // Combine and Deduplicate
+        // If a request has a dispatch_id, and we have that dispatch in our collection, we skip the request.
+        $dispatchIds = $dispatches->pluck('id')->toArray();
+        
+        $finalCollection = $dispatches->concat(
+            $requests->filter(fn($r) => !in_array($r->dispatch_id, $dispatchIds))
+        );
 
-        // We'll use a manually built collection to ensure no duplicates
-        $finalCollection = collect();
-
-        // Add all dispatches
-        foreach($dispatches as $d) {
-            $finalCollection->push($d);
-        }
-
-        // Add requests that are NOT already in dispatches
-        foreach($requests as $r) {
-            if (empty($r->dispatch_id)) {
-                $finalCollection->push($r);
-            }
-        }
-
-        // Merge and Group
+        // Group by the best available date
         $data = $finalCollection->sortBy('pickup_time')
             ->groupBy(function($item) {
-                if ($item->request_date instanceof Carbon) {
-                    return $item->request_date->format('Y-m-d');
+                $date = $item->request_date ?? $item->created_at;
+                if ($date instanceof Carbon) {
+                    return $date->format('Y-m-d');
                 }
-                return Carbon::parse($item->request_date)->format('Y-m-d');
+                return Carbon::parse($date)->format('Y-m-d');
             });
 
         return view('admin.schedules.calendar', [

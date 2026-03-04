@@ -81,7 +81,13 @@
                                     bg-red-600 border-red-700 text-white
                                 @endif">
                                 <div class="font-bold flex justify-between">
-                                    <span>{{ \Carbon\Carbon::parse($d->pickup_time)->format('H:i') }}</span>
+                                    <span>
+                                        @if($d->pickup_time)
+                                            {{ \Carbon\Carbon::parse($d->pickup_time)->format('H:i') }}
+                                        @else
+                                            {{ $d->created_at->format('H:i') }}
+                                        @endif
+                                    </span>
                                     <span>{{ $title }}</span>
                                 </div>
                                 <div class="truncate font-semibold mt-0.5">
