@@ -21,6 +21,14 @@
             </p>
         </div>
         <div class="flex gap-2">
+            <?php if($eventRequest->status === 'approved' && $eventRequest->end_date->isAfter(now()->startOfDay())): ?>
+                <form action="<?php echo e(route('admin.event-requests.finish', $eventRequest)); ?>" method="POST" onsubmit="return confirm('Selesaikan event ini sekarang? Semua unit yang ditugaskan akan otomatis dibebaskan.')">
+                    <?php echo csrf_field(); ?>
+                    <button type="submit" class="text-sm font-bold text-emerald-600 border border-emerald-200 rounded-lg px-3 py-2 hover:bg-emerald-50 transition">
+                        ✅ Selesaikan Event
+                    </button>
+                </form>
+            <?php endif; ?>
             <a href="<?php echo e(route('admin.event-requests.edit', $eventRequest)); ?>" class="text-sm font-bold text-blue-600 border border-blue-200 rounded-lg px-3 py-2 hover:bg-blue-50 transition">Edit</a>
         </div>
     </div>
