@@ -49,15 +49,22 @@ class MonitoringController extends Controller
 
         // Get active dispatches
         $dispatches = Dispatch::whereIn('status', $activeDispatchStatuses)
-            ->with(['ambulance', 'driver'])
+            ->with(['ambulance', 'driver', 'eventRequest'])
             ->latest()
             ->limit(10)
             ->get()
             ->map(function($dispatch) {
+                $condition = $dispatch->patient_condition;
+                if ($dispatch->event_request_id && $dispatch->eventRequest) {
+                    $condition = $dispatch->eventRequest->type === 'disaster' 
+                        ? 'Event Emergency' 
+                        : 'Event Terjadwal';
+                }
+
                 return [
                     'id' => $dispatch->id,
                     'patient_name' => $dispatch->patient_name,
-                    'patient_condition' => $dispatch->patient_condition,
+                    'patient_condition' => $condition,
                     'status' => $dispatch->status,
                     'ambulance' => $dispatch->ambulance ? $dispatch->ambulance->plate_number : '-',
                     'created_at' => $dispatch->created_at->format('H:i'),
