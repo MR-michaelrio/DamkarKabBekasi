@@ -31,15 +31,26 @@ class DriverDashboardController extends Controller
             return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
         }
 
-        $flow = [
-            'assigned' => 'enroute_pickup',
-            'enroute_pickup' => 'on_scene',
-            'on_scene' => 'enroute_destination',
-            'enroute_destination' => 'arrived_destination',
-            'arrived_destination' => 'completed',
-            'enroute_return' => 'arrived_return',
-            'arrived_return' => 'completed',
-        ];
+        // Event dispatch uses a simplified 4-step flow (no hospital leg)
+        if ($dispatch->event_request_id) {
+            $flow = [
+                'assigned'       => 'enroute_pickup',
+                'enroute_pickup' => 'on_scene',
+                'on_scene'       => 'enroute_return',
+                'enroute_return' => 'completed',
+            ];
+        } else {
+            // Regular patient / jenazah dispatch
+            $flow = [
+                'assigned'            => 'enroute_pickup',
+                'enroute_pickup'      => 'on_scene',
+                'on_scene'            => 'enroute_destination',
+                'enroute_destination' => 'arrived_destination',
+                'arrived_destination' => 'completed',
+                'enroute_return'      => 'arrived_return',
+                'arrived_return'      => 'completed',
+            ];
+        }
 
         if (!isset($flow[$dispatch->status])) {
             return response()->json(['success' => false, 'message' => 'Invalid status transition'], 400);
@@ -47,32 +58,31 @@ class DriverDashboardController extends Controller
 
         $newStatus = $flow[$dispatch->status];
 
-        // Handle Round Trip logic: If arrived at destination and it's a round trip, go to enroute_return instead of completed
-        if ($dispatch->status === 'arrived_destination' && $dispatch->trip_type === 'round_trip') {
+        // Round trip logic only for regular dispatches
+        if (!$dispatch->event_request_id
+            && $dispatch->status === 'arrived_destination'
+            && $dispatch->trip_type === 'round_trip') {
             $newStatus = 'enroute_return';
         }
-        
+
         $updateData = ['status' => $newStatus];
-        
-        // Dynamic timestamps based on status
-        if ($newStatus === 'enroute_pickup') {
-            // Optional: record start time if needed
-        } elseif ($newStatus === 'on_scene') {
+
+        // Dynamic timestamps
+        if ($newStatus === 'on_scene') {
             $updateData['pickup_at'] = now();
         } elseif ($newStatus === 'arrived_destination') {
-            $updateData['hospital_at'] = now(); 
+            $updateData['hospital_at'] = now();
         } elseif ($newStatus === 'enroute_return') {
-            // Arrived at primary destination, now heading back
             $updateData['hospital_at'] = now();
         } elseif ($newStatus === 'completed') {
             $updateData['completed_at'] = now();
-            
+
             // Free up ambulance and driver, and clear location
             $dispatch->ambulance->update([
-                'status' => 'ready',
-                'latitude' => null,
-                'longitude' => null,
-                'last_location_update' => null
+                'status'               => 'ready',
+                'latitude'             => null,
+                'longitude'            => null,
+                'last_location_update' => null,
             ]);
             $dispatch->driver->update(['status' => 'available']);
 
@@ -86,14 +96,14 @@ class DriverDashboardController extends Controller
         // Log the change
         \App\Models\DispatchLog::create([
             'dispatch_id' => $dispatch->id,
-            'status' => $newStatus,
-            'note' => 'Status diupdate oleh driver'
+            'status'      => $newStatus,
+            'note'        => 'Status diupdate oleh driver',
         ]);
 
         return response()->json([
-            'success' => true,
+            'success'    => true,
             'new_status' => $newStatus,
-            'message' => 'Status updated successfully'
+            'message'    => 'Status updated successfully',
         ]);
     }
 
