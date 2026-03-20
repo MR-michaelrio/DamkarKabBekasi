@@ -131,14 +131,17 @@ class DriverDashboardController extends Controller
         ]);
     }
 
-    public function dispatching()
+    public function dispatching(Request $request)
     {
+        $direction = $request->get('direction', 'asc');
+        $direction = in_array($direction, ['asc', 'desc']) ? $direction : 'asc';
+
         $requests = PatientRequest::where('status', 'pending')
-            ->orderBy('request_date', 'asc')
-            ->orderBy('pickup_time', 'asc')
+            ->orderBy('request_date', $direction)
+            ->orderBy('pickup_time', $direction)
             ->get();
             
-        return view('driver.dispatching.index', compact('requests'));
+        return view('driver.dispatching.index', compact('requests', 'direction'));
     }
 
     public function createSelfDispatch(PatientRequest $patientRequest)

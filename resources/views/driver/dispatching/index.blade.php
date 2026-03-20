@@ -17,6 +17,23 @@
         <h1 class="text-xl font-bold text-gray-800">📋 Permintaan Pasien</h1>
     </div>
 
+    <!-- Sorting Toggle -->
+    <div class="mb-4 flex justify-end">
+        <a href="{{ route('driver.dispatching', ['direction' => ($direction === 'asc' ? 'desc' : 'asc')]) }}" 
+           class="inline-flex items-center gap-2 bg-white px-3 py-1.5 rounded-lg shadow-sm border border-gray-200 text-xs font-bold text-gray-600 hover:bg-gray-50 transition active:scale-95">
+            <span>Urutan: {{ $direction === 'asc' ? 'Terdekat' : 'Terjauh' }}</span>
+            @if($direction === 'asc')
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12" />
+                </svg>
+            @else
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4h13M3 8h9m-9 4h9m5-1v12m0 0l-4-4m4 4l4-4" />
+                </svg>
+            @endif
+        </a>
+    </div>
+
     @if(session('success'))
         <div class="mb-4 bg-green-100 border border-green-300 text-green-700 px-4 py-3 rounded-lg text-sm font-bold">
             {{ session('success') }}

@@ -12,14 +12,17 @@ use Illuminate\Http\Request;
 
 class PatientRequestController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
+        $direction = $request->get('direction', 'desc');
+        $direction = in_array($direction, ['asc', 'desc']) ? $direction : 'desc';
+
         $requests = PatientRequest::with('dispatch')
-            ->orderBy('request_date', 'desc')
-            ->orderBy('pickup_time', 'desc')
+            ->orderBy('request_date', $direction)
+            ->orderBy('pickup_time', $direction)
             ->get();
 
-        return view('admin.patient_requests.index', compact('requests'));
+        return view('admin.patient_requests.index', compact('requests', 'direction'));
     }
 
     public function show(PatientRequest $patientRequest)
