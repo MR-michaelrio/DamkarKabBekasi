@@ -134,7 +134,8 @@ class DriverDashboardController extends Controller
     public function dispatching()
     {
         $requests = PatientRequest::where('status', 'pending')
-            ->orderByDesc('created_at')
+            ->orderBy('request_date', 'asc')
+            ->orderBy('pickup_time', 'asc')
             ->get();
             
         return view('driver.dispatching.index', compact('requests'));

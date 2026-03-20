@@ -15,7 +15,8 @@ class PatientRequestController extends Controller
     public function index()
     {
         $requests = PatientRequest::with('dispatch')
-            ->orderByDesc('created_at')
+            ->orderBy('request_date', 'desc')
+            ->orderBy('pickup_time', 'desc')
             ->get();
 
         return view('admin.patient_requests.index', compact('requests'));
