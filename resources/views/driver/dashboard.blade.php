@@ -345,9 +345,9 @@ journeyBtn?.addEventListener('click', async function() {
         // Special actions based on status
         if (currentStatus === 'assigned') {
             await startTracking();
-        } else if (currentStatus === 'enroute_pickup' && "{{ $activeDispatch->event_request_id ? 'yes' : '' }}") {
+        } else if (currentStatus === 'enroute_pickup' && "{{ optional($activeDispatch)->event_request_id ? 'yes' : '' }}") {
             await stopTracking(); // Arrived at event, stop tracking while on scene
-        } else if (currentStatus === 'on_scene' && "{{ $activeDispatch->event_request_id ? 'yes' : '' }}") {
+        } else if (currentStatus === 'on_scene' && "{{ optional($activeDispatch)->event_request_id ? 'yes' : '' }}") {
             await startTracking(); // Start journey back
         } else if (currentStatus === 'arrived_destination') {
             if ("{{ $activeDispatch->trip_type ?? '' }}" === "round_trip") {
