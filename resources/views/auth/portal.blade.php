@@ -109,5 +109,46 @@
         © {{ date('Y') }} Global Medical Care Indonesia.
     </footer>
 
+    <script>
+        const isCapacitor = window.hasOwnProperty('Capacitor') && window.Capacitor.hasOwnProperty('Plugins');
+        const CapacitorPlugins = isCapacitor ? window.Capacitor.Plugins : {};
+
+        async function initializePublicPushNotifications() {
+            if (!isCapacitor || !CapacitorPlugins.PushNotifications) return;
+
+            const { PushNotifications } = CapacitorPlugins;
+            try {
+                let permStatus = await PushNotifications.checkPermissions();
+                if (permStatus.receive === 'prompt') {
+                    permStatus = await PushNotifications.requestPermissions();
+                }
+                if (permStatus.receive === 'granted') {
+                    PushNotifications.addListener('registration', (token) => {
+                        fetch('/public-fcm-token', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                                'Accept': 'application/json'
+                            },
+                            body: JSON.stringify({ token: token.value })
+                        }).catch(err => console.error(err));
+                    });
+
+                    PushNotifications.addListener('pushNotificationReceived', (notification) => {
+                         alert("Informasi Baru:\n" + notification.title + "\n" + notification.body);
+                    });
+
+                    await PushNotifications.register();
+                }
+            } catch (e) {
+                console.error('Push error:', e);
+            }
+        }
+
+        if (isCapacitor) {
+            initializePublicPushNotifications();
+        }
+    </script>
 </body>
 </html>

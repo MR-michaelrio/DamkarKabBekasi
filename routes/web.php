@@ -49,6 +49,13 @@ Route::get('/portal/event-request', [\App\Http\Controllers\Admin\EventRequestCon
 Route::post('/portal/event-request', [\App\Http\Controllers\Admin\EventRequestController::class, 'publicStore'])
     ->name('portal.event-request.store');
 
+// Public FCM Token Save
+Route::post('/public-fcm-token', function (\Illuminate\Http\Request $request) {
+    $request->validate(['token' => 'required|string']);
+    \App\Models\DeviceToken::firstOrCreate(['token' => $request->token]);
+    return response()->json(['success' => true]);
+})->name('public-fcm-token.save');
+
 // API Routes (for driver GPS tracking)
 Route::post('/api/driver/location', [DriverLocationController::class, 'updateLocation'])
     ->middleware('auth:ambulance');  // specific guard here if we want, or just 'auth' if we configure defaults properly

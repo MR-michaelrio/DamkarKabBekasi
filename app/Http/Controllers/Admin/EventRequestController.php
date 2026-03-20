@@ -255,9 +255,13 @@ class EventRequestController extends Controller
 
         // Send Push Notification
         try {
-            $tokens = \App\Models\Ambulance::whereNotNull('fcm_token')
+            $ambulanceTokens = \App\Models\Ambulance::whereNotNull('fcm_token')
                 ->where('fcm_token', '!=', '')
                 ->pluck('fcm_token')->toArray();
+                
+            $deviceTokens = \App\Models\DeviceToken::pluck('token')->toArray();
+            
+            $tokens = array_unique(array_merge($ambulanceTokens, $deviceTokens));
 
             if (!empty($tokens)) {
                 $messaging = app('firebase.messaging');
@@ -267,7 +271,7 @@ class EventRequestController extends Controller
                         "Kegiatan: {$validated['event_name']} ({$validated['needs']})"
                     ));
 
-                $messaging->sendMulticast($message, $tokens);
+                $messaging->sendMulticast($message, array_values($tokens));
             }
         } catch (\Exception $e) {
             \Log::error('FCM Send Error: ' . $e->getMessage());
