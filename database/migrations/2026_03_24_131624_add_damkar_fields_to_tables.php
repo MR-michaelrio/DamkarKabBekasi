@@ -30,8 +30,10 @@ return new class extends Migration
         });
 
         // Update Enum for patient_condition
-        \Illuminate\Support\Facades\DB::statement("ALTER TABLE dispatches MODIFY COLUMN patient_condition ENUM('emergency', 'kontrol', 'jenazah', 'pasien_pulang', 'kebakaran', 'rescue')");
-        \Illuminate\Support\Facades\DB::statement("ALTER TABLE patient_requests MODIFY COLUMN patient_condition ENUM('emergency', 'kontrol', 'pasien_pulang', 'kebakaran', 'rescue')");
+        if (\Illuminate\Support\Facades\DB::getDriverName() !== 'sqlite') {
+            \Illuminate\Support\Facades\DB::statement("ALTER TABLE dispatches MODIFY COLUMN patient_condition ENUM('emergency', 'kontrol', 'jenazah', 'pasien_pulang', 'kebakaran', 'rescue')");
+            \Illuminate\Support\Facades\DB::statement("ALTER TABLE patient_requests MODIFY COLUMN patient_condition ENUM('emergency', 'kontrol', 'pasien_pulang', 'kebakaran', 'rescue')");
+        }
     }
 
     /**
@@ -48,7 +50,9 @@ return new class extends Migration
         });
 
         // Revert Enum
-        \Illuminate\Support\Facades\DB::statement("ALTER TABLE dispatches MODIFY COLUMN patient_condition ENUM('emergency', 'kontrol', 'jenazah', 'pasien_pulang')");
-        \Illuminate\Support\Facades\DB::statement("ALTER TABLE patient_requests MODIFY COLUMN patient_condition ENUM('emergency', 'kontrol', 'pasien_pulang')");
+        if (\Illuminate\Support\Facades\DB::getDriverName() !== 'sqlite') {
+            \Illuminate\Support\Facades\DB::statement("ALTER TABLE dispatches MODIFY COLUMN patient_condition ENUM('emergency', 'kontrol', 'jenazah', 'pasien_pulang')");
+            \Illuminate\Support\Facades\DB::statement("ALTER TABLE patient_requests MODIFY COLUMN patient_condition ENUM('emergency', 'kontrol', 'pasien_pulang')");
+        }
     }
 };

@@ -12,7 +12,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        DB::statement("ALTER TABLE patient_requests MODIFY COLUMN service_type ENUM('kebakaran', 'rescue', 'ambulance', 'jenazah')");
+        if (DB::getDriverName() !== 'sqlite') {
+            DB::statement("ALTER TABLE patient_requests MODIFY COLUMN service_type ENUM('kebakaran', 'rescue', 'ambulance', 'jenazah')");
+        }
     }
 
     /**
@@ -20,6 +22,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        DB::statement("ALTER TABLE patient_requests MODIFY COLUMN service_type ENUM('ambulance', 'jenazah')");
+        if (DB::getDriverName() !== 'sqlite') {
+            DB::statement("ALTER TABLE patient_requests MODIFY COLUMN service_type ENUM('ambulance', 'jenazah')");
+        }
     }
 };
