@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Detail Permintaan | GMCI Admin')
+@section('title', 'Detail Laporan | Damkar Admin')
 
 @section('content')
 <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -8,7 +8,7 @@
     <!-- Header -->
     <div class="mb-6">
         <h1 class="text-2xl font-bold text-gray-800">
-            📋 Detail Permintaan Pasien
+            📋 Detail Laporan Masyarakat
         </h1>
     </div>
 
@@ -17,12 +17,12 @@
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
             <div>
-                <label class="block text-sm font-bold text-gray-500 uppercase tracking-wider">Nama Pasien</label>
+                <label class="block text-sm font-bold text-gray-500 uppercase tracking-wider">Nama Pelapor</label>
                 <p class="text-lg font-bold text-gray-900 mt-1">{{ $patientRequest->patient_name }}</p>
             </div>
 
             <div>
-                <label class="block text-sm font-bold text-gray-500 uppercase tracking-wider">Tanggal</label>
+                <label class="block text-sm font-bold text-gray-500 uppercase tracking-wider">Tanggal Kejadian</label>
                 <p class="text-lg font-bold text-gray-900 mt-1">
                     {{ $patientRequest->request_date->format('d F Y') }}
                 </p>
@@ -31,60 +31,43 @@
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
             <div>
-                <label class="block text-sm font-bold text-gray-500 uppercase tracking-wider">Jam Penjemputan</label>
+                <label class="block text-sm font-bold text-gray-500 uppercase tracking-wider">Jam Kejadian</label>
                 <p class="text-lg font-bold text-gray-900 mt-1">
                     {{ $patientRequest->pickup_time ? \Carbon\Carbon::parse($patientRequest->pickup_time)->format('H:i') : '-' }} WIB
                 </p>
             </div>
+            
+            <div>
+                <label class="block text-sm font-bold text-gray-500 uppercase tracking-wider">No. Telepon (WA)</label>
+                <p class="text-lg font-bold text-red-600 mt-1">{{ $patientRequest->phone }}</p>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 border-t border-gray-50 pt-6">
+            <div>
+                <label class="block text-sm font-bold text-gray-500 uppercase tracking-wider">Jenis Kejadian</label>
+                <p class="text-lg font-bold text-gray-900 mt-1">
+                    @if ($patientRequest->service_type === 'kebakaran')
+                        🔥 Kebakaran
+                    @elseif ($patientRequest->service_type === 'rescue')
+                        🚒 Rescue
+                    @else
+                        {{ strtoupper($patientRequest->service_type) }}
+                    @endif
+                </p>
+            </div>
 
             <div>
-                <label class="block text-sm font-bold text-gray-500 uppercase tracking-wider">Tipe Perjalanan</label>
+                <label class="block text-sm font-bold text-gray-500 uppercase tracking-wider">Kondisi / Ket. Tambahan</label>
                 <p class="text-lg font-bold text-gray-900 mt-1">
-                    @if ($patientRequest->trip_type === 'round_trip')
-                        🔄 Pulang Pergi (PP)
-                    @else
-                        ➡️ Sekali Jalan
-                    @endif
+                    {{ strtoupper(str_replace('_', ' ', $patientRequest->patient_condition ?? '-')) }}
                 </p>
             </div>
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 border-t border-gray-50 pt-6">
             <div>
-                <label class="block text-sm font-bold text-gray-500 uppercase tracking-wider">Jenis Layanan</label>
-                <p class="text-lg font-bold text-gray-900 mt-1">
-                    @if ($patientRequest->service_type === 'ambulance')
-                        🚑 Pasien (Ambulance)
-                    @else
-                        ⚰️ Jenazah (Mobil Jenazah)
-                    @endif
-                </p>
-            </div>
-
-            <div>
-                <label class="block text-sm font-bold text-gray-500 uppercase tracking-wider">Kondisi / Status</label>
-                <p class="text-lg font-bold text-gray-900 mt-1">
-                    @if ($patientRequest->patient_condition === 'emergency')
-                        <span class="text-red-600">🚨 EMERGENCY</span>
-                    @elseif ($patientRequest->patient_condition === 'kontrol')
-                        <span class="text-blue-600">🏥 KONTROL</span>
-                    @elseif ($patientRequest->patient_condition === 'pasien_pulang')
-                        <span class="text-emerald-600">🏠 PULANG</span>
-                    @else
-                        <span class="text-gray-400">-</span>
-                    @endif
-                </p>
-            </div>
-        </div>
-
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 border-t border-gray-50 pt-6">
-            <div>
-                <label class="block text-sm font-bold text-gray-500 uppercase tracking-wider">No. Telepon</label>
-                <p class="text-lg font-bold text-gray-900 mt-1">{{ $patientRequest->phone }}</p>
-            </div>
-
-            <div>
-                <label class="block text-sm font-bold text-gray-500 uppercase tracking-wider">Status</label>
+                <label class="block text-sm font-bold text-gray-500 uppercase tracking-wider">Status Laporan</label>
                 <div class="mt-2">
                     @if ($patientRequest->status === 'pending')
                         <span class="px-3 py-1 bg-yellow-100 text-yellow-700 rounded text-sm font-bold shadow-sm">
@@ -105,26 +88,27 @@
                     @endif
                 </div>
             </div>
-        </div>
-
-        <div class="border-t border-gray-50 pt-6">
-            <label class="block text-sm font-bold text-gray-500 uppercase tracking-wider">Alamat Jemput</label>
-            <p class="text-gray-900 mt-2 bg-gray-50 p-3 rounded-lg border border-gray-100">{{ $patientRequest->pickup_address }}</p>
-        </div>
-
-        <div>
-            <label class="block text-sm font-bold text-gray-500 uppercase tracking-wider">Tujuan</label>
-            <p class="text-gray-900 mt-2 bg-gray-50 p-3 rounded-lg border border-gray-100">{{ $patientRequest->destination }}</p>
-        </div>
-
-        @if ($patientRequest->dispatch_id)
-            <div class="border-t border-gray-50 pt-6">
+            
+            @if ($patientRequest->dispatch_id)
+            <div>
                 <label class="block text-sm font-bold text-gray-500 uppercase tracking-wider">Dispatch ID</label>
                 <p class="text-xl font-bold text-blue-600 mt-1">
                     #{{ $patientRequest->dispatch_id }}
                 </p>
             </div>
-        @endif
+            @endif
+        </div>
+
+        <div class="border-t border-gray-50 pt-6">
+            <label class="block text-sm font-bold text-gray-500 uppercase tracking-wider">Alamat TKP (Lokasi Kejadian)</label>
+            <p class="text-gray-900 mt-2 bg-gray-50 p-3 rounded-lg border border-gray-100 font-bold text-red-600">{{ $patientRequest->pickup_address }}</p>
+            <div class="grid grid-cols-2 gap-4 mt-2 text-xs text-gray-500">
+                <span>Blok: {{ $patientRequest->blok ?? '-' }}</span>
+                <span>RT/RW: {{ $patientRequest->rt ?? '-' }}/{{ $patientRequest->rw ?? '-' }}</span>
+                <span>Kel: {{ $patientRequest->kelurahan ?? '-' }}</span>
+                <span>Kec: {{ $patientRequest->kecamatan ?? '-' }}</span>
+            </div>
+        </div>
 
     </div>
 
@@ -144,7 +128,7 @@
 
                 <form method="POST" action="{{ route('admin.patient-requests.reject', $patientRequest) }}"
                       class="inline"
-                      onsubmit="return confirm('Yakin ingin menolak permintaan ini?')">
+                      onsubmit="return confirm('Yakin ingin menolak laporan ini?')">
                     @csrf
                     <button type="submit"
                             class="bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-lg font-bold shadow-lg w-full transition transform active:scale-95">

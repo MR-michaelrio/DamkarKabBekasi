@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <title>GMCI Dispatch | Global Medical Care Indonesia</title>
+    <title>Damkar Bekasi | Dinas Pemadam Kebakaran dan Penyelamatan</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
     <!-- Tailwind CDN -->
@@ -39,7 +39,7 @@
 
             <!-- LOGIN -->
             <a href="{{ route('portal') }}"
-               class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-sm shadow">
+               class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white text-sm shadow">
                 🔐 Portal Login
             </a>
         </div>
@@ -51,33 +51,32 @@
         <!-- TEXT -->
         <div class="fade-up">
             <h1 class="text-4xl md:text-5xl font-extrabold leading-tight text-gray-900 mb-6">
-                Sistem Dispatch Ambulans<br>
-                <span class="text-emerald-600">Global Medical Care Indonesia</span>
+                Sistem Dispatch Damkar<br>
+                <span class="text-red-600">Dinas Pemadam Kebakaran Kab. Bekasi</span>
             </h1>
 
             <p class="text-lg text-gray-600 mb-6 leading-relaxed">
                 Aplikasi ini digunakan untuk mengelola dan memantau
-                <strong>penugasan ambulans secara real-time</strong>,
-                mulai dari panggilan darurat, pengantaran pasien,
-                hingga evakuasi jenazah.
+                <strong>penugasan unit damkar secara real-time</strong>,
+                mulai dari penanganan kebakaran, rescue,
+                hingga bantuan darurat lainnya.
             </p>
 
             <p class="text-gray-600 mb-8">
-                Dikembangkan untuk mendukung misi kemanusiaan
-                <strong>Yayasan Global Medical Care Indonesia</strong>
-                dalam memberikan pelayanan medis yang cepat, tepat,
-                dan terkoordinasi bagi masyarakat.
+                Mendukung pelayanan respons cepat 
+                <strong>Dinas Pemadam Kebakaran dan Penyelamatan Kabupaten Bekasi</strong>
+                dalam melindungi dan melayani masyarakat.
             </p>
 
             <div class="flex flex-wrap gap-4">
                 <a href="{{ route('patient-request.create') }}"
-                   class="px-6 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold shadow">
-                    🚑 Buat Permintaan Layanan
+                   class="px-6 py-3 rounded-xl bg-red-600 hover:bg-red-700 text-white font-semibold shadow">
+                    🚒 Buat Laporan Kejadian
                 </a>
 
                 <a href="#tentang"
                    class="px-6 py-3 rounded-xl border border-gray-300 hover:bg-gray-100 text-gray-700 font-semibold">
-                    ℹ️ Tentang GMCI
+                    ℹ️ Tentang Kami
                 </a>
             </div>
         </div>
@@ -85,10 +84,10 @@
         <!-- ILLUSTRATION -->
         <div class="fade-up text-center">
             <div class="bg-white rounded-2xl shadow-xl p-8">
-                <div class="text-6xl mb-4">🚑</div>
-                <div class="font-bold text-xl mb-2">Ambulance Dispatch System</div>
+                <div class="text-6xl mb-4">🚒</div>
+                <div class="font-bold text-xl mb-2">Fire Dispatch System</div>
                 <div class="text-gray-500 text-sm">
-                    Real-time • Terintegrasi • Profesional
+                    Real-time • Terkoordinasi • Patriotik
                 </div>
             </div>
         </div>
@@ -131,12 +130,9 @@
     <!-- FOOTER -->
     <footer class="bg-slate-900 text-slate-300">
         <div class="max-w-7xl mx-auto px-6 py-8 text-center text-sm">
-            © {{ date('Y') }} Global Medical Care Indonesia.<br>
-            Sistem Dispatch Ambulans — Untuk Kemanusiaan.<br>
+            © {{ date('Y') }} Dinas Pemadam Kebakaran dan Penyelamatan Kabupaten Bekasi.<br>
+            Sistem Dispatch Damkar — Melayani dengan Hati.<br>
             <div class="mt-4 font-bold text-slate-100">Layanan 24 Jam: +62 812-8685-8680</div>
-            <div class="mt-4">
-                <a href="{{ route('privacy') }}" class="text-xs hover:text-white underline">Kebijakan Privasi & Penghapusan Data</a>
-            </div>
         </div>
     </footer>
 

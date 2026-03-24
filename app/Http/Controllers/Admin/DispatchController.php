@@ -37,13 +37,19 @@ class DispatchController extends Controller
             'patient_name' => 'required',
             'request_date' => 'required|date',
             'pickup_time' => 'required',
-            'patient_condition' => 'required',
+            'patient_condition' => 'required|in:kebakaran,rescue',
             'pickup_address' => 'required',
             'destination' => 'nullable',
             'driver_id' => 'required',
             'ambulance_id' => 'required',
             'trip_type' => 'nullable|in:one_way,round_trip',
             'return_address' => 'nullable',
+            'blok' => 'nullable|string',
+            'rt' => 'nullable|string',
+            'rw' => 'nullable|string',
+            'kelurahan' => 'nullable|string',
+            'kecamatan' => 'nullable|string',
+            'nomor' => 'nullable|string',
         ]) + [
             'status' => 'assigned',
             'assigned_at' => now(),
@@ -186,5 +192,15 @@ class DispatchController extends Controller
             ->get(['latitude', 'longitude', 'created_at']);
         
         return response()->json($history);
+    }
+
+    public function exportSinglePdf(Dispatch $dispatch)
+    {
+        $dispatch->load(['driver', 'ambulance']);
+        
+        $pdf = Pdf::loadView('admin.dispatches.single_pdf', compact('dispatch'))
+                   ->setPaper('a4', 'portrait');
+
+        return $pdf->download('laporan-kejadian-' . $dispatch->id . '-' . date('Ymd') . '.pdf');
     }
 }

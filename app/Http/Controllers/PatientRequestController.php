@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\PatientRequest;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class PatientRequestController extends Controller
 {
@@ -16,15 +17,21 @@ class PatientRequestController extends Controller
     {
         $validated = $request->validate([
             'patient_name' => 'required|string|max:255',
-            'service_type' => 'required|in:ambulance,jenazah',
+            'service_type' => 'required|in:kebakaran,rescue',
             'request_date' => 'required|date',
             'pickup_time' => 'required',
             'phone' => 'required|string|max:20',
             'pickup_address' => 'required|string',
-            'destination' => 'required|string',
-            'patient_condition' => 'nullable|in:emergency,kontrol,pasien_pulang',
+            'destination' => 'nullable|string',
+            'patient_condition' => 'nullable|in:kebakaran,rescue',
             'trip_type' => 'nullable|in:one_way,round_trip',
             'return_address' => 'nullable|string',
+            'blok' => 'nullable|string',
+            'rt' => 'nullable|string',
+            'rw' => 'nullable|string',
+            'kelurahan' => 'nullable|string',
+            'kecamatan' => 'nullable|string',
+            'nomor' => 'nullable|string',
         ]);
 
         PatientRequest::create($validated);

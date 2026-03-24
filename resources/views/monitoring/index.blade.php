@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Monitoring Real-Time - GMCI Ambulance</title>
+    <title>Monitoring Real-Time - Damkar Bekasi</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
@@ -41,7 +41,7 @@
 <!-- Header -->
 <div class="bg-white shadow-sm border-b px-4 py-3 flex items-center justify-between gap-4 flex-shrink-0">
     <div class="flex items-center gap-3">
-        <a href="/portal" class="text-emerald-600 hover:text-emerald-800 font-bold flex items-center gap-1">
+        <a href="/portal" class="text-red-600 hover:text-red-800 font-bold flex items-center gap-1">
             <span class="text-lg">←</span> <span class="hidden sm:inline">Portal</span>
         </a>
         <div class="h-6 w-px bg-gray-300"></div>
@@ -54,7 +54,7 @@
         </div>
         <div class="w-px h-3 bg-gray-300"></div>
         <span class="text-xs font-bold text-gray-600">
-            <span id="countdown" class="font-mono font-black text-emerald-600">10</span>s
+            <span id="countdown" class="font-mono font-black text-red-600">10</span>s
         </span>
     </div>
 </div>
@@ -72,11 +72,11 @@
         
         <!-- Active Dispatches -->
         <div class="flex-1 flex flex-col min-h-[300px] lg:min-h-0 border-b">
-            <div class="bg-blue-50 px-4 py-3 border-b flex justify-between items-center sticky top-0 z-10">
+            <div class="bg-red-50 px-4 py-3 border-b flex justify-between items-center sticky top-0 z-10">
                 <h2 class="font-bold text-gray-800 flex items-center gap-2">
                     🚨 Dispatch Aktif
                 </h2>
-                <span id="dispatch-count" class="text-xs font-black bg-blue-600 text-white px-2 py-0.5 rounded-full shadow-sm">0</span>
+                <span id="dispatch-count" class="text-xs font-black bg-red-600 text-white px-2 py-0.5 rounded-full shadow-sm">0</span>
             </div>
             <div class="data-table p-4 flex-1">
                 <div id="dispatches-list" class="space-y-3">
@@ -89,9 +89,9 @@
         <div class="flex-1 flex flex-col min-h-[300px] lg:min-h-0">
             <div class="bg-green-50 px-4 py-3 border-b flex justify-between items-center sticky top-0 z-10">
                 <h2 class="font-bold text-gray-800 flex items-center gap-2">
-                    📋 Permintaan Pasien
+                    📋 Laporan Masyarakat
                 </h2>
-                <span id="request-count" class="text-xs font-black bg-green-600 text-white px-2 py-0.5 rounded-full shadow-sm">0</span>
+                <span id="request-count" class="text-xs font-black bg-emerald-600 text-white px-2 py-0.5 rounded-full shadow-sm">0</span>
             </div>
             <div class="data-table p-4 flex-1">
                 <div id="requests-list" class="space-y-3">
@@ -117,8 +117,8 @@ let markers = {};
 // Status badges
 const statusBadges = {
     'assigned': '<span class="text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded">Ditugaskan</span>',
-    'enroute_pickup': '<span class="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">Menuju Lokasi</span>',
-    'on_scene': '<span class="text-xs bg-purple-100 text-purple-800 px-2 py-1 rounded">Di Lokasi</span>',
+    'enroute_pickup': '<span class="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">Menuju TKP</span>',
+    'on_scene': '<span class="text-xs bg-purple-100 text-purple-800 px-2 py-1 rounded">Di TKP</span>',
     'enroute_destination': '<span class="text-xs bg-orange-100 text-orange-800 px-2 py-1 rounded">Menuju Tujuan</span>',
     'arrived_destination': '<span class="text-xs bg-emerald-100 text-emerald-800 px-2 py-1 rounded">Sampai Tujuan</span>',
     'completed': '<span class="text-xs bg-gray-100 text-gray-800 px-2 py-1 rounded">Selesai</span>',
@@ -150,7 +150,7 @@ function updateMap(ambulances) {
     ambulances.forEach(ambulance => {
         const popupContent = `
             <div class="p-2">
-                <h3 class="font-bold text-lg">🚑 ${ambulance.plate_number}</h3>
+                <h3 class="font-bold text-lg">🚒 ${ambulance.plate_number}</h3>
                 <p class="text-sm text-gray-600">${ambulance.code || '-'} - ${ambulance.type || '-'}</p>
                 <p class="text-sm mt-1"><strong>Status:</strong> ${ambulance.status}</p>
                 ${ambulance.dispatch ? `
@@ -189,7 +189,7 @@ function updateDispatches(dispatches) {
                 <div class="text-xs text-gray-500">${d.created_at}</div>
             </div>
             <div class="text-sm text-gray-600 mb-2">
-                🚑 ${d.ambulance}
+                🚒 ${d.ambulance}
             </div>
             <div class="flex justify-between items-center">
                 ${statusBadges[d.status] || d.status}
@@ -215,7 +215,7 @@ function updateRequests(requests) {
                 <div class="text-xs text-gray-500">${r.request_date}</div>
             </div>
             <div class="text-sm text-gray-600 mb-2">
-                ${r.service_type === 'ambulance' ? '🚑 Ambulance' : '⚰️ Jenazah'}
+                ${r.service_type === 'ambulance' ? '🚒 Unit Damkar' : '🚒 Rescue'}
                 ${r.patient_condition ? ` - ${r.patient_condition}` : ''}
             </div>
             <div>

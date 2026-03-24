@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Dashboard | GMCI Admin')
+@section('title', 'Dashboard | Damkar Admin')
 
 @section('content')
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -8,16 +8,16 @@
     <div class="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
             <h1 class="text-3xl font-extrabold text-gray-900 flex items-center gap-2">
-                📊 Statistik Dispatch
+                🚒 Aktivitas Damkar
             </h1>
             <p class="text-gray-500 text-sm mt-1">
-                Laporan aktivitas ambulans harian, mingguan, dan bulanan
+                Laporan aktivitas unit damkar harian, mingguan, dan bulanan
             </p>
         </div>
         <div class="flex items-center gap-3">
-            <div class="bg-blue-50 px-4 py-2 rounded-lg border border-blue-100">
-                <span class="text-xs text-blue-600 font-bold uppercase tracking-wider">Total Dispatch (Bulan Ini)</span>
-                <p class="text-2xl font-black text-blue-900">{{ $monthDispatches->count() }}</p>
+            <div class="bg-red-50 px-4 py-2 rounded-lg border border-red-100">
+                <span class="text-xs text-red-600 font-bold uppercase tracking-wider">Total Dispatch (Bulan Ini)</span>
+                <p class="text-2xl font-black text-red-900">{{ $monthDispatches->count() }}</p>
             </div>
         </div>
     </div>
@@ -28,7 +28,7 @@
         <div class="lg:col-span-1 bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
             <div class="p-5 border-b border-gray-50 bg-gray-50/50 flex justify-between items-center">
                 <h2 class="font-bold text-gray-800 flex items-center gap-2">
-                    🚑 Analitik Per Mobil
+                    🚒 Analitik Per Unit
                 </h2>
                 <span class="text-[10px] bg-gray-200 text-gray-600 px-2 py-0.5 rounded-full font-bold uppercase">Bulan Ini</span>
             </div>
@@ -136,7 +136,7 @@
                     } else {
                         markers[a.id] = L.marker([a.latitude, a.longitude])
                             .addTo(map)
-                            .bindPopup(`🚑 ${a.plate_number}<br><span class='text-xs'>${a.status}</span>`);
+                            .bindPopup(`🚒 ${a.plate_number}<br><span class='text-xs'>${a.status}</span>`);
                     }
                 });
             });

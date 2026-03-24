@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Edit Ambulans | GMCI Dispatch')
+@section('title', 'Edit Mobil Damkar | Damkar Dispatch')
 
 @section('content')
 <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -8,10 +8,10 @@
     <!-- Header -->
     <div class="mb-6">
         <h1 class="text-2xl font-bold text-gray-800 flex items-center gap-2">
-            ✏️ Edit Ambulans
+            ✏️ Edit Mobil Damkar
         </h1>
         <p class="text-gray-500 text-sm mt-1">
-            Perbarui data ambulans GMCI
+            Perbarui data mobil damkar
         </p>
     </div>
 
@@ -36,11 +36,11 @@
             <!-- Code -->
             <div>
                 <label class="block text-sm font-bold text-gray-700 mb-1">
-                    Kode Ambulans
+                    Kode Unit
                 </label>
                 <input type="text" name="code" required
                        value="{{ old('code', $ambulance->code) }}"
-                       class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                       class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-red-500 focus:border-red-500">
             </div>
 
             <!-- Plate -->
@@ -50,16 +50,16 @@
                 </label>
                 <input type="text" name="plate_number" required
                        value="{{ old('plate_number', $ambulance->plate_number) }}"
-                       class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                       class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-red-500 focus:border-red-500">
             </div>
 
             <!-- Type -->
             <div>
                 <label class="block text-sm font-bold text-gray-700 mb-1">
-                    Tipe Ambulans
+                    Tipe Armada
                 </label>
                 <select name="type" required
-                        class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                        class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-red-500 focus:border-red-500">
                     <option value="" disabled>Pilih Tipe</option>
                     @foreach($types as $type)
                         <option value="{{ $type->name }}" {{ old('type', $ambulance->type) == $type->name ? 'selected' : '' }}>
@@ -82,7 +82,7 @@
                     Status
                 </label>
                 <select name="status"
-                        class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                        class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-red-500 focus:border-red-500">
                     <option value="ready" {{ old('status', $ambulance->status) === 'ready' ? 'selected' : '' }}>Ready</option>
                     <option value="on_duty" {{ old('status', $ambulance->status) === 'on_duty' ? 'selected' : '' }}>On Duty</option>
                     <option value="maintenance" {{ old('status', $ambulance->status) === 'maintenance' ? 'selected' : '' }}>Maintenance</option>
@@ -95,7 +95,7 @@
                     Ganti Password (Opsional)
                 </label>
                 <input type="password" name="password"
-                       class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                       class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-red-500 focus:border-red-500"
                        placeholder="Kosongkan jika tidak ingin mengubah">
                 <p class="text-xs text-gray-500 mt-1 italic">
                     Gunakan password ini jika staff unit lupa password atau ingin direset oleh Admin.
@@ -110,8 +110,8 @@
                 </a>
 
                 <button type="submit"
-                        class="bg-yellow-500 hover:bg-yellow-600 text-white px-6 py-3 rounded-lg font-bold shadow-lg transition transform active:scale-95">
-                    Update Ambulans
+                        class="bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-lg font-bold shadow-lg transition transform active:scale-95">
+                    Update Unit
                 </button>
             </div>
         </form>

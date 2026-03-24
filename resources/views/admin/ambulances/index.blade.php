@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Ambulances | GMCI Dispatch')
+@section('title', 'Mobil Damkar | Damkar Dispatch')
 
 @section('content')
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -8,12 +8,12 @@
     <!-- Header -->
     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
         <h1 class="text-2xl font-bold text-gray-800 flex items-center gap-2">
-            🚑 Manajemen Ambulans
+            🚒 Manajemen Mobil Damkar
         </h1>
 
         <a href="{{ route('admin.ambulances.create') }}"
-           class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-semibold shadow w-full sm:w-auto text-center">
-            ➕ Tambah Ambulans
+           class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm font-semibold shadow w-full sm:w-auto text-center">
+            ➕ Tambah Mobil Damkar
         </a>
     </div>
 
@@ -77,7 +77,7 @@
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit"
-                                        onclick="return confirm('Hapus ambulans ini?')"
+                                        onclick="return confirm('Hapus mobil damkar ini?')"
                                         class="text-red-600 hover:text-red-800 font-bold">
                                         Hapus
                                     </button>
@@ -87,7 +87,7 @@
                     @empty
                         <tr>
                             <td colspan="5" class="px-6 py-10 text-center text-gray-500 italic">
-                                🚑 Belum ada data ambulans
+                                🚒 Belum ada data mobil damkar
                             </td>
                         </tr>
                     @endforelse

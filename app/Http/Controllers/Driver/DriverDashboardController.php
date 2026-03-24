@@ -192,6 +192,12 @@ class DriverDashboardController extends Controller
             'return_address' => $patientRequest->return_address,
             'request_date' => $patientRequest->request_date,
             'pickup_time' => $patientRequest->pickup_time,
+            'blok' => $patientRequest->blok,
+            'rt' => $patientRequest->rt,
+            'rw' => $patientRequest->rw,
+            'kelurahan' => $patientRequest->kelurahan,
+            'kecamatan' => $patientRequest->kecamatan,
+            'nomor' => $patientRequest->nomor,
         ]);
 
         // Update statuses

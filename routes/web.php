@@ -115,6 +115,8 @@ Route::middleware(['auth'])->group(function () {
         // Dispatch Management
         Route::get('dispatches/export/pdf', [DispatchController::class, 'exportPdf'])
             ->name('dispatches.export.pdf');
+        Route::get('dispatches/{dispatch}/export-pdf', [DispatchController::class, 'exportSinglePdf'])
+            ->name('dispatches.export-single.pdf');
             
         Route::resource('dispatches', DispatchController::class);
         

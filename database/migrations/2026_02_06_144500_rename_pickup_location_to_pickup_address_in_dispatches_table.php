@@ -11,18 +11,19 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('dispatches', function (Blueprint $table) {
-            // Jika kolom lama ada → rename
-            if (Schema::hasColumn('dispatches', 'pickup_location')) {
+        // Jika kolom lama ada → rename
+        if (Schema::hasColumn('dispatches', 'pickup_location')) {
+            Schema::table('dispatches', function (Blueprint $table) {
                 $table->renameColumn('pickup_location', 'pickup_address');
-            }
+            });
+        }
 
-            // Jika kolom baru belum ada → buat
-            if (!Schema::hasColumn('dispatches', 'pickup_address')) {
+        // Jika kolom baru belum ada → buat
+        if (!Schema::hasColumn('dispatches', 'pickup_address')) {
+            Schema::table('dispatches', function (Blueprint $table) {
                 $table->string('pickup_address')->nullable();
-            }
-            // $table->renameColumn('pickup_location', 'pickup_address');
-        });
+            });
+        }
     }
 
     /**

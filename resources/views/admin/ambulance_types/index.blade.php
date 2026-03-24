@@ -1,17 +1,17 @@
 @extends('layouts.app')
 
-@section('title', 'Tipe Armada | GMCI Dispatch')
+@section('title', 'Tipe Armada Damkar | Damkar Dispatch')
 
 @section('content')
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
         <h1 class="text-2xl font-bold text-gray-800 flex items-center gap-2">
-            🚐 Tipe Armada
+            🚒 Tipe Armada Damkar
         </h1>
 
         <a href="{{ route('admin.ambulance-types.create') }}"
-           class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-semibold shadow w-full sm:w-auto text-center">
+           class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm font-semibold shadow w-full sm:w-auto text-center">
             ➕ Tambah Tipe
         </a>
     </div>
@@ -40,7 +40,7 @@
                             </td>
                             <td class="px-6 py-4 text-right space-x-3 whitespace-nowrap">
                                 <a href="{{ route('admin.ambulance-types.edit', $type) }}"
-                                   class="text-blue-600 hover:text-blue-800 font-bold">
+                                   class="text-red-600 hover:text-red-800 font-bold">
                                     Edit
                                 </a>
 

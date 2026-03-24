@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>Driver Dashboard | GMCI</title>
+    <title>Dashboard Unit | Damkar Bekasi</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-100 min-h-screen">
@@ -16,7 +16,7 @@
         <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8 flex justify-between items-center">
             <div>
                 <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-                    🚑 Dashboard Ambulans
+                    🚒 Dashboard Unit Damkar
                 </h2>
                 <p class="text-sm text-gray-500">{{ auth('ambulance')->user()->plate_number }} ({{ auth('ambulance')->user()->username }})</p>
             </div>
@@ -45,9 +45,9 @@
                         <span class="text-[10px] font-black text-gray-400 uppercase tracking-widest block mb-1">Layanan</span>
                         <span class="font-bold text-gray-800">
                             @if($activeDispatch->event_request_id)
-                                🎪 Event/Disaster
+                                🎪 Event/Bencana
                             @else
-                                {{ $activeDispatch->patient_condition === 'jenazah' ? '⚰️ Jenazah' : '🚑 Pasien' }}
+                                {{ $activeDispatch->patient_condition === 'jenazah' ? '⚰️ Jenazah' : '🚒 Penanganan' }}
                             @endif
                         </span>
                     </div>
@@ -221,12 +221,12 @@
             <div class="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4 text-4xl">
                 📭
             </div>
-            <h3 class="font-bold text-gray-800 text-lg">Tidak Ada Dispatch Aktif</h3>
-            <p class="text-gray-500 text-sm mt-1 mb-6">Unit ambulans Anda sedang tidak dalam tugas. Silakan cek permintaan pasien yang masuk.</p>
+            <h3 class="font-bold text-gray-800 text-lg">Tidak Ada Penugasan Aktif</h3>
+            <p class="text-gray-500 text-sm mt-1 mb-6">Unit damkar Anda sedang tidak dalam tugas. Silakan cek laporan masyarakat yang masuk.</p>
             
             <a href="{{ route('driver.dispatching') }}" 
-               class="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-xl shadow-lg transition transform active:scale-95">
-                📋 Lihat Permintaan Pasien
+               class="inline-flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-6 rounded-xl shadow-lg transition transform active:scale-95">
+                📋 Lihat Laporan Masyarakat
             </a>
         </div>
     @endif
@@ -235,7 +235,7 @@
      <div class="mt-6 grid grid-cols-2 gap-4">
         <a href="{{ route('driver.dispatching') }}" class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex flex-col items-center gap-2 text-center transition hover:bg-gray-50 active:scale-95">
             <span class="text-2xl">📋</span>
-            <span class="text-xs font-bold text-gray-700">Terima Tugas</span>
+            <span class="text-xs font-bold text-gray-700">Laporan Masuk</span>
         </a>
         <button onclick="window.location.reload()" class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex flex-col items-center gap-2 text-center transition hover:bg-gray-50 active:scale-95">
             <span class="text-2xl">🔄</span>
@@ -436,7 +436,7 @@ async function startTracking() {
         try {
             watchId = await BackgroundGeolocation.addWatcher(
                 {
-                    backgroundMessage: "GMCI sedang melacak lokasi ambulans...",
+                    backgroundMessage: "Damkar sedang melacak lokasi unit...",
                     backgroundTitle: "Tracking Aktif",
                     requestPermissions: true,
                     stale: false,

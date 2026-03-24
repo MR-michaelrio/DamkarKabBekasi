@@ -22,6 +22,12 @@ class PatientRequest extends Model
         'dispatch_id',
         'trip_type',
         'return_address',
+        'blok',
+        'rt',
+        'rw',
+        'kelurahan',
+        'kecamatan',
+        'nomor',
     ];
 
     protected function casts(): array

@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Edit User | GMCI Admin')
+@section('title', 'Edit User | Damkar Admin')
 
 @section('content')
 <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -11,7 +11,7 @@
             ✏️ Edit User
         </h1>
         <p class="text-gray-500 text-sm mt-1">
-            Perbarui data akun pengguna sistem GMCI
+            Perbarui data akun pengguna sistem Damkar
         </p>
     </div>
 
@@ -97,7 +97,7 @@
                 </a>
 
                 <button type="submit"
-                        class="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg font-bold shadow-lg transition transform active:scale-95">
+                        class="bg-red-600 hover:bg-red-700 text-white px-8 py-3 rounded-lg font-bold shadow-lg transition transform active:scale-95">
                     Update User
                 </button>
             </div>

@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Permintaan Pasien | GMCI Admin')
+@section('title', 'Laporan Masyarakat | Damkar Admin')
 
 @section('content')
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -8,10 +8,10 @@
     <!-- Header -->
     <div class="mb-6">
         <h1 class="text-2xl font-bold text-gray-800 flex items-center gap-2">
-            📋 Permintaan Pasien
+            📋 Laporan Masyarakat
         </h1>
         <p class="text-gray-500 text-sm mt-1">
-            Kelola permintaan layanan dari pasien/keluarga
+            Kelola laporan kejadian dari masyarakat
         </p>
     </div>
 
@@ -42,7 +42,7 @@
                                 @endif
                             </a>
                         </th>
-                        <th class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider whitespace-nowrap">Nama Pasien</th>
+                        <th class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider whitespace-nowrap">Nama Pelapor</th>
                         <th class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider whitespace-nowrap">Layanan</th>
                         <th class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider whitespace-nowrap">Kondisi</th>
                         <th class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider whitespace-nowrap">Status</th>
@@ -59,10 +59,12 @@
                                 {{ $request->patient_name }}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-gray-900">
-                                @if ($request->service_type === 'ambulance')
-                                    🚑 Ambulance
+                                @if ($request->service_type === 'kebakaran')
+                                    🔥 Kebakaran
+                                @elseif ($request->service_type === 'rescue')
+                                    🚒 Rescue
                                 @else
-                                    ⚰️ Jenazah
+                                    {{ strtoupper($request->service_type) }}
                                 @endif
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-gray-900">
@@ -124,7 +126,7 @@
                     @empty
                         <tr>
                             <td colspan="6" class="px-6 py-10 text-center text-gray-500 italic">
-                                Belum ada permintaan
+                                Belum ada laporan masuk
                             </td>
                         </tr>
                     @endforelse

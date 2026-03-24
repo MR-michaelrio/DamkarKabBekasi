@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <title>Kebijakan Privasi & Penghapusan Data | GMCI</title>
+    <title>Kebijakan Privasi & Penghapusan Data | Damkar Bekasi</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
@@ -10,9 +10,9 @@
 
     <div class="max-w-3xl mx-auto px-6 py-12">
         <div class="text-center mb-10">
-            <img src="/logo.png" alt="GMCI Logo" class="h-16 mx-auto mb-4">
-            <h1 class="text-3xl font-extrabold text-gray-900">Kebijakan Privasi & Penghapusan Data</h1>
-            <p class="text-gray-500 mt-2">Global Medical Care Indonesia (GMCI) Dispatch</p>
+            <img src="/logo.png" alt="Damkar Logo" class="h-16 mx-auto mb-4">
+            <h1 class="text-3xl font-bold text-gray-900">Kebijakan Privasi</h1>
+            <p class="text-gray-500 mt-2">Dinas Pemadam Kebakaran dan Penyelamatan Kab. Bekasi</p>
         </div>
 
         <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 space-y-8">
@@ -20,7 +20,7 @@
             <section>
                 <h2 class="text-xl font-bold text-gray-800 mb-3 underline decoration-emerald-500">1. Penghapusan Akun & Data</h2>
                 <p class="leading-relaxed text-gray-600 mb-4">
-                    Demi keamanan operasional, akun aplikasi GMCI Dispatch (Admin dan Driver) dikelola secara terpusat oleh administrator. Kami menyediakan hak bagi pengguna untuk meminta penghapusan akun dan seluruh data terkait.
+                    Demi keamanan operasional, akun aplikasi Damkar Dispatch (Admin dan Driver) dikelola secara terpusat oleh administrator. Kami menyediakan hak bagi pengguna untuk meminta penghapusan akun dan seluruh data terkait.
                 </p>
                 <div class="bg-emerald-50 border-l-4 border-emerald-500 p-4 rounded-r-lg">
                     <h3 class="font-bold text-emerald-800 mb-1 font-sm uppercase tracking-wider">Cara Mengajukan Penghapusan:</h3>

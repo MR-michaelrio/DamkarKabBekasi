@@ -33,6 +33,12 @@ class Dispatch extends Model
         'event_request_id',
         'is_replacement',
         'replaced_dispatch_id',
+        'blok',
+        'rt',
+        'rw',
+        'kelurahan',
+        'kecamatan',
+        'nomor',
     ];
 
     protected function casts(): array

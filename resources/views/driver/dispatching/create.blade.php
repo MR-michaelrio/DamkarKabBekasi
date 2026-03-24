@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Assign Penugasan | GMCI</title>
+    <title>Assign Penugasan | Damkar Bekasi</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-100 min-h-screen">
@@ -14,7 +14,7 @@
         <a href="{{ route('driver.dispatching') }}" class="w-10 h-10 bg-white rounded-full shadow flex items-center justify-center text-gray-600">
             ←
         </a>
-        <h1 class="text-xl font-bold text-gray-800">Assign Penugasan</h1>
+        <h1 class="text-xl font-bold text-gray-800">🚒 Respon Laporan</h1>
     </div>
 
     @if ($errors->any())
@@ -28,19 +28,24 @@
     @endif
 
     <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden mb-6">
-        <div class="bg-blue-600 px-6 py-4">
-            <h2 class="text-white font-bold">Detail Permintaan</h2>
+        <div class="bg-red-600 px-6 py-4 text-center">
+            <h2 class="text-white font-bold uppercase tracking-wider">DINAS PEMADAM KEBAKARAN</h2>
+            <p class="text-white text-[10px] opacity-80">KABUPATEN BEKASI</p>
         </div>
         <div class="p-6 space-y-4">
             <div>
-                <label class="text-xs font-bold text-gray-400 uppercase tracking-widest">Nama Pasien</label>
+                <label class="text-xs font-bold text-gray-400 uppercase tracking-widest">Nama</label>
                 <p class="font-bold text-gray-800 text-lg">{{ $patientRequest->patient_name }}</p>
             </div>
             
             <div class="grid grid-cols-2 gap-4">
                 <div>
-                    <label class="text-xs font-bold text-gray-400 uppercase tracking-widest">Tipe Layanan</label>
-                    <p class="font-bold text-gray-700">{{ strtoupper($patientRequest->service_type) }}</p>
+                    <label class="text-xs font-bold text-gray-400 uppercase tracking-widest">Tipe Kejadian</label>
+                    <p class="font-bold text-gray-700">
+                        @if($patientRequest->service_type === 'kebakaran') 🔥 KEBAKARAN
+                        @elseif($patientRequest->service_type === 'rescue') 🚒 RESCUE
+                        @else {{ strtoupper($patientRequest->service_type) }} @endif
+                    </p>
                 </div>
                 <div>
                     <label class="text-xs font-bold text-gray-400 uppercase tracking-widest">Nomor HP</label>
@@ -52,17 +57,26 @@
 
             <div>
                 <label class="text-xs font-bold text-gray-400 uppercase tracking-widest flex items-center gap-1">
-                    <span>📍</span> Lokasi Jemput
+                    <span>📍</span> Lokasi TKP (Lengkap)
                 </label>
-                <p class="text-gray-700 mt-1 leading-relaxed">{{ $patientRequest->pickup_address }}</p>
+                <p class="text-gray-700 mt-1 leading-relaxed font-bold">{{ $patientRequest->pickup_address }}</p>
+                
+                <div class="grid grid-cols-2 gap-2 mt-2">
+                    @if($patientRequest->blok) <span class="text-xs text-gray-500">Blok: {{ $patientRequest->blok }}</span> @endif
+                    @if($patientRequest->rt || $patientRequest->rw) <span class="text-xs text-gray-500">RT/RW: {{ $patientRequest->rt ?? '-' }}/{{ $patientRequest->rw ?? '-' }}</span> @endif
+                    @if($patientRequest->kelurahan) <span class="text-xs text-gray-500">Kel: {{ $patientRequest->kelurahan }}</span> @endif
+                    @if($patientRequest->kecamatan) <span class="text-xs text-gray-500">Kec: {{ $patientRequest->kecamatan }}</span> @endif
+                </div>
             </div>
 
+            @if($patientRequest->destination && $patientRequest->destination !== '-')
             <div>
                 <label class="text-xs font-bold text-gray-400 uppercase tracking-widest flex items-center gap-1">
-                    <span>🏁</span> Tujuan Utama
+                    <span>🏁</span> Tujuan (Opsional)
                 </label>
                 <p class="text-gray-700 mt-1 leading-relaxed">{{ $patientRequest->destination }}</p>
             </div>
+            @endif
 
             @if($patientRequest->trip_type === 'round_trip' && $patientRequest->return_address)
                 <div>
@@ -82,8 +96,8 @@
             <div>
                 <label class="block text-sm font-bold text-gray-700 mb-2">Pilih Driver</label>
                 <select name="driver_id" required 
-                        class="w-full bg-gray-50 border-gray-200 rounded-xl focus:ring-blue-500 focus:border-blue-500 py-3 text-sm font-medium">
-                    <option value="">-- Pilih Driver --</option>
+                        class="w-full bg-gray-50 border-gray-200 rounded-xl focus:ring-red-500 focus:border-red-500 py-3 text-sm font-medium">
+                    <option value="">-- Pilih Petugas --</option>
                     @foreach($drivers as $driver)
                         <option value="{{ $driver->id }}">{{ $driver->name }}</option>
                     @endforeach
@@ -92,15 +106,15 @@
             </div>
 
             <div>
-                <label class="block text-sm font-bold text-gray-700 mb-2">Unit Ambulans</label>
+                <label class="block text-sm font-bold text-gray-700 mb-2">Unit Damkar</label>
                 <input type="text" value="{{ $ambulance->plate_number }}" disabled 
                        class="w-full bg-gray-100 border-gray-100 rounded-xl py-3 px-4 text-sm font-bold text-gray-500 cursor-not-allowed">
                 <p class="text-[10px] text-gray-400 mt-2">Otomatis menggunakan unit yang sedang login</p>
             </div>
 
             <button type="submit" 
-                    class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-xl shadow-lg transition transform active:scale-95 flex items-center justify-center gap-2 mt-4">
-                🚀 Ambil Penugasan Ini
+                    class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-4 rounded-xl shadow-lg transition transform active:scale-95 flex items-center justify-center gap-2 mt-4">
+                🚀 Proses Penugasan Ini
             </button>
         </div>
     </form>

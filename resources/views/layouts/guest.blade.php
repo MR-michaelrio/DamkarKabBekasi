@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>{{ config('app.name', 'Ambulance Dispatch GMCI') }}</title>
+    <title>{{ config('app.name', 'Damkar Bekasi') }}</title>
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.bunny.net">
@@ -20,9 +20,9 @@
 
         <div>
             <a href="/">
-                <h1 class="text-2xl font-bold text-blue-600">
-                    Ambulance Dispatch GMCI
-                </h1>
+                <div class="text-3xl font-black text-red-600 tracking-tighter">
+                    Damkar Bekasi
+                </div>
             </a>
         </div>
 

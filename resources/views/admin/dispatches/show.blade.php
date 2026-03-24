@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Detail Dispatch | GMCI Admin')
+@section('title', 'Detail Laporan | Damkar Admin')
 
 @section('content')
 <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -8,11 +8,17 @@
     <!-- Header -->
     <div class="mb-6 flex justify-between items-center">
         <h1 class="text-2xl font-bold text-gray-800">
-            📋 Detail Dispatch #{{ $dispatch->id }}
+            🚒 Detail Laporan #{{ $dispatch->nomor ?? $dispatch->id }}
         </h1>
-        <a href="{{ route('admin.dispatches.index') }}" class="text-gray-600 hover:text-gray-800 font-bold">
-            ← Kembali
-        </a>
+        <div class="flex items-center gap-4">
+            <a href="{{ route('admin.dispatches.export-single.pdf', $dispatch->id) }}" 
+               class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-bold shadow-md transition transform active:scale-95 flex items-center gap-2">
+                🖨️ Cetak Laporan Damkar
+            </a>
+            <a href="{{ route('admin.dispatches.index') }}" class="text-gray-600 hover:text-gray-800 font-bold">
+                ← Kembali
+            </a>
+        </div>
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -20,41 +26,76 @@
         <!-- Info Card (Kiri) -->
         <div class="bg-white shadow rounded-xl p-6 border border-gray-100 lg:col-span-1 space-y-6">
             
-            <h2 class="text-xl font-bold text-gray-800 border-b pb-2">Informasi Penugasan</h2>
+            <h2 class="text-xl font-bold text-gray-800 border-b pb-2">Informasi Kejadian</h2>
 
             <div>
-                <label class="block text-sm font-bold text-gray-500 uppercase tracking-wider">Pasien</label>
+                <label class="block text-sm font-bold text-gray-500 uppercase tracking-wider">Nama</label>
                 <p class="text-lg font-bold text-gray-900 mt-1">{{ $dispatch->patient_name }}</p>
-                <span class="text-xs font-bold px-2 py-1 rounded {{ $dispatch->patient_condition === 'emergency' ? 'bg-red-100 text-red-700' : 'bg-gray-100 text-gray-700' }}">
-                    {{ strtoupper($dispatch->patient_condition) }}
+                <span class="text-xs font-bold px-2 py-1 rounded 
+                    @if(in_array($dispatch->patient_condition, ['emergency', 'kebakaran'])) bg-red-100 text-red-700
+                    @elseif($dispatch->patient_condition === 'rescue') bg-blue-100 text-blue-700
+                    @else bg-gray-100 text-gray-700 @endif">
+                    {{ strtoupper(str_replace('_', ' ', $dispatch->patient_condition)) }}
                 </span>
             </div>
 
-            <div>
-                <label class="block text-sm font-bold text-gray-500 uppercase tracking-wider">Driver & Ambulans</label>
-                <p class="text-md text-gray-900 mt-1">👨‍✈️ {{ $dispatch->driver?->name ?? '-' }}</p>
-                <p class="text-md text-gray-900 mt-1">🚑 {{ $dispatch->ambulance?->plate_number ?? '-' }}</p>
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-bold text-gray-500 uppercase tracking-wider">No. Laporan</label>
+                    <p class="text-md font-bold text-gray-900 mt-1">{{ $dispatch->nomor ?? '-' }}</p>
+                </div>
+                <div>
+                    <label class="block text-sm font-bold text-gray-500 uppercase tracking-wider">No HP</label>
+                    <p class="text-md font-bold text-red-600 mt-1">{{ $dispatch->patient_phone ?? '-' }}</p>
+                </div>
             </div>
 
             <div>
-                <label class="block text-sm font-bold text-gray-500 uppercase tracking-wider">Jadwal</label>
+                <label class="block text-sm font-bold text-gray-500 uppercase tracking-wider">Unit Damkar</label>
+                <p class="text-md text-gray-900 mt-1">👨‍✈️ {{ $dispatch->driver?->name ?? '-' }}</p>
+                <p class="text-md text-gray-900 mt-1">🚒 {{ $dispatch->ambulance?->plate_number ?? '-' }}</p>
+            </div>
+
+            <div>
+                <label class="block text-sm font-bold text-gray-500 uppercase tracking-wider">Waktu Kejadian</label>
                 <p class="text-md font-bold text-gray-900 mt-1">
                     {{ $dispatch->request_date?->format('d F Y') ?? '-' }}
                 </p>
                 <p class="text-sm text-gray-600 border px-2 mt-1 rounded inline-block bg-gray-50">
-                    Jam: {{ $dispatch->pickup_time ?? '-' }}
+                    Jam Kejadian: {{ $dispatch->pickup_time ?? '-' }}
                 </p>
             </div>
 
             <div>
-                <label class="block text-sm font-bold text-gray-500 uppercase tracking-wider">Lokasi Jemput</label>
-                <p class="text-sm mt-1 bg-gray-50 p-2 rounded">{{ $dispatch->pickup_address }}</p>
+                <label class="block text-sm font-bold text-gray-500 uppercase tracking-wider">Alamat TKP (Lengkap)</label>
+                <p class="text-sm mt-1 bg-red-50 p-2 rounded font-bold border border-red-100">{{ $dispatch->pickup_address }}</p>
+                
+                <div class="grid grid-cols-2 gap-x-4 gap-y-2 mt-3 text-xs">
+                    <div>
+                        <span class="text-gray-400 font-bold uppercase block">Blok</span>
+                        <span class="text-gray-700 font-bold">{{ $dispatch->blok ?? '-' }}</span>
+                    </div>
+                    <div>
+                        <span class="text-gray-400 font-bold uppercase block">RT / RW</span>
+                        <span class="text-gray-700 font-bold">{{ $dispatch->rt ?? '-' }} / {{ $dispatch->rw ?? '-' }}</span>
+                    </div>
+                    <div>
+                        <span class="text-gray-400 font-bold uppercase block">Kelurahan</span>
+                        <span class="text-gray-700 font-bold">{{ $dispatch->kelurahan ?? '-' }}</span>
+                    </div>
+                    <div>
+                        <span class="text-gray-400 font-bold uppercase block">Kecamatan</span>
+                        <span class="text-gray-700 font-bold">{{ $dispatch->kecamatan ?? '-' }}</span>
+                    </div>
+                </div>
             </div>
 
+            @if($dispatch->destination && $dispatch->destination !== '-')
             <div>
-                <label class="block text-sm font-bold text-gray-500 uppercase tracking-wider">Tujuan</label>
-                <p class="text-sm mt-1 bg-gray-50 p-2 rounded">{{ $dispatch->destination ?? '-' }}</p>
+                <label class="block text-sm font-bold text-gray-500 uppercase tracking-wider">Tujuan (Opsional)</label>
+                <p class="text-sm mt-1 bg-gray-50 p-2 rounded">{{ $dispatch->destination }}</p>
             </div>
+            @endif
 
             <div>
                 <label class="block text-sm font-bold text-gray-500 uppercase tracking-wider">Status</label>
