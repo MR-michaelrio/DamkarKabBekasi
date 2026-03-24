@@ -167,17 +167,7 @@ class DispatchController extends Controller
             }
         }])->get();
 
-        // Sunday Analytics (requested: "untuk yang pdf analitiknya buat perbulan hari minggu juga")
-        $sundayDispatches = collect();
-        if ($range === 'month') {
-            $sundayDispatches = Dispatch::with(['ambulance'])
-                ->whereMonth('created_at', Carbon::now()->month)
-                ->whereYear('created_at', Carbon::now()->year)
-                ->whereRaw('DAYOFWEEK(created_at) = 1') 
-                ->get();
-        }
-
-        $pdf = Pdf::loadView('admin.dispatches.dashboard_pdf', compact('dispatches', 'analytics', 'title', 'range', 'sundayDispatches'));
+        $pdf = Pdf::loadView('admin.dispatches.dashboard_pdf', compact('dispatches', 'analytics', 'title', 'range'));
 
         return $pdf->download('dispatch-report-' . $range . '-' . date('Y-m-d') . '.pdf');
     }

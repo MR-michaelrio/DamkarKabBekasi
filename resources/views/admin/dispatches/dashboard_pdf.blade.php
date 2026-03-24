@@ -25,7 +25,7 @@
         .analytics-count { font-size: 18px; font-weight: bold; color: #2d3748; }
         .analytics-label { font-size: 9px; color: #718096; text-transform: uppercase; }
 
-        .sunday-section { background: #fff5f5; border: 1px solid #feb2b2; padding: 10px; margin-top: 10px; }
+
     </style>
 </head>
 <body>
@@ -53,32 +53,7 @@
     @endforeach
 </div>
 
-@if($sundayDispatches->isNotEmpty())
-<div class="section-title">☀️ RINGKASAN HARI MINGGU</div>
-<div class="sunday-section">
-    <p>Total Dispatch pada Hari Minggu: <strong>{{ $sundayDispatches->count() }}</strong></p>
-    <table>
-        <thead>
-            <tr>
-                <th>Tanggal</th>
-                <th>Pasien</th>
-                <th>Ambulans</th>
-                <th>Status</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach($sundayDispatches as $sd)
-            <tr>
-                <td>{{ $sd->created_at->format('d M Y') }}</td>
-                <td>{{ $sd->patient_name }}</td>
-                <td>{{ $sd->ambulance?->plate_number }}</td>
-                <td>{{ $sd->status }}</td>
-            </tr>
-            @endforeach
-        </tbody>
-    </table>
-</div>
-@endif
+
 
 <div class="section-title">📋 DAFTAR DISPATCH</div>
 <table>
