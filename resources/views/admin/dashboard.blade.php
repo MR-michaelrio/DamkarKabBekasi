@@ -124,7 +124,7 @@
 
 <script>
     // Map remains the same, just smaller in context
-    const map = L.map('map').setView([-6.2707338, 107.0901348], 11);
+    const map = L.map('map').setView([-6.219229, 107.104865], 10);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
 
     const markers = {};

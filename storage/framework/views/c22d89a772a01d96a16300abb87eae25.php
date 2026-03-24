@@ -28,7 +28,8 @@
                 <h2 class="font-bold text-gray-800 flex items-center gap-2">
                     🚒 Analitik Per Unit
                 </h2>
-                <span class="text-[10px] bg-gray-200 text-gray-600 px-2 py-0.5 rounded-full font-bold uppercase">Bulan Ini</span>
+                <span class="text-[10px] bg-gray-200 text-gray-600 px-2 py-0.5 rounded-full font-bold uppercase">Bulan
+                    Ini</span>
             </div>
             <div class="p-5 max-h-[400px] overflow-y-auto">
                 <div class="space-y-4">
@@ -57,7 +58,9 @@
                 <div class="bg-white/90 backdrop-blur-md p-3 rounded-xl shadow-lg border border-white/50">
                     <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Status Live</p>
                     <div class="flex items-center gap-2">
-                        <div class="w-2 h-2 bg-green-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(34,197,94,0.6)]"></div>
+                        <div
+                            class="w-2 h-2 bg-green-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(34,197,94,0.6)]">
+                        </div>
                         <span class="text-xs font-black text-gray-700 tracking-tighter uppercase">Tracking Active</span>
                     </div>
                 </div>
@@ -67,15 +70,15 @@
 
     <!-- 3 Tables Section -->
     <div class="space-y-8">
-        
+
         <!-- Today's Table -->
         <section>
             <div class="flex items-center justify-between mb-4">
                 <h3 class="text-lg font-bold text-gray-800 flex items-center gap-2">
                     📅 Hari Ini
                 </h3>
-                <a href="<?php echo e(route('admin.dispatches.export.pdf', ['range' => 'today'])); ?>" 
-                   class="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 rounded-lg text-xs font-bold shadow-sm transition flex items-center gap-2">
+                <a href="<?php echo e(route('admin.dispatches.export.pdf', ['range' => 'today'])); ?>"
+                    class="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 rounded-lg text-xs font-bold shadow-sm transition flex items-center gap-2">
                     📄 Export PDF
                 </a>
             </div>
@@ -88,8 +91,8 @@
                 <h3 class="text-lg font-bold text-gray-800 flex items-center gap-2">
                     🗓️ Minggu Ini
                 </h3>
-                <a href="<?php echo e(route('admin.dispatches.export.pdf', ['range' => 'week'])); ?>" 
-                   class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded-lg text-xs font-bold shadow-sm transition flex items-center gap-2">
+                <a href="<?php echo e(route('admin.dispatches.export.pdf', ['range' => 'week'])); ?>"
+                    class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded-lg text-xs font-bold shadow-sm transition flex items-center gap-2">
                     📄 Export PDF
                 </a>
             </div>
@@ -102,8 +105,8 @@
                 <h3 class="text-lg font-bold text-gray-800 flex items-center gap-2">
                     📆 Bulan Ini
                 </h3>
-                <a href="<?php echo e(route('admin.dispatches.export.pdf', ['range' => 'month'])); ?>" 
-                   class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-lg text-xs font-bold shadow-sm transition flex items-center gap-2">
+                <a href="<?php echo e(route('admin.dispatches.export.pdf', ['range' => 'month'])); ?>"
+                    class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-lg text-xs font-bold shadow-sm transition flex items-center gap-2">
                     📄 Export PDF
                 </a>
             </div>
@@ -119,7 +122,7 @@
 
 <script>
     // Map remains the same, just smaller in context
-    const map = L.map('map').setView([-6.2, 106.8], 11);
+    const map = L.map('map').setView([-6.219229, 107.104865], 10);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
 
     const markers = {};
@@ -145,5 +148,4 @@
     setInterval(updateMap, 10000);
 </script>
 <?php $__env->stopSection(); ?>
-
 <?php echo $__env->make('layouts.app', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH /Applications/Dev/damkar-dispatch/resources/views/admin/dashboard.blade.php ENDPATH**/ ?>
