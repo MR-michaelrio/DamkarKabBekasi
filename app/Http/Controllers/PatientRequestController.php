@@ -41,22 +41,23 @@ class PatientRequestController extends Controller
             $ambulanceTokens = \App\Models\Ambulance::whereNotNull('fcm_token')
                 ->where('fcm_token', '!=', '')
                 ->pluck('fcm_token')->toArray();
-                
+
             $deviceTokens = \App\Models\DeviceToken::pluck('token')->toArray();
-            
+
             $tokens = array_unique(array_merge($ambulanceTokens, $deviceTokens));
 
             if (!empty($tokens)) {
                 $messaging = app('firebase.messaging');
-                $message = \Kreait\Firebase\Messaging\CloudMessage::new()
+                $message = \Kreait\Firebase\Messaging\CloudMessage::new ()
                     ->withNotification(\Kreait\Firebase\Messaging\Notification::create(
-                        'Permintaan Pasien Baru',
-                        "Pasien: {$validated['patient_name']} ({$validated['pickup_address']})"
-                    ));
+                    'Permintaan Baru',
+                    "{$validated['patient_name']} ({$validated['pickup_address']})"
+                ));
 
                 $messaging->sendMulticast($message, array_values($tokens));
             }
-        } catch (\Exception $e) {
+        }
+        catch (\Exception $e) {
             \Log::error('FCM Send Error: ' . $e->getMessage());
         }
 

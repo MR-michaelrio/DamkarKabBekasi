@@ -164,7 +164,7 @@
                 <p class="text-sm mt-1"><strong>Status:</strong> ${ambulance.status}</p>
                 ${ambulance.dispatch ? `
                     <hr class="my-2">
-                    <p class="text-sm"><strong>Pasien:</strong> ${ambulance.dispatch.patient_name}</p>
+                    <p class="text-sm"><strong>Pelapor:</strong> ${ambulance.dispatch.patient_name}</p>
                     <p class="text-sm">${statusBadges[ambulance.dispatch.status] || ambulance.dispatch.status}</p>
                 ` : '<p class="text-sm text-gray-500 mt-2">Tidak ada dispatch aktif</p>'}
                 ${ambulance.last_update ? `<p class="text-xs text-gray-400 mt-2">${ambulance.last_update}</p>` : ''}

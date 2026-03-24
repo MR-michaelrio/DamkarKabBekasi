@@ -37,7 +37,7 @@
         <thead>
             <tr>
                 <th>No</th>
-                <th>Pasien</th>
+                <th>Pelapor</th>
                 <th>Kondisi</th>
                 <th>Jemput</th>
                 <th>Tujuan</th>

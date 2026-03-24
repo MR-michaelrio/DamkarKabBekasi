@@ -4,7 +4,7 @@
             <thead
                 class="bg-gray-50 text-gray-600 uppercase text-[10px] font-black tracking-widest border-b border-gray-100">
                 <tr>
-                    <th class="px-6 py-4 text-left">Pasien</th>
+                    <th class="px-6 py-4 text-left">Pelapor / Kejadian</th>
                     <th class="px-6 py-4 text-left">Armada / Driver</th>
                     <th class="px-6 py-4 text-left">Waktu</th>
                     <th class="px-6 py-4 text-left">Status</th>

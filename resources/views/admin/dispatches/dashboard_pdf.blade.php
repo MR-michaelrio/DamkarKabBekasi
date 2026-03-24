@@ -154,7 +154,7 @@
         <thead>
             <tr>
                 <th>Waktu</th>
-                <th>Pasien</th>
+                <th>Pelapor</th>
                 <th>Armada</th>
                 <th>Driver</th>
                 <th>Tujuan</th>

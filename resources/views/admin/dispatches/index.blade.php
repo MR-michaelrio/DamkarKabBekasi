@@ -30,7 +30,7 @@
             <table class="w-full text-sm">
                 <thead class="bg-gray-100 text-gray-700">
                     <tr>
-                        <th class="px-4 py-3 text-left">Pasien</th>
+                        <th class="px-4 py-3 text-left">Pelapor</th>
                         <th class="px-4 py-3 text-left">Jadwal</th>
                         <th class="px-4 py-3 text-left">Lokasi</th>
                         <th class="px-4 py-3 text-left">Driver</th>
@@ -44,7 +44,7 @@
                     @forelse($dispatches as $d)
                     <tr class="border-t hover:bg-gray-50">
 
-                        <!-- PASIEN -->
+                        <!-- Pelapor -->
                         <td class="px-4 py-3">
                             <div class="font-semibold">{{ $d->patient_name }}</div>
                             <div class="text-xs text-gray-500">

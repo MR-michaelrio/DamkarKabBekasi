@@ -130,7 +130,7 @@
                         </div>
                         
                         ${ambulance.dispatch ? `
-                            <p class="text-sm"><strong>Pasien:</strong> ${ambulance.dispatch.patient_name}</p>
+                            <p class="text-sm"><strong>Pelapor:</strong> ${ambulance.dispatch.patient_name}</p>
                             <p class="text-sm"><strong>Status:</strong> ${ambulance.dispatch.status.replace(/_/g, ' ')}</p>
                             <p class="text-sm line-clamp-2"><strong>Jemput:</strong> ${ambulance.dispatch.pickup_address}</p>
                             <p class="text-sm line-clamp-2"><strong>Tujuan:</strong> ${ambulance.dispatch.destination ?? '-'}</p>
