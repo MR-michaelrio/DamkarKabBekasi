@@ -15,7 +15,7 @@ class DispatchController extends Controller
 {
     public function index()
     {
-        $dispatches = Dispatch::with(['driver','ambulance','logs'])
+        $dispatches = Dispatch::with(['driver', 'ambulance', 'logs'])
             ->orderByDesc('created_at')
             ->get();
 
@@ -25,8 +25,8 @@ class DispatchController extends Controller
     public function create()
     {
         return view('admin.dispatches.create', [
-            'drivers' => Driver::where('status','available')->get(),
-            'ambulances' => Ambulance::where('status','ready')->get(),
+            'drivers' => Driver::where('status', 'available')->get(),
+            'ambulances' => Ambulance::where('status', 'ready')->get(),
             'patientRequest' => null, // Will be populated when coming from patient request
         ]);
     }
@@ -55,8 +55,8 @@ class DispatchController extends Controller
             'assigned_at' => now(),
         ]);
 
-        Driver::where('id', $dispatch->driver_id)->update(['status'=>'on_duty']);
-        Ambulance::where('id', $dispatch->ambulance_id)->update(['status'=>'on_duty']);
+        Driver::where('id', $dispatch->driver_id)->update(['status' => 'on_duty']);
+        Ambulance::where('id', $dispatch->ambulance_id)->update(['status' => 'on_duty']);
 
         DispatchLog::create([
             'dispatch_id' => $dispatch->id,
@@ -68,9 +68,9 @@ class DispatchController extends Controller
         if ($request->has('patient_request_id')) {
             \App\Models\PatientRequest::where('id', $request->patient_request_id)
                 ->update([
-                    'status' => 'dispatched',
-                    'dispatch_id' => $dispatch->id,
-                ]);
+                'status' => 'dispatched',
+                'dispatch_id' => $dispatch->id,
+            ]);
         }
 
         return redirect()->route('admin.dispatches.index');
@@ -106,8 +106,8 @@ class DispatchController extends Controller
         ]);
 
         if ($dispatch->status === 'completed') {
-            $dispatch->ambulance->update(['status'=>'ready']);
-            $dispatch->driver->update(['status'=>'available']);
+            $dispatch->ambulance->update(['status' => 'ready']);
+            $dispatch->driver->update(['status' => 'available']);
 
             // Sync PatientRequest status if exists
             \App\Models\PatientRequest::where('dispatch_id', $dispatch->id)
@@ -130,8 +130,8 @@ class DispatchController extends Controller
     {
         $range = $request->get('range', 'all');
         $query = Dispatch::with(['driver', 'ambulance']);
-        
-        $title = "Laporan Dispatch Ambulans";
+
+        $title = "Laporan Dispatch Armada";
         $startDate = null;
         $endDate = null;
 
@@ -140,14 +140,16 @@ class DispatchController extends Controller
             $title .= " Hari Ini";
             $startDate = Carbon::today()->startOfDay();
             $endDate = Carbon::today()->endOfDay();
-        } elseif ($range === 'week') {
+        }
+        elseif ($range === 'week') {
             $query->whereBetween('created_at', [Carbon::now()->startOfWeek(), Carbon::now()->endOfWeek()]);
             $title .= " Minggu Ini";
             $startDate = Carbon::now()->startOfWeek();
             $endDate = Carbon::now()->endOfWeek();
-        } elseif ($range === 'month') {
+        }
+        elseif ($range === 'month') {
             $query->whereMonth('created_at', Carbon::now()->month)
-                  ->whereYear('created_at', Carbon::now()->year);
+                ->whereYear('created_at', Carbon::now()->year);
             $title .= " Bulan Ini";
             $startDate = Carbon::now()->startOfMonth();
             $endDate = Carbon::now()->endOfMonth();
@@ -159,17 +161,19 @@ class DispatchController extends Controller
         $analytics = Ambulance::with(['dispatches' => function ($q) use ($startDate, $endDate) {
             if ($startDate && $endDate) {
                 $q->whereBetween('created_at', [$startDate, $endDate]);
-            } else {
-                $q->whereMonth('created_at', Carbon::now()->month)
-                  ->whereYear('created_at', Carbon::now()->year);
             }
-        }])->get()->map(function($ambulance) {
+            else {
+                $q->whereMonth('created_at', Carbon::now()->month)
+                    ->whereYear('created_at', Carbon::now()->year);
+            }
+        }])->get()->map(function ($ambulance) {
             $ambulance->dispatches_count = $ambulance->dispatches->count();
             $ambulance->condition_breakdown = $ambulance->dispatches
                 ->groupBy('patient_condition')
                 ->map(function ($items) {
-                    return $items->count();
-                });
+                return $items->count();
+            }
+            );
             return $ambulance;
         });
 
@@ -183,16 +187,16 @@ class DispatchController extends Controller
         $history = \App\Models\DispatchLocationHistory::where('dispatch_id', $dispatch->id)
             ->orderBy('created_at', 'asc')
             ->get(['latitude', 'longitude', 'created_at']);
-        
+
         return response()->json($history);
     }
 
     public function exportSinglePdf(Dispatch $dispatch)
     {
         $dispatch->load(['driver', 'ambulance']);
-        
+
         $pdf = Pdf::loadView('admin.dispatches.single_pdf', compact('dispatch'))
-                   ->setPaper('a4', 'portrait');
+            ->setPaper('a4', 'portrait');
 
         return $pdf->download('laporan-kejadian-' . $dispatch->id . '-' . date('Ymd') . '.pdf');
     }

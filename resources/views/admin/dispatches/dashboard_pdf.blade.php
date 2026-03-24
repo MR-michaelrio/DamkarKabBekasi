@@ -155,7 +155,7 @@
             <tr>
                 <th>Waktu</th>
                 <th>Pasien</th>
-                <th>Ambulans</th>
+                <th>Armada</th>
                 <th>Driver</th>
                 <th>Tujuan</th>
                 <th>Status</th>

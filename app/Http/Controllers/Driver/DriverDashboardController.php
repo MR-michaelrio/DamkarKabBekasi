@@ -15,7 +15,7 @@ class DriverDashboardController extends Controller
     {
         // Get authenticated ambulance
         $ambulance = auth('ambulance')->user();
-        
+
         // Get active dispatch for this ambulance
         $activeDispatch = Dispatch::where('ambulance_id', $ambulance->id)
             ->whereIn('status', ['pending', 'on_the_way_scene', 'on_scene', 'on_the_way_kantor_pos'])
@@ -33,9 +33,9 @@ class DriverDashboardController extends Controller
 
         // Simplified flow with only 5 statuses as required
         $flow = [
-            'pending'               => 'on_the_way_scene',
-            'on_the_way_scene'      => 'on_scene',
-            'on_scene'              => 'on_the_way_kantor_pos',
+            'pending' => 'on_the_way_scene',
+            'on_the_way_scene' => 'on_scene',
+            'on_scene' => 'on_the_way_kantor_pos',
             'on_the_way_kantor_pos' => 'completed',
         ];
 
@@ -50,16 +50,18 @@ class DriverDashboardController extends Controller
         // Dynamic timestamps
         if ($newStatus === 'on_scene') {
             $updateData['pickup_at'] = now();
-        } elseif ($newStatus === 'on_the_way_kantor_pos') {
+        }
+        elseif ($newStatus === 'on_the_way_kantor_pos') {
             $updateData['hospital_at'] = now();
-        } elseif ($newStatus === 'completed') {
+        }
+        elseif ($newStatus === 'completed') {
             $updateData['completed_at'] = now();
 
             // Free up ambulance and driver, and clear location
             $dispatch->ambulance->update([
-                'status'               => 'ready',
-                'latitude'             => null,
-                'longitude'            => null,
+                'status' => 'ready',
+                'latitude' => null,
+                'longitude' => null,
                 'last_location_update' => null,
             ]);
             $dispatch->driver->update(['status' => 'available']);
@@ -74,14 +76,14 @@ class DriverDashboardController extends Controller
         // Log the change
         \App\Models\DispatchLog::create([
             'dispatch_id' => $dispatch->id,
-            'status'      => $newStatus,
-            'note'        => 'Status diupdate oleh driver',
+            'status' => $newStatus,
+            'note' => 'Status diupdate oleh driver',
         ]);
 
         return response()->json([
-            'success'    => true,
+            'success' => true,
             'new_status' => $newStatus,
-            'message'    => 'Status updated successfully',
+            'message' => 'Status updated successfully',
         ]);
     }
 
@@ -118,7 +120,7 @@ class DriverDashboardController extends Controller
             ->orderBy('request_date', $direction)
             ->orderBy('pickup_time', $direction)
             ->get();
-            
+
         return view('driver.dispatching.index', compact('requests', 'direction'));
     }
 
@@ -131,11 +133,11 @@ class DriverDashboardController extends Controller
             ->first();
 
         if ($activeDispatch) {
-            return redirect()->route('driver.dashboard')->with('error', 'Unit ambulans ini masih dalam penugasan aktif.');
+            return redirect()->route('driver.dashboard')->with('error', 'Unit ini masih dalam penugasan aktif.');
         }
 
         $drivers = Driver::where('status', 'available')->get();
-        
+
         return view('driver.dispatching.create', compact('patientRequest', 'drivers', 'ambulance'));
     }
 
@@ -153,7 +155,7 @@ class DriverDashboardController extends Controller
             ->first();
 
         if ($activeDispatch) {
-            return redirect()->route('driver.dashboard')->with('error', 'Unit ambulans ini masih dalam penugasan aktif.');
+            return redirect()->route('driver.dashboard')->with('error', 'Unit ini masih dalam penugasan aktif.');
         }
 
         $dispatch = Dispatch::create([
@@ -186,7 +188,7 @@ class DriverDashboardController extends Controller
         DispatchLog::create([
             'dispatch_id' => $dispatch->id,
             'status' => 'pending',
-            'note' => 'Dispatch dibuat sendiri oleh unit ambulans'
+            'note' => 'Dispatch dibuat sendiri oleh unit'
         ]);
 
         // Link to patient request

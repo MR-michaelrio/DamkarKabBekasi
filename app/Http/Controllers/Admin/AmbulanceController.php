@@ -33,15 +33,15 @@ class AmbulanceController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'code'          => 'required|unique:ambulances,code',
-            'plate_number'  => 'required',
-            'type'          => 'required',
-            'status'        => 'required',
+            'code' => 'required|unique:ambulances,code',
+            'plate_number' => 'required',
+            'type' => 'required',
+            'status' => 'required',
         ]);
 
         // Use code as username for easier login
         $username = $validated['code'];
-        
+
         Ambulance::create($validated + [
             'username' => $username,
             'password' => bcrypt('password'), // Default password
@@ -66,16 +66,17 @@ class AmbulanceController extends Controller
     public function update(Request $request, Ambulance $ambulance)
     {
         $validated = $request->validate([
-            'code'          => 'required|unique:ambulances,code,' . $ambulance->id,
-            'plate_number'  => 'required',
-            'type'          => 'required',
-            'status'        => 'required',
-            'password'      => 'nullable|string|min:6',
+            'code' => 'required|unique:ambulances,code,' . $ambulance->id,
+            'plate_number' => 'required',
+            'type' => 'required',
+            'status' => 'required',
+            'password' => 'nullable|string|min:6',
         ]);
 
         if (!empty($validated['password'])) {
             $validated['password'] = bcrypt($validated['password']);
-        } else {
+        }
+        else {
             unset($validated['password']);
         }
 
@@ -83,7 +84,7 @@ class AmbulanceController extends Controller
 
         return redirect()
             ->route('admin.ambulances.index')
-            ->with('success', 'Ambulans berhasil diperbarui');
+            ->with('success', 'Armada berhasil diperbarui');
     }
 
     /**
@@ -95,6 +96,6 @@ class AmbulanceController extends Controller
 
         return redirect()
             ->route('admin.ambulances.index')
-            ->with('success', 'Ambulans berhasil dihapus');
+            ->with('success', 'Armada berhasil dihapus');
     }
 }

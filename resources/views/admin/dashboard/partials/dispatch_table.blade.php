@@ -1,10 +1,11 @@
 <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
     <div class="overflow-x-auto">
         <table class="w-full text-sm">
-            <thead class="bg-gray-50 text-gray-600 uppercase text-[10px] font-black tracking-widest border-b border-gray-100">
+            <thead
+                class="bg-gray-50 text-gray-600 uppercase text-[10px] font-black tracking-widest border-b border-gray-100">
                 <tr>
                     <th class="px-6 py-4 text-left">Pasien</th>
-                    <th class="px-6 py-4 text-left">Ambulans / Driver</th>
+                    <th class="px-6 py-4 text-left">Armada / Driver</th>
                     <th class="px-6 py-4 text-left">Waktu</th>
                     <th class="px-6 py-4 text-left">Status</th>
                 </tr>
@@ -14,13 +15,15 @@
                 <tr class="hover:bg-gray-50/50 transition-colors">
                     <td class="px-6 py-4">
                         <div class="font-bold text-gray-900">{{ $d->patient_name }}</div>
-                        <div class="text-[10px] @if($d->patient_condition === 'emergency') text-red-600 @else text-gray-500 @endif font-bold uppercase tracking-tighter">
+                        <div
+                            class="text-[10px] @if($d->patient_condition === 'emergency') text-red-600 @else text-gray-500 @endif font-bold uppercase tracking-tighter">
                             {{ $d->patient_condition }}
                         </div>
                     </td>
                     <td class="px-6 py-4">
                         <div class="flex items-center gap-2 mb-0.5">
-                            <span class="text-xs font-bold text-gray-800">{{ $d->ambulance?->plate_number ?? '-' }}</span>
+                            <span class="text-xs font-bold text-gray-800">{{ $d->ambulance?->plate_number ?? '-'
+                                }}</span>
                         </div>
                         <div class="text-[10px] text-gray-500 italic">{{ $d->driver?->name ?? '-' }}</div>
                     </td>

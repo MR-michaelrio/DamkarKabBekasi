@@ -1,7 +1,8 @@
 <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
     <div class="overflow-x-auto">
         <table class="w-full text-sm">
-            <thead class="bg-gray-50 text-gray-600 uppercase text-[10px] font-black tracking-widest border-b border-gray-100">
+            <thead
+                class="bg-gray-50 text-gray-600 uppercase text-[10px] font-black tracking-widest border-b border-gray-100">
                 <tr>
                     <th class="px-6 py-4 text-left">Pasien</th>
                     <th class="px-6 py-4 text-left">Ambulans / Driver</th>
@@ -13,21 +14,32 @@
                 <?php $__empty_1 = true; $__currentLoopData = $dispatches; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $d): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
                 <tr class="hover:bg-gray-50/50 transition-colors">
                     <td class="px-6 py-4">
-                        <div class="font-bold text-gray-900"><?php echo e($d->patient_name); ?></div>
-                        <div class="text-[10px] <?php if($d->patient_condition === 'emergency'): ?> text-red-600 <?php else: ?> text-gray-500 <?php endif; ?> font-bold uppercase tracking-tighter">
+                        <div class="font-bold text-gray-900">
+                            <?php echo e($d->patient_name); ?>
+                        </div>
+                        <div
+                            class="text-[10px] <?php if($d->patient_condition === 'emergency'): ?> text-red-600 <?php else: ?> text-gray-500 <?php endif; ?> font-bold uppercase tracking-tighter">
                             <?php echo e($d->patient_condition); ?>
 
                         </div>
                     </td>
                     <td class="px-6 py-4">
                         <div class="flex items-center gap-2 mb-0.5">
-                            <span class="text-xs font-bold text-gray-800"><?php echo e($d->ambulance?->plate_number ?? '-'); ?></span>
+                            <span class="text-xs font-bold text-gray-800">
+                                <?php echo e($d->ambulance?->plate_number ?? '-'); ?>
+                            </span>
                         </div>
-                        <div class="text-[10px] text-gray-500 italic"><?php echo e($d->driver?->name ?? '-'); ?></div>
+                        <div class="text-[10px] text-gray-500 italic">
+                            <?php echo e($d->driver?->name ?? '-'); ?>
+                        </div>
                     </td>
                     <td class="px-6 py-4">
-                        <div class="text-xs text-gray-700 font-medium"><?php echo e($d->created_at->format('H:i')); ?></div>
-                        <div class="text-[10px] text-gray-400"><?php echo e($d->created_at->format('d M Y')); ?></div>
+                        <div class="text-xs text-gray-700 font-medium">
+                            <?php echo e($d->created_at->format('H:i')); ?>
+                        </div>
+                        <div class="text-[10px] text-gray-400">
+                            <?php echo e($d->created_at->format('d M Y')); ?>
+                        </div>
                     </td>
                     <td class="px-6 py-4">
                         <span class="px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider

@@ -7,7 +7,7 @@
     <div
         class="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-white p-4 rounded-xl shadow-sm border border-gray-100 mb-6 gap-4">
         <div>
-            <h1 class="text-2xl font-bold text-gray-800">🗺️ Peta Ambulans (Realtime)</h1>
+            <h1 class="text-2xl font-bold text-gray-800">🗺️ Peta Armada (Realtime)</h1>
             <p class="text-gray-500 text-xs mt-1">Gunakan unit panel di kiri untuk fokus ke lokasi</p>
         </div>
 

@@ -6,10 +6,10 @@
     <!-- HEADER -->
     <div class="mb-4">
         <h1 class="text-2xl font-bold text-gray-800">
-            📍 Realtime Lokasi Ambulans
+            📍 Realtime Lokasi Armada
         </h1>
         <p class="text-sm text-gray-500">
-            Posisi ambulance diperbarui secara realtime melalui browser driver
+            Posisi armada diperbarui secara realtime melalui browser driver
         </p>
     </div>
 
@@ -21,10 +21,7 @@
 </div>
 
 <!-- LEAFLET MAP -->
-<link
-    rel="stylesheet"
-    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-/>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
@@ -52,13 +49,13 @@
     // Ambil lokasi dari browser driver
     if ("geolocation" in navigator) {
         navigator.geolocation.watchPosition(
-            function(position) {
+            function (position) {
                 updateAmbulancePosition(
                     position.coords.latitude,
                     position.coords.longitude
                 );
             },
-            function(error) {
+            function (error) {
                 console.error("GPS Error:", error.message);
             },
             {
@@ -72,4 +69,3 @@
     }
 </script>
 @endsection
-
