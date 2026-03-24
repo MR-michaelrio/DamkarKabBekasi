@@ -3,7 +3,8 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Damkar Bekasi | Dinas Pemadam Kebakaran dan Penyelamatan</title>
+    <title>Damkar Kabupaten Bekasi</title>
+    <link rel="icon" href="<?php echo e(asset('logo-damkar.png')); ?>" type="image/png">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
     <!-- Tailwind CDN -->
