@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="utf-8">
-    <title>Laporan Unit Damkar</title>
+    <title>Laporan Unit Damkar Kabupaten Bekasi</title>
     <style>
         body {
             font-family: DejaVu Sans;
@@ -29,7 +29,7 @@
 
 <body>
 
-    <h2>Laporan Unit Damkar Bekasi</h2>
+    <h2>Laporan Unit Damkar Kabupaten Bekasi</h2>
 
     <p>Tanggal cetak: {{ now()->format('d-m-Y H:i') }}</p>
 

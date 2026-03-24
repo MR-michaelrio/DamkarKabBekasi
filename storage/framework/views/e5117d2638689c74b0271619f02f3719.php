@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
     <meta charset="UTF-8">
     <title>Damkar Bekasi | Dinas Pemadam Kebakaran dan Penyelamatan</title>
@@ -13,11 +14,13 @@
         .fade-up {
             animation: fadeUp 1s ease-out both;
         }
+
         @keyframes fadeUp {
             from {
                 opacity: 0;
                 transform: translateY(20px);
             }
+
             to {
                 opacity: 1;
                 transform: translateY(0);
@@ -39,7 +42,7 @@
 
             <!-- LOGIN -->
             <a href="<?php echo e(route('portal')); ?>"
-               class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white text-sm shadow">
+                class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white text-sm shadow">
                 🔐 Portal Login
             </a>
         </div>
@@ -63,19 +66,19 @@
             </p>
 
             <p class="text-gray-600 mb-8">
-                Mendukung pelayanan respons cepat 
+                Mendukung pelayanan respons cepat
                 <strong>Dinas Pemadam Kebakaran dan Penyelamatan Kabupaten Bekasi</strong>
                 dalam melindungi dan melayani masyarakat.
             </p>
 
             <div class="flex flex-wrap gap-4">
                 <a href="<?php echo e(route('patient-request.create')); ?>"
-                   class="px-6 py-3 rounded-xl bg-red-600 hover:bg-red-700 text-white font-semibold shadow">
+                    class="px-6 py-3 rounded-xl bg-red-600 hover:bg-red-700 text-white font-semibold shadow">
                     🚒 Buat Laporan Kejadian
                 </a>
 
                 <a href="#tentang"
-                   class="px-6 py-3 rounded-xl border border-gray-300 hover:bg-gray-100 text-gray-700 font-semibold">
+                    class="px-6 py-3 rounded-xl border border-gray-300 hover:bg-gray-100 text-gray-700 font-semibold">
                     ℹ️ Tentang Kami
                 </a>
             </div>
@@ -102,7 +105,7 @@
                 <h3 class="font-bold text-lg mb-2">Respon Cepat</h3>
                 <p class="text-gray-600 text-sm">
                     Sistem dirancang untuk mempercepat proses
-                    penugasan ambulans dan koordinasi lapangan.
+                    penugasan dan koordinasi armada lapangan.
                 </p>
             </div>
 
@@ -110,7 +113,7 @@
                 <div class="text-3xl mb-3">🛰️</div>
                 <h3 class="font-bold text-lg mb-2">Monitoring Real-time</h3>
                 <p class="text-gray-600 text-sm">
-                    Status ambulans, driver, dan dispatch
+                    Status armada, driver, dan dispatch
                     dapat dipantau secara langsung.
                 </p>
             </div>
@@ -132,7 +135,7 @@
         <div class="max-w-7xl mx-auto px-6 py-8 text-center text-sm">
             © <?php echo e(date('Y')); ?> Dinas Pemadam Kebakaran dan Penyelamatan Kabupaten Bekasi.<br>
             Sistem Dispatch Damkar — Melayani dengan Hati.<br>
-            <div class="mt-4 font-bold text-slate-100">Layanan 24 Jam: +62 812-8685-8680</div>
+            <div class="mt-4 font-bold text-slate-100">Layanan 24 Jam: 02122137870 / 02122162577</div>
         </div>
     </footer>
 
@@ -163,7 +166,7 @@
                     });
 
                     PushNotifications.addListener('pushNotificationReceived', (notification) => {
-                         alert("Informasi Baru:\n" + notification.title + "\n" + notification.body);
+                        alert("Informasi Baru:\n" + notification.title + "\n" + notification.body);
                     });
 
                     await PushNotifications.register();
@@ -178,4 +181,5 @@
         }
     </script>
 </body>
+
 </html><?php /**PATH /Applications/Dev/damkar-dispatch/resources/views/home.blade.php ENDPATH**/ ?>

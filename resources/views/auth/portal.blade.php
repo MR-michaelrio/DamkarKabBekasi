@@ -3,7 +3,8 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Portal Damkar | Kabupaten Bekasi</title>
+    <title>Portal | Damkar Kabupaten Bekasi</title>
+    <link rel="icon" href="{{ asset('logo-damkar.png') }}" type="image/png">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <script src="https://cdn.tailwindcss.com"></script>
     <style>

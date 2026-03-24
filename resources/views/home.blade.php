@@ -3,7 +3,8 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Damkar Bekasi | Dinas Pemadam Kebakaran dan Penyelamatan</title>
+    <title>Damkar Kabupaten Bekasi</title>
+    <link rel="icon" href="{{ asset('logo-damkar.png') }}" type="image/png">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
     <!-- Tailwind CDN -->
@@ -135,7 +136,7 @@
         <div class="max-w-7xl mx-auto px-6 py-8 text-center text-sm">
             © {{ date('Y') }} Dinas Pemadam Kebakaran dan Penyelamatan Kabupaten Bekasi.<br>
             Sistem Dispatch Damkar — Melayani dengan Hati.<br>
-            <div class="mt-4 font-bold text-slate-100">Layanan 24 Jam: +62 812-8685-8680</div>
+            <div class="mt-4 font-bold text-slate-100">Layanan 24 Jam: 02122137870 / 02122162577</div>
         </div>
     </footer>
 

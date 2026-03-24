@@ -2,7 +2,8 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <title>Kebijakan Privasi & Penghapusan Data | Damkar Bekasi</title>
+    <title>Kebijakan Privasi | Damkar Kabupaten Bekasi</title>
+    <link rel="icon" href="{{ asset('logo-damkar.png') }}" type="image/png">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
@@ -26,7 +27,7 @@
                     <h3 class="font-bold text-emerald-800 mb-1 font-sm uppercase tracking-wider">Cara Mengajukan Penghapusan:</h3>
                     <p class="text-emerald-700">
                         Silakan hubungi Administrator kami melalui:
-                        <br><strong>WhatsApp:</strong> +62 812-8685-8680
+                        <br><strong>Telepon:</strong> 02122137870 / 02122162577
                         <br><strong>Email:</strong> iptrunkbackup@gmail.com (Subject: Request Hapus Akun)
                     </p>
                 </div>

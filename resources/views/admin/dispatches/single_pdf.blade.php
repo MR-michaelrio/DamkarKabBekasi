@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>Laporan Kejadian - Damkar Bekasi</title>
+    <title>Laporan Kejadian - Damkar Kabupaten Bekasi</title>
     <style>
         @page {
             margin: 1cm;

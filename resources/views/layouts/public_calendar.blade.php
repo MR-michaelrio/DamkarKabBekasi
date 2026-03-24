@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Jadwal Unit | Damkar Bekasi</title>
+    <title>Jadwal Unit | Damkar Kabupaten Bekasi</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <meta http-equiv="refresh" content="60"> {{-- Auto Refresh every 60s --}}
     <!-- Favicon -->

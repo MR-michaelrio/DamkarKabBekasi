@@ -114,7 +114,7 @@
 
     <div class="header">
         <h1>{{ $title }}</h1>
-        <p>DAMKAR BEKASI DISPATCH SYSTEM</p>
+        <p>DAMKAR KABUPATEN BEKASI DISPATCH SYSTEM</p>
 
         <p>Periode:
             @if($range === 'today') {{ now()->format('d F Y') }}
@@ -183,7 +183,7 @@
     </table>
 
     <div class="footer">
-        Dicetak pada: {{ now()->format('d-m-Y H:i:s') }} | Damkar Bekasi Dispatch
+        Dicetak pada: {{ now()->format('d-m-Y H:i:s') }} | Damkar Kabupaten Bekasi Dispatch
 
     </div>
 

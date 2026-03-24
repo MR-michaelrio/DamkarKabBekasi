@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>Laporan Unit Damkar</title>
+    <title>Laporan Unit Damkar Kabupaten Bekasi</title>
     <style>
         body { font-family: sans-serif; font-size: 11px; }
         table { width:100%; border-collapse: collapse; }
@@ -12,7 +12,7 @@
 </head>
 <body>
 
-<h2>Laporan Unit Damkar Bekasi</h2>
+<h2>Laporan Unit Damkar Kabupaten Bekasi</h2>
 
 <table>
     <thead>
