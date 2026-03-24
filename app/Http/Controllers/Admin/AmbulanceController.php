@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Ambulance;
+use App\Models\AmbulanceType;
 use Illuminate\Http\Request;
 
 class AmbulanceController extends Controller
@@ -22,7 +23,8 @@ class AmbulanceController extends Controller
      */
     public function create()
     {
-        return view('admin.ambulances.create');
+        $types = AmbulanceType::all();
+        return view('admin.ambulances.create', compact('types'));
     }
 
     /**
@@ -54,7 +56,8 @@ class AmbulanceController extends Controller
      */
     public function edit(Ambulance $ambulance)
     {
-        return view('admin.ambulances.edit', compact('ambulance'));
+        $types = AmbulanceType::all();
+        return view('admin.ambulances.edit', compact('ambulance', 'types'));
     }
 
     /**

@@ -12,6 +12,7 @@ class MapController extends Controller
         // Get all ambulances with location data
         $ambulances = Ambulance::whereNotNull('latitude')
             ->whereNotNull('longitude')
+            ->where('status', 'on_duty')
             ->with(['dispatches' => function($query) {
                 $query->whereIn('status', ['assigned', 'enroute_pickup', 'on_scene', 'enroute_destination', 'arrived_destination'])
                       ->latest()
@@ -27,6 +28,7 @@ class MapController extends Controller
         // API endpoint for real-time updates
         $ambulances = Ambulance::whereNotNull('latitude')
             ->whereNotNull('longitude')
+            ->where('status', 'on_duty')
             ->with(['dispatches' => function($query) {
                 $query->whereIn('status', ['assigned', 'enroute_pickup', 'on_scene', 'enroute_destination', 'arrived_destination'])
                       ->latest()

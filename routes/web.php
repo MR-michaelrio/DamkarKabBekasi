@@ -11,6 +11,7 @@ use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\PatientRequestController;
 use App\Http\Controllers\Driver\DriverDashboardController;
 use App\Http\Controllers\Admin\AmbulanceMaintenanceController;
+use App\Http\Controllers\Admin\AmbulanceTypeController;
 use App\Http\Controllers\Api\DriverLocationController;
 
 /*
@@ -102,6 +103,7 @@ Route::middleware(['auth'])->group(function () {
 
         // Resource Routes
         Route::resource('ambulances', AmbulanceController::class);
+        Route::resource('ambulance-types', AmbulanceTypeController::class);
         Route::get('ambulances/{ambulance}/maintenance', [AmbulanceMaintenanceController::class, 'index'])->name('ambulances.maintenance.index');
         Route::post('ambulances/{ambulance}/maintenance', [AmbulanceMaintenanceController::class, 'store'])->name('ambulances.maintenance.store');
         Route::put('maintenance/{maintenance}', [AmbulanceMaintenanceController::class, 'update'])->name('maintenance.update');

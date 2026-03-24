@@ -12,6 +12,7 @@
                 <div class="hidden space-x-8 lg:-my-px lg:ml-10 lg:flex items-center">
                     <?php if(auth()->user()->role === 'admin'): ?>
                         <a href="<?php echo e(route('admin.ambulances.index')); ?>" class="text-sm font-medium text-gray-700 hover:text-indigo-600 transition">Ambulance</a>
+                        <a href="<?php echo e(route('admin.ambulance-types.index')); ?>" class="text-sm font-medium text-gray-700 hover:text-indigo-600 transition">Tipe Armada</a>
                         <a href="<?php echo e(route('admin.drivers.index')); ?>" class="text-sm font-medium text-gray-700 hover:text-indigo-600 transition">Driver</a>
                         <a href="<?php echo e(route('admin.dispatches.index')); ?>" class="text-sm font-medium text-gray-700 hover:text-indigo-600 transition">Dispatch</a>
                         <a href="<?php echo e(route('admin.schedules.index')); ?>" class="text-sm font-medium text-gray-700 hover:text-indigo-600 transition">📅 Jadwal</a>
@@ -50,6 +51,7 @@
         <div class="pt-2 pb-3 space-y-1">
             <?php if(auth()->user()->role === 'admin'): ?>
                 <a href="<?php echo e(route('admin.ambulances.index')); ?>" class="block pl-3 pr-4 py-2 border-l-4 border-transparent text-base font-medium text-gray-600 hover:bg-gray-50 hover:border-gray-300 transition">Ambulance</a>
+                <a href="<?php echo e(route('admin.ambulance-types.index')); ?>" class="block pl-3 pr-4 py-2 border-l-4 border-transparent text-base font-medium text-gray-600 hover:bg-gray-50 hover:border-gray-300 transition">Tipe Armada</a>
                 <a href="<?php echo e(route('admin.drivers.index')); ?>" class="block pl-3 pr-4 py-2 border-l-4 border-transparent text-base font-medium text-gray-600 hover:bg-gray-50 hover:border-gray-300 transition">Driver</a>
                 <a href="<?php echo e(route('admin.dispatches.index')); ?>" class="block pl-3 pr-4 py-2 border-l-4 border-transparent text-base font-medium text-gray-600 hover:bg-gray-50 hover:border-gray-300 transition">Dispatch</a>
                 <a href="<?php echo e(route('admin.schedules.index')); ?>" class="block pl-3 pr-4 py-2 border-l-4 border-transparent text-base font-medium text-gray-600 hover:bg-gray-50 hover:border-gray-300 transition">📅 Jadwal</a>

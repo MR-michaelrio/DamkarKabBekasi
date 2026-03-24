@@ -60,10 +60,20 @@
                 </label>
                 <select name="type" required
                         class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500">
-                    <option value="BASIC" {{ old('type', $ambulance->type) === 'BASIC' ? 'selected' : '' }}>BASIC</option>
-                    <option value="Jenazah" {{ old('type', $ambulance->type) === 'Jenazah' ? 'selected' : '' }}>Jenazah</option>
-                    <option value="POSKO" {{ old('type', $ambulance->type) === 'POSKO' ? 'selected' : '' }}>MOBIL POSKO KESEHATAN</option>
+                    <option value="" disabled>Pilih Tipe</option>
+                    @foreach($types as $type)
+                        <option value="{{ $type->name }}" {{ old('type', $ambulance->type) == $type->name ? 'selected' : '' }}>
+                            {{ $type->name }}
+                        </option>
+                    @endforeach
+                    @if($types->isEmpty())
+                        <option value="BASIC" {{ old('type', $ambulance->type) == 'BASIC' ? 'selected' : '' }}>BASIC</option>
+                        <option value="Jenazah" {{ old('type', $ambulance->type) == 'Jenazah' ? 'selected' : '' }}>Jenazah</option>
+                    @endif
                 </select>
+                <p class="text-xs text-gray-500 mt-1">
+                    Atur tipe di menu <a href="{{ route('admin.ambulance-types.index') }}" class="text-blue-600 underline">Tipe Armada</a>
+                </p>
             </div>
 
             <!-- Status -->
