@@ -62,6 +62,11 @@
                                 <?php endif; ?>
                             </td>
                             <td class="px-6 py-4 text-right space-x-3 whitespace-nowrap">
+                                <a href="<?php echo e(route('admin.ambulances.maintenance.index', $ambulance)); ?>"
+                                   class="text-green-600 hover:text-green-800 font-bold">
+                                    Riwayat
+                                </a>
+
                                 <a href="<?php echo e(route('admin.ambulances.edit', $ambulance)); ?>"
                                    class="text-blue-600 hover:text-blue-800 font-bold">
                                     Edit

@@ -10,6 +10,7 @@ use App\Http\Controllers\Admin\PatientRequestController as AdminPatientRequestCo
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\PatientRequestController;
 use App\Http\Controllers\Driver\DriverDashboardController;
+use App\Http\Controllers\Admin\AmbulanceMaintenanceController;
 use App\Http\Controllers\Api\DriverLocationController;
 
 /*
@@ -101,6 +102,10 @@ Route::middleware(['auth'])->group(function () {
 
         // Resource Routes
         Route::resource('ambulances', AmbulanceController::class);
+        Route::get('ambulances/{ambulance}/maintenance', [AmbulanceMaintenanceController::class, 'index'])->name('ambulances.maintenance.index');
+        Route::post('ambulances/{ambulance}/maintenance', [AmbulanceMaintenanceController::class, 'store'])->name('ambulances.maintenance.store');
+        Route::delete('maintenance/{maintenance}', [AmbulanceMaintenanceController::class, 'destroy'])->name('maintenance.destroy');
+        
         Route::resource('drivers', DriverController::class);
         Route::resource('users', UserController::class);
         
