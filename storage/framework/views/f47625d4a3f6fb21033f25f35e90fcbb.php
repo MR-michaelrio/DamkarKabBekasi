@@ -1,4 +1,4 @@
-<?php $__env->startSection('title', 'Peta Realtime | GMCI Admin'); ?>
+<?php $__env->startSection('title', 'Peta Realtime | Damkar Admin'); ?>
 
 <?php $__env->startSection('content'); ?>
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -46,7 +46,7 @@
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 
 <script>
-const map = L.map('map').setView([-6.200000, 106.816666], 11);
+const map = L.map('map').setView([-6.2707338, 107.0901348], 16);
 
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '© OpenStreetMap'

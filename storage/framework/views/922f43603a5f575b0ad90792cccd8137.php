@@ -4,7 +4,7 @@
             <div class="flex">
                 <div class="shrink-0 flex items-center">
                     <a href="<?php echo e(route('dashboard')); ?>" class="flex items-center gap-2">
-                        <img src="<?php echo e(asset('logo.png')); ?>" alt="GMCI Logo" class="h-10 w-auto">
+                        <img src="<?php echo e(asset('logo-damkar.png')); ?>" alt="Damkar Logo" class="h-10 w-auto">
                     </a>
                 </div>
 

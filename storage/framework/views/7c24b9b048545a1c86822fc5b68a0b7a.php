@@ -12,6 +12,8 @@
 
     <!-- Alpine.js (Core) -->
     <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <!-- Favicon -->
+    <link rel="icon" href="<?php echo e(asset('logo-damkar.png')); ?>" type="image/png">
 </head>
 
 <body class="font-sans antialiased bg-gray-50 min-h-screen">

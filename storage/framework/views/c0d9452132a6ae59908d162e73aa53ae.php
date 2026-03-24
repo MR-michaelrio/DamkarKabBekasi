@@ -116,7 +116,7 @@
 
     <script>
         // Initialize map
-        const map = L.map('map').setView([-452.254, 276.553], 11);
+        const map = L.map('map').setView([-6.2707338, 107.0901348], 11);
 
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '© OpenStreetMap'
