@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -23,7 +24,7 @@
         <div>
             <a href="/">
                 <div class="text-3xl font-black text-red-600 tracking-tighter">
-                    Damkar Bekasi
+                    Damkar Kabupaten Bekasi
                 </div>
             </a>
         </div>
@@ -33,4 +34,5 @@
         </div>
     </div>
 </body>
+
 </html>
