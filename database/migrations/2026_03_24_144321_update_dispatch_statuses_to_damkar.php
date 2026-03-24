@@ -18,7 +18,9 @@ return new class extends Migration
         DB::table('dispatches')->whereIn('status', ['enroute_destination', 'arrived_destination', 'enroute_return', 'arrived_return'])->update(['status' => 'on_the_way_kantor_pos']);
 
         // 2. Update the ENUM definition
-        DB::statement("ALTER TABLE dispatches CHANGE COLUMN status status ENUM('pending', 'on_the_way_scene', 'on_scene', 'on_the_way_kantor_pos', 'completed', 'cancelled') DEFAULT 'pending'");
+        if (DB::getDriverName() !== 'sqlite') {
+            DB::statement("ALTER TABLE dispatches CHANGE COLUMN status status ENUM('pending', 'on_the_way_scene', 'on_scene', 'on_the_way_kantor_pos', 'completed', 'cancelled') DEFAULT 'pending'");
+        }
     }
 
     /**
@@ -26,6 +28,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        DB::statement("ALTER TABLE dispatches CHANGE COLUMN status status ENUM('pending', 'assigned', 'enroute_pickup', 'on_scene', 'enroute_destination', 'arrived_destination', 'enroute_return', 'arrived_return', 'completed', 'cancelled') DEFAULT 'pending'");
+        if (DB::getDriverName() !== 'sqlite') {
+            DB::statement("ALTER TABLE dispatches CHANGE COLUMN status status ENUM('pending', 'assigned', 'enroute_pickup', 'on_scene', 'enroute_destination', 'arrived_destination', 'enroute_return', 'arrived_return', 'completed', 'cancelled') DEFAULT 'pending'");
+        }
     }
 };

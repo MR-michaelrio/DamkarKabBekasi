@@ -12,7 +12,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        DB::statement("ALTER TABLE patient_requests CHANGE COLUMN status status ENUM('pending', 'dispatched', 'rejected', 'completed') DEFAULT 'pending'");
+        if (DB::getDriverName() !== 'sqlite') {
+            DB::statement("ALTER TABLE patient_requests CHANGE COLUMN status status ENUM('pending', 'dispatched', 'rejected', 'completed') DEFAULT 'pending'");
+        }
     }
 
     /**
@@ -20,6 +22,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        DB::statement("ALTER TABLE patient_requests CHANGE COLUMN status status ENUM('pending', 'dispatched', 'rejected') DEFAULT 'pending'");
+        if (DB::getDriverName() !== 'sqlite') {
+            DB::statement("ALTER TABLE patient_requests CHANGE COLUMN status status ENUM('pending', 'dispatched', 'rejected') DEFAULT 'pending'");
+        }
     }
 };

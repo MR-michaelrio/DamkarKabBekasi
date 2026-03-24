@@ -12,8 +12,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // Option 1: Using DB statement for MySQL enum modification
-        DB::statement("ALTER TABLE dispatches CHANGE COLUMN status status ENUM('pending', 'assigned', 'on_route', 'completed') DEFAULT 'pending'");
+        if (DB::getDriverName() !== 'sqlite') {
+            // MySQL-specific enum modification
+            DB::statement("ALTER TABLE dispatches CHANGE COLUMN status status ENUM('pending', 'assigned', 'on_route', 'completed') DEFAULT 'pending'");
+        }
     }
 
     /**
@@ -21,6 +23,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-         DB::statement("ALTER TABLE dispatches CHANGE COLUMN status status ENUM('pending', 'on_route', 'completed') DEFAULT 'pending'");
+        if (DB::getDriverName() !== 'sqlite') {
+            DB::statement("ALTER TABLE dispatches CHANGE COLUMN status status ENUM('pending', 'on_route', 'completed') DEFAULT 'pending'");
+        }
     }
 };
