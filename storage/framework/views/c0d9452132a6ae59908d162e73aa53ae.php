@@ -241,3 +241,4 @@ setInterval(() => {
 
 </body>
 </html>
+<?php /**PATH /Applications/Dev/damkar-dispatch/resources/views/monitoring/index.blade.php ENDPATH**/ ?>

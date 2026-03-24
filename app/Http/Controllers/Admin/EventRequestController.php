@@ -107,7 +107,7 @@ class EventRequestController extends Controller
             'destination'      => '-',
             'ambulance_id'     => $request->ambulance_id,
             'driver_id'        => $request->driver_id,
-            'status'           => 'assigned',
+            'status'           => 'pending',
             'assigned_at'      => now(),
             'request_date'     => $eventRequest->start_date,
             'is_replacement'   => false,
@@ -119,7 +119,7 @@ class EventRequestController extends Controller
 
         DispatchLog::create([
             'dispatch_id' => $dispatch->id,
-            'status'      => 'assigned',
+            'status'      => 'pending',
             'note'        => 'Unit ditugaskan ke Event: ' . $eventRequest->event_name,
         ]);
 
@@ -171,7 +171,7 @@ class EventRequestController extends Controller
             'destination'         => '-',
             'ambulance_id'        => $newAmbulanceId,
             'driver_id'           => $newDriverId,
-            'status'              => 'assigned',
+            'status'              => 'pending',
             'assigned_at'         => now(),
             'request_date'        => $request->replacement_date,
             'is_replacement'      => true,
@@ -188,7 +188,7 @@ class EventRequestController extends Controller
 
         DispatchLog::create([
             'dispatch_id' => $newDispatch->id,
-            'status'      => 'assigned',
+            'status'      => 'pending',
             'note'        => 'Perubahan unit/driver untuk Event: ' . $eventRequest->event_name . ' (Efektif: ' . $request->replacement_date . ')',
         ]);
 

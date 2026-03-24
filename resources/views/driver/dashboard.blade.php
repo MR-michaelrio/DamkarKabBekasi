@@ -121,57 +121,24 @@
             </div>
 
             @php
-                if ($activeDispatch->event_request_id) {
-                    $statusConfig = [
-                        'assigned' => [
-                            'label' => '🚀 OTW ke Lokasi',
-                            'color' => 'bg-green-600 hover:bg-green-700',
-                        ],
-                        'enroute_pickup' => [
-                            'label' => '📍 Sampai Lokasi',
-                            'color' => 'bg-blue-600 hover:bg-blue-700',
-                        ],
-                        'on_scene' => [
-                            'label' => '🔄 Perjalanan Pulang',
-                            'color' => 'bg-orange-600 hover:bg-orange-700',
-                        ],
-                        'enroute_return' => [
-                            'label' => '✅ Selesai',
-                            'color' => 'bg-red-600 hover:bg-red-700',
-                        ],
-                    ];
-                } else {
-                    $statusConfig = [
-                        'assigned' => [
-                            'label' => '🚀 Mulai Perjalanan',
-                            'color' => 'bg-green-600 hover:bg-green-700',
-                        ],
-                        'enroute_pickup' => [
-                            'label' => '📍 Sudah Sampai Lokasi Penjemputan / On Scene',
-                            'color' => 'bg-blue-600 hover:bg-blue-700',
-                        ],
-                        'on_scene' => [
-                            'label' => '🚚 OTW Titik Tuju',
-                            'color' => 'bg-orange-600 hover:bg-orange-700',
-                        ],
-                        'enroute_destination' => [
-                            'label' => '🏁 Sampai Titik Tuju',
-                            'color' => 'bg-indigo-600 hover:bg-indigo-700',
-                        ],
-                        'arrived_destination' => [
-                            'label' => $activeDispatch->trip_type === 'round_trip' ? '🚗 OTW Balik / Pulang' : '✅ Selesai',
-                            'color' => $activeDispatch->trip_type === 'round_trip' ? 'bg-blue-600 hover:bg-blue-700' : 'bg-red-600 hover:bg-red-700',
-                        ],
-                        'enroute_return' => [
-                            'label' => '📍 Sudah Sampai di Rumah / Tujuan Pulang',
-                            'color' => 'bg-blue-600 hover:bg-blue-700',
-                        ],
-                        'arrived_return' => [
-                            'label' => '🏁 Selesai Penugasan',
-                            'color' => 'bg-red-600 hover:bg-red-700',
-                        ],
-                    ];
-                }
+                $statusConfig = [
+                    'pending' => [
+                        'label' => '🚀 OTW ke TKP',
+                        'color' => 'bg-green-600 hover:bg-green-700',
+                    ],
+                    'on_the_way_scene' => [
+                        'label' => '📍 Sampai di TKP',
+                        'color' => 'bg-blue-600 hover:bg-blue-700',
+                    ],
+                    'on_scene' => [
+                        'label' => '🚒 OTW Kantor Pos',
+                        'color' => 'bg-orange-600 hover:bg-orange-700',
+                    ],
+                    'on_the_way_kantor_pos' => [
+                        'label' => '🏁 Selesai',
+                        'color' => 'bg-red-600 hover:bg-red-700',
+                    ],
+                ];
                 $currentConfig = $statusConfig[$activeDispatch->status] ?? null;
             @endphp
 
@@ -383,20 +350,14 @@ journeyBtn?.addEventListener('click', async function() {
 
     try {
         // Special actions based on status
-        if (currentStatus === 'assigned') {
+        if (currentStatus === 'pending') {
             await startTracking();
-        } else if (currentStatus === 'enroute_pickup' && "{{ optional($activeDispatch)->event_request_id ? 'yes' : '' }}") {
-            await stopTracking(); // Arrived at event, stop tracking while on scene
-        } else if (currentStatus === 'on_scene' && "{{ optional($activeDispatch)->event_request_id ? 'yes' : '' }}") {
-            await startTracking(); // Start journey back
-        } else if (currentStatus === 'arrived_destination') {
-            if ("{{ $activeDispatch->trip_type ?? '' }}" === "round_trip") {
-                await startTracking(); // Start tracking for return leg
-            } else {
-                await stopTracking(); // One-way finished
-            }
-        } else if (currentStatus === 'enroute_return') {
-            await stopTracking(); // Return leg finished
+        } else if (currentStatus === 'on_the_way_scene') {
+            await stopTracking(); // Arrived at scene, stop tracking while working
+        } else if (currentStatus === 'on_scene') {
+            await startTracking(); // Start journey back to station
+        } else if (currentStatus === 'on_the_way_kantor_pos') {
+            await stopTracking(); // Back at station
         }
 
         // Update status via API
@@ -512,7 +473,7 @@ async function stopTracking() {
 }
 
 // Auto-start tracking if journey is already in progress
-const autoStartStatuses = ['enroute_pickup', 'on_scene', 'enroute_destination', 'enroute_return'];
+const autoStartStatuses = ['on_the_way_scene', 'on_the_way_kantor_pos'];
 const currentDispatchStatus = "{{ $activeDispatch->status ?? '' }}";
 const isPaused = {{ ($activeDispatch && $activeDispatch->is_paused) ? 1 : 0 }};
 

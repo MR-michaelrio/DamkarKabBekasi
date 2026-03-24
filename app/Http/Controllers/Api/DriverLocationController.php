@@ -37,7 +37,7 @@ class DriverLocationController extends Controller
 
         // Save to location history if on active dispatch
         $activeDispatch = Dispatch::where('ambulance_id', $ambulance->id)
-            ->whereIn('status', ['assigned', 'enroute_pickup', 'on_scene', 'enroute_destination', 'arrived_destination', 'enroute_return', 'arrived_return'])
+            ->whereIn('status', ['pending', 'on_the_way_scene', 'on_scene', 'on_the_way_kantor_pos'])
             ->first();
 
         if ($activeDispatch) {

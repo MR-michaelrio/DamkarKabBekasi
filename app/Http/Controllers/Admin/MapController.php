@@ -14,7 +14,7 @@ class MapController extends Controller
             ->whereNotNull('longitude')
             ->where('status', 'on_duty')
             ->with(['dispatches' => function($query) {
-                $query->whereIn('status', ['assigned', 'enroute_pickup', 'on_scene', 'enroute_destination', 'arrived_destination'])
+                $query->whereIn('status', ['pending', 'on_the_way_scene', 'on_scene', 'on_the_way_kantor_pos'])
                       ->latest()
                       ->limit(1);
             }])
@@ -30,7 +30,7 @@ class MapController extends Controller
             ->whereNotNull('longitude')
             ->where('status', 'on_duty')
             ->with(['dispatches' => function($query) {
-                $query->whereIn('status', ['assigned', 'enroute_pickup', 'on_scene', 'enroute_destination', 'arrived_destination'])
+                $query->whereIn('status', ['pending', 'on_the_way_scene', 'on_scene', 'on_the_way_kantor_pos'])
                       ->latest()
                       ->limit(1);
             }])

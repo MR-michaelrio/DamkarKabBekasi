@@ -16,7 +16,7 @@ class MonitoringController extends Controller
 
     public function getData()
     {
-        $activeDispatchStatuses = ['assigned', 'enroute_pickup', 'on_scene', 'enroute_destination', 'arrived_destination'];
+        $activeDispatchStatuses = ['pending', 'on_the_way_scene', 'on_scene', 'on_the_way_kantor_pos'];
 
         // Get active ambulances with GPS data and an active dispatch
         $ambulances = Ambulance::whereNotNull('latitude')

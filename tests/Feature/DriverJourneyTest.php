@@ -33,17 +33,16 @@ class DriverJourneyTest extends TestCase
             'patient_condition' => 'Critical',
             'pickup_address' => 'Home',
             'destination' => 'Hospital',
-            'status' => 'assigned'
+            'status' => 'pending'
         ]);
 
         $this->actingAs($ambulance, 'ambulance');
 
         $flow = [
-            'assigned' => 'enroute_pickup',
-            'enroute_pickup' => 'on_scene',
-            'on_scene' => 'enroute_destination',
-            'enroute_destination' => 'arrived_destination',
-            'arrived_destination' => 'completed',
+            'pending'               => 'on_the_way_scene',
+            'on_the_way_scene'      => 'on_scene',
+            'on_scene'              => 'on_the_way_kantor_pos',
+            'on_the_way_kantor_pos' => 'completed',
         ];
 
         foreach ($flow as $current => $next) {

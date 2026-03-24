@@ -32,7 +32,7 @@
                     <td class="px-6 py-4">
                         <span class="px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider
                             <?php if($d->status === 'completed'): ?> bg-emerald-50 text-emerald-700
-                            <?php elseif($d->status === 'assigned'): ?> bg-blue-50 text-blue-700
+                            <?php elseif($d->status === 'pending'): ?> bg-blue-50 text-blue-700
                             <?php else: ?> bg-amber-50 text-amber-700 <?php endif; ?>">
                             <?php echo e(str_replace('_', ' ', $d->status)); ?>
 

@@ -77,7 +77,7 @@
                     <td class="px-4 py-3">
                         <span class="px-2 py-1 rounded text-xs font-semibold
                             @if($d->status === 'completed') bg-green-100 text-green-700
-                            @elseif($d->status === 'assigned') bg-blue-100 text-blue-700
+                            @elseif($d->status === 'pending') bg-blue-100 text-blue-700
                             @else bg-yellow-100 text-yellow-700 @endif">
                             {{ str_replace('_',' ', strtoupper($d->status)) }}
                         </span>

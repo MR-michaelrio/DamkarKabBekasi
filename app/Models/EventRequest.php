@@ -44,7 +44,7 @@ class EventRequest extends Model
                     ->orWhere(function($q) {
                         $q->where('event_request_id', $this->id)
                           ->where('is_replacement', true)
-                          ->whereIn('status', ['assigned', 'enroute_pickup', 'on_scene', 'enroute_destination', 'arrived_destination', 'enroute_return', 'arrived_return']);
+                          ->whereIn('status', ['pending', 'on_the_way_scene', 'on_scene', 'on_the_way_kantor_pos']);
                     });
     }
 

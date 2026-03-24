@@ -34,7 +34,7 @@
                         <td class="px-6 py-4 whitespace-nowrap">
                             <span class="px-2 py-1 rounded text-[10px] font-bold tracking-wider
                                 @if($l->status === 'completed') bg-green-100 text-green-700
-                                @elseif($l->status === 'assigned') bg-blue-100 text-blue-700
+                                @elseif($l->status === 'pending') bg-blue-100 text-blue-700
                                 @else bg-yellow-100 text-yellow-700 @endif border border-current opacity-80">
                                 {{ strtoupper(str_replace('_',' ',$l->status)) }}
                             </span>

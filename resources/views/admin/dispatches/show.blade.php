@@ -102,7 +102,7 @@
                 <div class="mt-1">
                     <span class="px-3 py-1 text-sm font-bold rounded shadow-sm
                         @if($dispatch->status === 'completed') bg-green-100 text-green-700
-                        @elseif($dispatch->status === 'assigned') bg-blue-100 text-blue-700
+                        @elseif($dispatch->status === 'pending') bg-blue-100 text-blue-700
                         @else bg-yellow-100 text-yellow-700 @endif">
                         {{ strtoupper(str_replace('_',' ', $dispatch->status)) }}
                     </span>

@@ -23,9 +23,9 @@
 
     <!-- Success Message -->
     <?php if(session('success')): ?>
-        <div class="mb-6 bg-green-100 border border-green-300 text-green-700 px-4 py-3 rounded">
-            <?php echo e(session('success')); ?>
-
+        <div class="mb-6 bg-green-100 border border-green-300 text-green-700 px-4 py-3 rounded text-center">
+            <p class="font-bold text-lg">✅ Laporan Berhasil Terkirim!</p>
+            <p class="text-sm">Petugas akan segera menindaklanjuti laporan Anda.</p>
         </div>
     <?php endif; ?>
 
@@ -46,20 +46,20 @@
             <?php echo csrf_field(); ?>
 
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">
-                    Nama <span class="text-red-500">*</span>
+                <label class="block text-sm font-bold text-gray-700 mb-2">
+                    Nama Pelapor <span class="text-red-500">*</span>
                 </label>
                 <input type="text" name="patient_name" value="<?php echo e(old('patient_name')); ?>" required
-                       class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-red-500 focus:border-red-500"
-                       placeholder="Masukkan nama Anda">
+                       class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-red-500 focus:border-red-500 py-3"
+                       placeholder="Masukkan nama lengkap">
             </div>
 
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">
+                <label class="block text-sm font-bold text-gray-700 mb-2">
                     Jenis Kejadian <span class="text-red-500">*</span>
                 </label>
                 <select name="service_type" id="service_type" required
-                        class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-red-500 focus:border-red-500">
+                        class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-red-500 focus:border-red-500 py-3">
                     <option value="">-- Pilih Jenis Kejadian --</option>
                     <option value="kebakaran" <?php echo e(old('service_type') === 'kebakaran' ? 'selected' : ''); ?>>
                         🔥 Kebakaran
@@ -73,15 +73,15 @@
             <!-- Address Detail Fields -->
             <div class="grid grid-cols-2 gap-4">
                 <div class="col-span-2">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">
-                        Alamat TKP (Lengkap) <span class="text-red-500">*</span>
+                    <label class="block text-sm font-bold text-gray-700 mb-2">
+                        Alamat TKP (Titik Kenal Lokasi) <span class="text-red-500">*</span>
                     </label>
                     <textarea name="pickup_address" rows="2" required
-                              class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-red-500 focus:border-red-500"
-                              placeholder="Contoh: Jl. Raya Cikarang No. 123"><?php echo e(old('pickup_address')); ?></textarea>
+                              class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-red-500 focus:border-red-500 font-bold text-red-600"
+                              placeholder="Contoh: Jl. Utama No. 12, Samping Indomaret"><?php echo e(old('pickup_address')); ?></textarea>
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Blok (Opsional)</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Blok</label>
                     <input type="text" name="blok" value="<?php echo e(old('blok')); ?>" class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-red-500 focus:border-red-500">
                 </div>
                 <div class="grid grid-cols-2 gap-2">
@@ -107,80 +107,33 @@
             <!-- Request Date & Time -->
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                    <label class="block text-sm font-bold text-gray-700 mb-2">
                         Tanggal Kejadian <span class="text-red-500">*</span>
                     </label>
                     <input type="date" name="request_date" value="<?php echo e(old('request_date', date('Y-m-d'))); ?>" required
-                           class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-red-500 focus:border-red-500">
+                           class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-red-500 focus:border-red-500 py-3">
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                    <label class="block text-sm font-bold text-gray-700 mb-2">
                         Jam Kejadian <span class="text-red-500">*</span>
                     </label>
                     <input type="time" name="pickup_time" value="<?php echo e(old('pickup_time', date('H:i'))); ?>" required
-                           class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-red-500 focus:border-red-500">
+                           class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-red-500 focus:border-red-500 py-3">
                 </div>
             </div>
 
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">
-                    No HP <span class="text-red-500">*</span>
+                <label class="block text-sm font-bold text-gray-700 mb-2">
+                    No HP / WhatsApp (Aktif) <span class="text-red-500">*</span>
                 </label>
                 <input type="tel" name="phone" value="<?php echo e(old('phone')); ?>" required
-                       class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-red-500 focus:border-red-500"
+                       class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-red-500 focus:border-red-500 py-3 font-bold"
                        placeholder="08xxxxxxxxxx">
-            </div>
-
-            <!-- Patient Condition (Conditional for Ambulance) -->
-            <div id="patient_condition_wrapper" style="display: none;">
-                <label class="block text-sm font-medium text-gray-700 mb-2">
-                    Kondisi Korban / Pasien <span class="text-red-500">*</span>
-                </label>
-                <select name="patient_condition" id="patient_condition"
-                        class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-red-500 focus:border-red-500">
-                    <option value="">-- Pilih Kondisi --</option>
-                    <option value="emergency" <?php echo e(old('patient_condition') === 'emergency' ? 'selected' : ''); ?>>
-                        🚨 EMERGENCY
-                    </option>
-                    <option value="kontrol" <?php echo e(old('patient_condition') === 'kontrol' ? 'selected' : ''); ?>>
-                        🏥 KONTROL
-                    </option>
-                    <option value="pasien_pulang" <?php echo e(old('patient_condition') === 'pasien_pulang' ? 'selected' : ''); ?>>
-                        🏠 PULANG
-                    </option>
-                </select>
-            </div>
-
-            <!-- Trip Type (Conditional for Kontrol) -->
-            <div id="trip_type_wrapper" style="display: none;">
-                <label class="block text-sm font-medium text-gray-700 mb-2">
-                    Tipe Perjalanan <span class="text-red-500">*</span>
-                </label>
-                <div class="flex gap-4">
-                    <label class="flex items-center gap-2 cursor-pointer">
-                        <input type="radio" name="trip_type" value="one_way" checked
-                               class="text-red-600 focus:ring-red-500">
-                        <span class="text-sm text-gray-700">Pergi Saja</span>
-                    </label>
-                    <label class="flex items-center gap-2 cursor-pointer">
-                        <input type="radio" name="trip_type" value="round_trip"
-                               class="text-red-600 focus:ring-red-500">
-                        <span class="text-sm text-gray-700">Pulang Pergi</span>
-                    </label>
-                </div>
-            </div>
-
-            <!-- Return Address (Conditional for Round Trip) -->
-            <div id="return_address_wrapper" style="display: none;">
-                <label class="block text-sm font-medium text-gray-700 mb-2">
-                    Alamat Pulang <span class="text-red-500">*</span>
-                </label>
-                <textarea name="return_address" id="return_address" rows="3"
-                          class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-red-500 focus:border-red-500"
-                          placeholder="Masukkan alamat pengantaran pulang"><?php echo e(old('return_address')); ?></textarea>
+                <p class="text-[10px] text-gray-500 mt-1 italic">Pastikan nomor dapat dihubungi segera oleh petugas</p>
             </div>
 
             <input type="hidden" name="destination" value="-">
+            <input type="hidden" name="trip_type" value="one_way">
 
             <!-- Submit Button -->
             <div class="pt-4">
@@ -195,72 +148,13 @@
 
     <!-- Footer Info -->
     <div class="mt-8 text-center text-sm text-gray-600">
-        <p>Kami akan merespon laporan Anda secepatnya.</p>
+        <p>Layanan Darurat Pemerintah Kabupaten Bekasi</p>
         <p class="mt-2 text-lg font-bold">Layanan 24 Jam: <a href="tel:+6281286858680" class="text-red-600">+62 812-8685-8680</a></p>
     </div>
 
 </div>
 
 <script>
-    const serviceType = document.getElementById('service_type');
-    const patientConditionWrapper = document.getElementById('patient_condition_wrapper');
-    const patientConditionSelect = document.getElementById('patient_condition');
-    const tripTypeWrapper = document.getElementById('trip_type_wrapper');
-    const returnAddressWrapper = document.getElementById('return_address_wrapper');
-    const returnAddressInput = document.getElementById('return_address');
-    const tripTypeRadios = document.getElementsByName('trip_type');
-
-    function toggleFormFields() {
-        // Condition Visibility
-        if (serviceType.value === 'ambulance') {
-            patientConditionWrapper.style.display = 'block';
-            patientConditionSelect.required = true;
-        } else {
-            patientConditionWrapper.style.display = 'none';
-            patientConditionSelect.required = false;
-            patientConditionSelect.value = '';
-        }
-
-        // Trip Type Visibility (only for Kontrol)
-        if (patientConditionSelect.value === 'kontrol') {
-            tripTypeWrapper.style.display = 'block';
-        } else {
-            tripTypeWrapper.style.display = 'none';
-            // Reset to one_way
-            tripTypeRadios[0].checked = true;
-        }
-
-        updateReturnAddressVisibility();
-    }
-
-    function updateReturnAddressVisibility() {
-        let isRoundTrip = false;
-        tripTypeRadios.forEach(radio => {
-            if (radio.checked && radio.value === 'round_trip') {
-                isRoundTrip = true;
-            }
-        });
-
-        if (isRoundTrip && patientConditionSelect.value === 'kontrol') {
-            returnAddressWrapper.style.display = 'block';
-            returnAddressInput.required = true;
-        } else {
-            returnAddressWrapper.style.display = 'none';
-            returnAddressInput.required = false;
-            returnAddressInput.value = '';
-        }
-    }
-
-    // Initial check
-    toggleFormFields();
-
-    // Listen for changes
-    serviceType.addEventListener('change', toggleFormFields);
-    patientConditionSelect.addEventListener('change', toggleFormFields);
-    tripTypeRadios.forEach(radio => {
-        radio.addEventListener('change', updateReturnAddressVisibility);
-    });
-
     // Loading State for Submit
     document.getElementById('request-form').addEventListener('submit', function() {
         const btn = document.getElementById('submit-btn');

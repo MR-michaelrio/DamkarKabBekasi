@@ -51,7 +51,7 @@ class DispatchController extends Controller
             'kecamatan' => 'nullable|string',
             'nomor' => 'nullable|string',
         ]) + [
-            'status' => 'assigned',
+            'status' => 'pending',
             'assigned_at' => now(),
         ]);
 
@@ -60,7 +60,7 @@ class DispatchController extends Controller
 
         DispatchLog::create([
             'dispatch_id' => $dispatch->id,
-            'status' => 'assigned',
+            'status' => 'pending',
             'note' => 'Dispatch dibuat'
         ]);
 
@@ -85,25 +85,18 @@ class DispatchController extends Controller
     public function next(Dispatch $dispatch)
     {
         $flow = [
-            'assigned' => 'enroute_pickup',
-            'enroute_pickup' => 'on_scene',
-            'on_scene' => 'enroute_destination',
-            'enroute_destination' => 'arrived_destination',
-            'arrived_destination' => 'completed',
-            'enroute_return' => 'arrived_return',
-            'arrived_return' => 'completed',
+            'pending' => 'on_the_way_scene',
+            'on_the_way_scene' => 'on_scene',
+            'on_scene' => 'on_the_way_kantor_pos',
+            'on_the_way_kantor_pos' => 'completed',
         ];
 
         if (!isset($flow[$dispatch->status])) {
             return back();
         }
 
+        // Simplified flow, no special round trip logic needed anymore per requirements
         $nextStatus = $flow[$dispatch->status];
-
-        // Handle Round Trip logic
-        if ($dispatch->status === 'arrived_destination' && $dispatch->trip_type === 'round_trip') {
-            $nextStatus = 'enroute_return';
-        }
 
         $dispatch->update(['status' => $nextStatus]);
 

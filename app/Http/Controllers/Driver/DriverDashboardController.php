@@ -18,7 +18,7 @@ class DriverDashboardController extends Controller
         
         // Get active dispatch for this ambulance
         $activeDispatch = Dispatch::where('ambulance_id', $ambulance->id)
-            ->whereIn('status', ['assigned', 'enroute_pickup', 'on_scene', 'enroute_destination', 'arrived_destination', 'enroute_return', 'arrived_return'])
+            ->whereIn('status', ['pending', 'on_the_way_scene', 'on_scene', 'on_the_way_kantor_pos'])
             ->first();
 
         return view('driver.dashboard', compact('activeDispatch', 'ambulance'));
@@ -31,26 +31,13 @@ class DriverDashboardController extends Controller
             return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
         }
 
-        // Event dispatch uses a simplified 4-step flow (no hospital leg)
-        if ($dispatch->event_request_id) {
-            $flow = [
-                'assigned'       => 'enroute_pickup',
-                'enroute_pickup' => 'on_scene',
-                'on_scene'       => 'enroute_return',
-                'enroute_return' => 'completed',
-            ];
-        } else {
-            // Regular patient / jenazah dispatch
-            $flow = [
-                'assigned'            => 'enroute_pickup',
-                'enroute_pickup'      => 'on_scene',
-                'on_scene'            => 'enroute_destination',
-                'enroute_destination' => 'arrived_destination',
-                'arrived_destination' => 'completed',
-                'enroute_return'      => 'arrived_return',
-                'arrived_return'      => 'completed',
-            ];
-        }
+        // Simplified flow with only 5 statuses as required
+        $flow = [
+            'pending'               => 'on_the_way_scene',
+            'on_the_way_scene'      => 'on_scene',
+            'on_scene'              => 'on_the_way_kantor_pos',
+            'on_the_way_kantor_pos' => 'completed',
+        ];
 
         if (!isset($flow[$dispatch->status])) {
             return response()->json(['success' => false, 'message' => 'Invalid status transition'], 400);
@@ -58,21 +45,12 @@ class DriverDashboardController extends Controller
 
         $newStatus = $flow[$dispatch->status];
 
-        // Round trip logic only for regular dispatches
-        if (!$dispatch->event_request_id
-            && $dispatch->status === 'arrived_destination'
-            && $dispatch->trip_type === 'round_trip') {
-            $newStatus = 'enroute_return';
-        }
-
         $updateData = ['status' => $newStatus];
 
         // Dynamic timestamps
         if ($newStatus === 'on_scene') {
             $updateData['pickup_at'] = now();
-        } elseif ($newStatus === 'arrived_destination') {
-            $updateData['hospital_at'] = now();
-        } elseif ($newStatus === 'enroute_return') {
+        } elseif ($newStatus === 'on_the_way_kantor_pos') {
             $updateData['hospital_at'] = now();
         } elseif ($newStatus === 'completed') {
             $updateData['completed_at'] = now();
@@ -149,7 +127,7 @@ class DriverDashboardController extends Controller
         // Check if ambulance is already on duty
         $ambulance = auth('ambulance')->user();
         $activeDispatch = Dispatch::where('ambulance_id', $ambulance->id)
-            ->whereIn('status', ['assigned', 'enroute_pickup', 'on_scene', 'enroute_destination', 'arrived_destination', 'enroute_return', 'arrived_return'])
+            ->whereIn('status', ['pending', 'on_the_way_scene', 'on_scene', 'on_the_way_kantor_pos'])
             ->first();
 
         if ($activeDispatch) {
@@ -171,7 +149,7 @@ class DriverDashboardController extends Controller
 
         // Double check penugasan aktif
         $activeDispatch = Dispatch::where('ambulance_id', $ambulance->id)
-            ->whereIn('status', ['assigned', 'enroute_pickup', 'on_scene', 'enroute_destination', 'arrived_destination', 'enroute_return', 'arrived_return'])
+            ->whereIn('status', ['pending', 'on_the_way_scene', 'on_scene', 'on_the_way_kantor_pos'])
             ->first();
 
         if ($activeDispatch) {
@@ -186,7 +164,7 @@ class DriverDashboardController extends Controller
             'destination' => $patientRequest->destination,
             'driver_id' => $request->driver_id,
             'ambulance_id' => $ambulance->id,
-            'status' => 'assigned',
+            'status' => 'pending',
             'assigned_at' => now(),
             'trip_type' => $patientRequest->trip_type ?? 'one_way',
             'return_address' => $patientRequest->return_address,
@@ -207,7 +185,7 @@ class DriverDashboardController extends Controller
         // Log
         DispatchLog::create([
             'dispatch_id' => $dispatch->id,
-            'status' => 'assigned',
+            'status' => 'pending',
             'note' => 'Dispatch dibuat sendiri oleh unit ambulans'
         ]);
 

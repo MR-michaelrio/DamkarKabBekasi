@@ -135,9 +135,10 @@
                                         <div class="flex items-center gap-2 mt-2">
                                             @php
                                                 $statusColors = [
-                                                    'assigned'              => 'bg-blue-100 text-blue-700',
-                                                    'enroute_pickup'        => 'bg-yellow-100 text-yellow-700',
+                                                    'pending'               => 'bg-blue-100 text-blue-700',
+                                                    'on_the_way_scene'      => 'bg-yellow-100 text-yellow-700',
                                                     'on_scene'              => 'bg-green-100 text-green-700',
+                                                    'on_the_way_kantor_pos' => 'bg-orange-100 text-orange-700',
                                                     'completed'             => 'bg-gray-100 text-gray-500',
                                                 ];
                                                 $sc = $statusColors[$d->status] ?? 'bg-gray-100 text-gray-600';
