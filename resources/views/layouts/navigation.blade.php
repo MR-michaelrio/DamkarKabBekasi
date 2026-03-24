@@ -4,7 +4,7 @@
             <div class="flex">
                 <div class="shrink-0 flex items-center">
                     <a href="{{ route('dashboard') }}" class="flex items-center gap-2">
-                        <img src="{{ asset('logo.png') }}" alt="GMCI Logo" class="h-10 w-auto">
+                        <img src="{{ asset('logo-damkar.png') }}" alt="Damkar Logo" class="h-10 w-auto">
                     </a>
                 </div>
 

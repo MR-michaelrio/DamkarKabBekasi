@@ -34,7 +34,7 @@
 
             <!-- LOGO + NAME -->
             <div class="flex items-center gap-4">
-                <img src="/logo.png" alt="GMCI Logo" class="h-10">
+                <img src="{{ asset('logo-damkar.png') }}" alt="Damkar Logo" class="h-10">
             </div>
 
             <!-- LOGIN -->

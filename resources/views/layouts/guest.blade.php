@@ -13,6 +13,8 @@
 
     <!-- Tailwind CDN (NO VITE) -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Favicon -->
+    <link rel="icon" href="{{ asset('logo-damkar.png') }}" type="image/png">
 </head>
 
 <body class="font-sans text-gray-900 antialiased bg-gray-100">

@@ -14,7 +14,7 @@
 
     <div class="max-w-2xl mx-auto px-6 py-12">
         <div class="text-center mb-10">
-            <img src="/logo.png" alt="Damkar Logo" class="h-12 mx-auto mb-4">
+            <img src="{{ asset('logo-damkar.png') }}" alt="Damkar Logo" class="h-12 mx-auto mb-4">
             <h1 class="text-3xl font-extrabold tracking-tight text-slate-900">Permintaan Event</h1>
             <p class="text-slate-500 mt-2 font-medium">Lengkapi formulir di bawah untuk pengajuan pengawalan event</p>
         </div>
@@ -94,7 +94,7 @@
         </div>
 
         <footer class="mt-12 text-center text-slate-400 text-xs font-bold uppercase tracking-widest">
-            © {{ date('Y') }} Global Medical Care Indonesia
+            © {{ date('Y') }} Damkar Kabupaten Bekasi
         </footer>
     </div>
 

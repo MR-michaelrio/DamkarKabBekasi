@@ -10,7 +10,7 @@
 
     <div class="max-w-3xl mx-auto px-6 py-12">
         <div class="text-center mb-10">
-            <img src="/logo.png" alt="Damkar Logo" class="h-16 mx-auto mb-4">
+            <img src="{{ asset('logo-damkar.png') }}" alt="Damkar Logo" class="h-16 mx-auto mb-4">
             <h1 class="text-3xl font-bold text-gray-900">Kebijakan Privasi</h1>
             <p class="text-gray-500 mt-2">Dinas Pemadam Kebakaran dan Penyelamatan Kab. Bekasi</p>
         </div>
@@ -61,7 +61,7 @@
 
         <div class="mt-12 text-center text-sm text-gray-400">
             <a href="/" class="text-emerald-600 font-bold hover:underline"> Kembali ke Beranda</a>
-            <p class="mt-4">© {{ date('Y') }} Global Medical Care Indonesia.</p>
+            <p class="mt-4">© {{ date('Y') }} Damkar Kabupaten Bekasi.</p>
         </div>
     </div>
 

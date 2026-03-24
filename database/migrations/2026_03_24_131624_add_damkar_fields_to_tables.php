@@ -12,21 +12,21 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('dispatches', function (Blueprint $table) {
-            $table->string('blok')->nullable();
-            $table->string('rt')->nullable();
-            $table->string('rw')->nullable();
-            $table->string('kelurahan')->nullable();
-            $table->string('kecamatan')->nullable();
-            $table->string('nomor')->nullable();
+            if (!Schema::hasColumn('dispatches', 'blok')) $table->string('blok')->nullable();
+            if (!Schema::hasColumn('dispatches', 'rt')) $table->string('rt')->nullable();
+            if (!Schema::hasColumn('dispatches', 'rw')) $table->string('rw')->nullable();
+            if (!Schema::hasColumn('dispatches', 'kelurahan')) $table->string('kelurahan')->nullable();
+            if (!Schema::hasColumn('dispatches', 'kecamatan')) $table->string('kecamatan')->nullable();
+            if (!Schema::hasColumn('dispatches', 'nomor')) $table->string('nomor')->nullable();
         });
 
         Schema::table('patient_requests', function (Blueprint $table) {
-            $table->string('blok')->nullable();
-            $table->string('rt')->nullable();
-            $table->string('rw')->nullable();
-            $table->string('kelurahan')->nullable();
-            $table->string('kecamatan')->nullable();
-            $table->string('nomor')->nullable();
+            if (!Schema::hasColumn('patient_requests', 'blok')) $table->string('blok')->nullable();
+            if (!Schema::hasColumn('patient_requests', 'rt')) $table->string('rt')->nullable();
+            if (!Schema::hasColumn('patient_requests', 'rw')) $table->string('rw')->nullable();
+            if (!Schema::hasColumn('patient_requests', 'kelurahan')) $table->string('kelurahan')->nullable();
+            if (!Schema::hasColumn('patient_requests', 'kecamatan')) $table->string('kecamatan')->nullable();
+            if (!Schema::hasColumn('patient_requests', 'nomor')) $table->string('nomor')->nullable();
         });
 
         // Update Enum for patient_condition
