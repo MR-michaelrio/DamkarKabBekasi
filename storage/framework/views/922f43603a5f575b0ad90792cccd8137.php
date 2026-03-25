@@ -20,7 +20,8 @@
                     <a href="<?php echo e(route('admin.dispatches.index')); ?>"
                         class="text-sm font-medium text-gray-700 hover:text-indigo-600 transition">Dispatch</a>
                     <a href="<?php echo e(route('admin.patient-requests.index')); ?>"
-                        class="text-sm font-medium text-gray-700 hover:text-indigo-600 transition">📋 Laporan Masyarakat</a>
+                        class="text-sm font-medium text-gray-700 hover:text-indigo-600 transition">📋 Laporan
+                        Masyarakat</a>
                     <a href="<?php echo e(route('admin.users.index')); ?>"
                         class="text-sm font-medium text-gray-700 hover:text-indigo-600 transition">👥 User</a>
                     <a href="<?php echo e(route('admin.maps')); ?>"
@@ -70,12 +71,6 @@
                 class="block pl-3 pr-4 py-2 border-l-4 border-transparent text-base font-medium text-gray-600 hover:bg-gray-50 hover:border-gray-300 transition">Driver</a>
             <a href="<?php echo e(route('admin.dispatches.index')); ?>"
                 class="block pl-3 pr-4 py-2 border-l-4 border-transparent text-base font-medium text-gray-600 hover:bg-gray-50 hover:border-gray-300 transition">Dispatch</a>
-            <a href="<?php echo e(route('admin.schedules.index')); ?>"
-                class="block pl-3 pr-4 py-2 border-l-4 border-transparent text-base font-medium text-gray-600 hover:bg-gray-50 hover:border-gray-300 transition">📅
-                Jadwal</a>
-            <a href="<?php echo e(route('admin.event-requests.index')); ?>"
-                class="block pl-3 pr-4 py-2 border-l-4 border-transparent text-base font-medium text-gray-600 hover:bg-gray-50 hover:border-gray-300 transition">🎪
-                Event</a>
             <a href="<?php echo e(route('admin.patient-requests.index')); ?>"
                 class="block pl-3 pr-4 py-2 border-l-4 border-transparent text-base font-medium text-gray-600 hover:bg-gray-50 hover:border-gray-300 transition">📋
                 Laporan Masyarakat</a>

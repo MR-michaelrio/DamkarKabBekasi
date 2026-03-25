@@ -1,10 +1,11 @@
 <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
     <div class="overflow-x-auto">
         <table class="w-full text-sm">
-            <thead class="bg-gray-50 text-gray-600 uppercase text-[10px] font-black tracking-widest border-b border-gray-100">
+            <thead
+                class="bg-gray-50 text-gray-600 uppercase text-[10px] font-black tracking-widest border-b border-gray-100">
                 <tr>
-                    <th class="px-6 py-4 text-left">Pasien</th>
-                    <th class="px-6 py-4 text-left">Ambulans / Driver</th>
+                    <th class="px-6 py-4 text-left">Pelapor / Kejadian</th>
+                    <th class="px-6 py-4 text-left">Armada / Driver</th>
                     <th class="px-6 py-4 text-left">Waktu</th>
                     <th class="px-6 py-4 text-left">Status</th>
                 </tr>
@@ -14,7 +15,8 @@
                 <tr class="hover:bg-gray-50/50 transition-colors">
                     <td class="px-6 py-4">
                         <div class="font-bold text-gray-900"><?php echo e($d->patient_name); ?></div>
-                        <div class="text-[10px] <?php if($d->patient_condition === 'emergency'): ?> text-red-600 <?php else: ?> text-gray-500 <?php endif; ?> font-bold uppercase tracking-tighter">
+                        <div
+                            class="text-[10px] <?php if($d->patient_condition === 'emergency'): ?> text-red-600 <?php else: ?> text-gray-500 <?php endif; ?> font-bold uppercase tracking-tighter">
                             <?php echo e($d->patient_condition); ?>
 
                         </div>
@@ -49,5 +51,4 @@
             </tbody>
         </table>
     </div>
-</div>
-<?php /**PATH /Applications/Dev/damkar-dispatch/resources/views/admin/dashboard/partials/dispatch_table.blade.php ENDPATH**/ ?>
+</div><?php /**PATH /Applications/Dev/damkar-dispatch/resources/views/admin/dashboard/partials/dispatch_table.blade.php ENDPATH**/ ?>

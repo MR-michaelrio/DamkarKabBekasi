@@ -70,6 +70,8 @@
                 Mendukung pelayanan respons cepat
                 <strong>Dinas Pemadam Kebakaran dan Penyelamatan Kabupaten Bekasi</strong>
                 dalam melindungi dan melayani masyarakat.
+                Dikembangkan oleh Yayasan Global Medical Care Indonesia sistem ini hadir sebagai wujud dukungan terhadap
+                misi kemanusiaan dalam menghadirkan layanan yang cepat, tepat, dan terkoordinasi bagi masyarakat.
             </p>
 
             <div class="flex flex-wrap gap-4">
@@ -134,7 +136,7 @@
     <!-- FOOTER -->
     <footer class="bg-slate-900 text-slate-300">
         <div class="max-w-7xl mx-auto px-6 py-8 text-center text-sm">
-            © <?php echo e(date('Y')); ?> Dinas Pemadam Kebakaran dan Penyelamatan Kabupaten Bekasi.<br>
+            © <?php echo e(date('Y')); ?> Yayasan Global Medical Care Indonesia.<br>
             Sistem Dispatch Damkar — Melayani dengan Hati.<br>
             <div class="mt-4 font-bold text-slate-100">Layanan 24 Jam: 02122137870 / 02122162577</div>
         </div>

@@ -3,7 +3,8 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Portal Damkar | Kabupaten Bekasi</title>
+    <title>Portal | Damkar Kabupaten Bekasi</title>
+    <link rel="icon" href="<?php echo e(asset('logo-damkar.png')); ?>" type="image/png">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -79,7 +80,7 @@
                     style="animation-delay: 0.3s">
                     <div class="text-5xl mb-4 group-hover:scale-110 transition-transform">🗺️</div>
                     <h2 class="text-xl font-bold text-gray-800 mb-2">Monitoring</h2>
-                    <p class="text-sm text-gray-500 mb-6">Pantau pergerakan ambulans dan status dispatch secara publik.
+                    <p class="text-sm text-gray-500 mb-6">Pantau pergerakan armada dan status dispatch secara publik.
                     </p>
                     <div class="inline-flex items-center text-blue-600 font-semibold">
                         Lihat Peta →

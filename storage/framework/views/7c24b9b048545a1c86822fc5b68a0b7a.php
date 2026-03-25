@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="<?php echo e(csrf_token()); ?>">
 
-    <title><?php echo $__env->yieldContent('title', config('app.name', 'Damkar Bekasi')); ?></title>
+    <title><?php echo $__env->yieldContent('title', 'Damkar Kabupaten Bekasi'); ?></title>
 
     <!-- Tailwind CSS (CDN, tanpa Vite) -->
     <script src="https://cdn.tailwindcss.com"></script>
