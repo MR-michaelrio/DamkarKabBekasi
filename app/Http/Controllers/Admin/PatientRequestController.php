@@ -9,9 +9,20 @@ use App\Models\DispatchLog;
 use App\Models\Driver;
 use App\Models\Ambulance;
 use Illuminate\Http\Request;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class PatientRequestController extends Controller
 {
+    public function exportPdf(PatientRequest $patientRequest)
+    {
+        $patientRequest->load(['dispatches.driver', 'dispatches.ambulance']);
+        
+        $pdf = Pdf::loadView('admin.patient_requests.pdf', compact('patientRequest'))
+            ->setPaper('a4', 'portrait');
+
+        return $pdf->download('laporan-masyarakat-' . $patientRequest->id . '-' . date('Ymd') . '.pdf');
+    }
+
     public function index(Request $request)
     {
         $direction = $request->get('direction', 'desc');

@@ -170,6 +170,8 @@ Route::middleware(['auth'])->group(function () {
                 ->name('patient-requests.destroy');
             Route::get('laporan-masyarakat/{patientRequest}/dispatch', [AdminPatientRequestController::class , 'createDispatch'])
                 ->name('patient-requests.create-dispatch');
+            Route::get('laporan-masyarakat/{patientRequest}/pdf', [AdminPatientRequestController::class , 'exportPdf'])
+                ->name('patient-requests.pdf');
             Route::post('laporan-masyarakat/{patientRequest}/reject', [AdminPatientRequestController::class , 'reject'])
                 ->name('patient-requests.reject');
         }

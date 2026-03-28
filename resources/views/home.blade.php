@@ -70,8 +70,10 @@
                 Mendukung pelayanan respons cepat
                 <strong>Dinas Pemadam Kebakaran dan Penyelamatan Kabupaten Bekasi</strong>
                 dalam melindungi dan melayani masyarakat.
-                Dikembangkan oleh Yayasan Global Medical Care Indonesia sistem ini hadir sebagai wujud dukungan terhadap
-                misi kemanusiaan dalam menghadirkan layanan yang cepat, tepat, dan terkoordinasi bagi masyarakat.
+                Sistem ini dikembangkan oleh Yayasan Global Medical Care Indonesia
+                dengan dukungan teknologi dari PT Iptrunk Teknologi Indonesia,
+                sebagai wujud komitmen dalam menghadirkan layanan yang cepat, tepat, terintegrasi, dan terkoordinasi
+                demi mendukung misi kemanusiaan bagi masyarakat luas.
             </p>
 
             <div class="flex flex-wrap gap-4">

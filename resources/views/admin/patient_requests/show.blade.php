@@ -6,10 +6,14 @@
 <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
 
     <!-- Header -->
-    <div class="mb-6">
+    <div class="mb-6 flex justify-between items-center">
         <h1 class="text-2xl font-bold text-gray-800">
             📋 Detail Laporan Masyarakat
         </h1>
+        <a href="{{ route('admin.patient-requests.pdf', $patientRequest->id) }}" 
+           class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-bold shadow-md transition transform active:scale-95 flex items-center gap-2">
+            📄 Cetak PDF
+        </a>
     </div>
 
     <!-- Request Details Card -->
