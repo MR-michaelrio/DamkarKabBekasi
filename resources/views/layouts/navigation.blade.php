@@ -10,7 +10,7 @@
 
                 <!-- Desktop Links -->
                 <div class="hidden space-x-8 lg:-my-px lg:ml-10 lg:flex items-center">
-                    @if(auth()->user()->role === 'admin')
+                    @if(in_array(auth()->user()->role, ['admin', 'user']))
                     <a href="{{ route('admin.ambulances.index') }}"
                         class="text-sm font-medium text-gray-700 hover:text-red-600 transition">Mobil Damkar</a>
                     <a href="{{ route('admin.ambulance-types.index') }}"
@@ -24,8 +24,12 @@
                     <a href="{{ route('admin.patient-requests.index') }}"
                         class="text-sm font-medium text-gray-700 hover:text-indigo-600 transition">📋 Laporan
                         Masyarakat</a>
+                    
+                    @if(auth()->user()->role === 'admin')
                     <a href="{{ route('admin.users.index') }}"
                         class="text-sm font-medium text-gray-700 hover:text-indigo-600 transition">👥 User</a>
+                    @endif
+
                     <a href="{{ route('admin.maps') }}"
                         class="text-sm font-medium text-gray-700 hover:text-indigo-600 transition">🗺️ Maps</a>
                     @endif
@@ -62,7 +66,7 @@
     <!-- Mobile Menu -->
     <div :class="{'block': open, 'hidden': ! open}" class="hidden lg:hidden border-t border-gray-100 bg-white">
         <div class="pt-2 pb-3 space-y-1">
-            @if(auth()->user()->role === 'admin')
+            @if(in_array(auth()->user()->role, ['admin', 'user']))
             <a href="{{ route('admin.ambulances.index') }}"
                 class="block pl-3 pr-4 py-2 border-l-4 border-transparent text-base font-medium text-gray-600 hover:bg-gray-50 hover:border-red-300 transition">Mobil
                 Damkar</a>
@@ -78,9 +82,13 @@
             <a href="{{ route('admin.patient-requests.index') }}"
                 class="block pl-3 pr-4 py-2 border-l-4 border-transparent text-base font-medium text-gray-600 hover:bg-gray-50 hover:border-gray-300 transition">📋
                 Laporan Masyarakat</a>
+            
+            @if(auth()->user()->role === 'admin')
             <a href="{{ route('admin.users.index') }}"
                 class="block pl-3 pr-4 py-2 border-l-4 border-transparent text-base font-medium text-gray-600 hover:bg-gray-50 hover:border-gray-300 transition">👥
                 User</a>
+            @endif
+
             <a href="{{ route('admin.maps') }}"
                 class="block pl-3 pr-4 py-2 border-l-4 border-transparent text-base font-medium text-gray-600 hover:bg-gray-50 hover:border-gray-300 transition">🗺️
                 Maps</a>

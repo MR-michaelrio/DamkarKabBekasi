@@ -80,7 +80,7 @@ Route::middleware(['auth'])->group(function () {
                 return redirect()->route('driver.dashboard');
             }
 
-            if (auth()->user()->role === 'admin') {
+            if (in_array(auth()->user()->role, ['admin', 'user'])) {
                 return redirect()->route('admin.dashboard');
             }
             else {
@@ -116,7 +116,7 @@ Route::middleware(['auth'])->group(function () {
 
             Route::resource('drivers', DriverController::class);
             Route::resource('pletons', PletonController::class);
-            Route::resource('users', UserController::class);
+            Route::resource('users', UserController::class)->middleware('role:admin');
 
             // Dispatch Management
             Route::get('dispatches/export/pdf', [DispatchController::class , 'exportPdf'])
