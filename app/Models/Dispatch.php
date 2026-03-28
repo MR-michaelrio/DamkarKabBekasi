@@ -39,6 +39,7 @@ class Dispatch extends Model
         'kelurahan',
         'kecamatan',
         'nomor',
+        'patient_request_id',
     ];
 
     protected function casts(): array
@@ -59,6 +60,11 @@ class Dispatch extends Model
     public function driver()
     {
         return $this->belongsTo(Driver::class);
+    }
+
+    public function patientRequest()
+    {
+        return $this->belongsTo(PatientRequest::class);
     }
 
     public function ambulance()

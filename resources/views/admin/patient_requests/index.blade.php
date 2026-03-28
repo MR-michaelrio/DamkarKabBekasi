@@ -115,10 +115,10 @@
                                         Hapus
                                     </button>
                                 </form>
-                                @if ($request->status === 'pending')
+                                @if (in_array($request->status, ['pending', 'dispatched']))
                                     <a href="{{ route('admin.patient-requests.create-dispatch', $request) }}"
                                        class="text-green-600 hover:text-green-800 font-bold">
-                                        Dispatch
+                                        {{ $request->status === 'dispatched' ? 'Tambah Armada' : 'Dispatch' }}
                                     </a>
                                 @endif
                             </td>

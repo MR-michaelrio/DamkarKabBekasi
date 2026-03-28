@@ -50,6 +50,7 @@ class DispatchController extends Controller
             'kelurahan' => 'nullable|string',
             'kecamatan' => 'nullable|string',
             'nomor' => 'nullable|string',
+            'patient_request_id' => 'nullable|exists:patient_requests,id',
         ]) + [
             'status' => 'pending',
             'assigned_at' => now(),
@@ -69,7 +70,6 @@ class DispatchController extends Controller
             \App\Models\PatientRequest::where('id', $request->patient_request_id)
                 ->update([
                 'status' => 'dispatched',
-                'dispatch_id' => $dispatch->id,
             ]);
         }
 

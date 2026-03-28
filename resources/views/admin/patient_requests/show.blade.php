@@ -88,15 +88,6 @@
                     @endif
                 </div>
             </div>
-            
-            @if ($patientRequest->dispatch_id)
-            <div>
-                <label class="block text-sm font-bold text-gray-500 uppercase tracking-wider">Dispatch ID</label>
-                <p class="text-xl font-bold text-blue-600 mt-1">
-                    #{{ $patientRequest->dispatch_id }}
-                </p>
-            </div>
-            @endif
         </div>
 
         <div class="border-t border-gray-50 pt-6">
@@ -112,6 +103,43 @@
 
     </div>
 
+    <!-- Dispatches Card -->
+    @if($patientRequest->dispatches->count() > 0)
+    <div class="bg-white shadow rounded-xl p-6 mt-6 border border-gray-100">
+        <h2 class="font-black text-gray-800 uppercase tracking-tight text-sm mb-4">🚑 Unit Ditugaskan ({{ $patientRequest->dispatches->count() }})</h2>
+        <div class="divide-y divide-gray-50">
+            @foreach($patientRequest->dispatches->sortByDesc('assigned_at') as $d)
+                <div class="py-4 flex items-start justify-between">
+                    <div>
+                        <div class="flex items-center gap-2 mb-1">
+                            <span class="font-black text-gray-900">{{ $d->ambulance?->code ?? '?' }}</span>
+                            <span class="text-gray-400 text-sm">{{ $d->ambulance?->plate_number }}</span>
+                        </div>
+                        <p class="text-sm text-gray-600 mb-2">👤 {{ $d->driver?->name ?? 'No driver' }}</p>
+                        @php
+                            $statusColors = [
+                                'pending'               => 'bg-blue-100 text-blue-700',
+                                'on_the_way_scene'      => 'bg-yellow-100 text-yellow-700',
+                                'on_scene'              => 'bg-green-100 text-green-700',
+                                'on_the_way_kantor_pos' => 'bg-orange-100 text-orange-700',
+                                'completed'             => 'bg-gray-100 text-gray-500',
+                            ];
+                            $sc = $statusColors[$d->status] ?? 'bg-gray-100 text-gray-600';
+                        @endphp
+                        <span class="px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider {{ $sc }}">
+                            {{ str_replace('_', ' ', $d->status) }}
+                        </span>
+                    </div>
+                    <div class="text-right flex flex-col items-end">
+                        <span class="text-xs text-gray-400 block">{{ $d->assigned_at?->format('d M H:i') }}</span>
+                        <a href="{{ route('admin.dispatches.show', $d) }}" class="text-emerald-600 hover:text-emerald-800 text-xs font-bold mt-2 mt-auto">Detail Dispatch →</a>
+                    </div>
+                </div>
+            @endforeach
+        </div>
+    </div>
+    @endif
+
     <!-- Actions -->
     <div class="mt-6 flex flex-col sm:flex-row justify-between items-center gap-4">
         <a href="{{ route('admin.patient-requests.index') }}"
@@ -119,13 +147,14 @@
             ← Kembali
         </a>
 
-        @if ($patientRequest->status === 'pending')
+        @if (in_array($patientRequest->status, ['pending', 'dispatched']))
             <div class="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
                 <a href="{{ route('admin.patient-requests.create-dispatch', $patientRequest) }}"
                    class="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-bold shadow-lg text-center transition transform active:scale-95">
-                    ✅ Buat Dispatch
+                    {{ $patientRequest->status === 'dispatched' ? '➕ Tambah Armada' : '✅ Buat Dispatch' }}
                 </a>
 
+                @if ($patientRequest->status === 'pending')
                 <form method="POST" action="{{ route('admin.patient-requests.reject', $patientRequest) }}"
                       class="inline"
                       onsubmit="return confirm('Yakin ingin menolak laporan ini?')">
@@ -135,6 +164,7 @@
                         ❌ Tolak
                     </button>
                 </form>
+                @endif
             </div>
         @endif
     </div>

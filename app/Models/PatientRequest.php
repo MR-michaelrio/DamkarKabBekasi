@@ -37,8 +37,8 @@ class PatientRequest extends Model
         ];
     }
 
-    public function dispatch(): BelongsTo
+    public function dispatches()
     {
-        return $this->belongsTo(Dispatch::class);
+        return $this->hasMany(Dispatch::class);
     }
 }
