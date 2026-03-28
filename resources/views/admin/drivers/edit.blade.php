@@ -25,6 +25,7 @@
                 class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500" required>
         </div>
 
+        <div>
             <label class="block text-sm font-bold text-gray-700 mb-1">No HP</label>
             <input name="phone" value="{{ old('phone', $driver->phone) }}"
                 class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500">
@@ -68,7 +69,7 @@
                 ← Kembali
             </a>
             <button
-                class="bg-yellow-500 hover:bg-yellow-600 text-white px-6 py-3 rounded-lg font-bold shadow-lg transition transform active:scale-95">
+                class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-bold shadow-lg transition transform active:scale-95">
                 Update Driver
             </button>
         </div>
