@@ -25,8 +25,9 @@ class DispatchController extends Controller
     public function create()
     {
         return view('admin.dispatches.create', [
-            'drivers' => Driver::where('status', 'available')->get(),
+            'drivers' => Driver::where('status', 'available')->with('pleton')->get(),
             'ambulances' => Ambulance::where('status', 'ready')->get(),
+            'pletons' => \App\Models\Pleton::all(),
             'patientRequest' => null, // Will be populated when coming from patient request
         ]);
     }

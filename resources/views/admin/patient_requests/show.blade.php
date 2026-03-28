@@ -18,13 +18,13 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
             <div>
                 <label class="block text-sm font-bold text-gray-500 uppercase tracking-wider">Nama Pelapor</label>
-                <p class="text-lg font-bold text-gray-900 mt-1">{{ $patientRequest->patient_name }}</p>
+                <p class="text-lg font-bold text-gray-900 mt-1">{{ $patientRequest?->patient_name }}</p>
             </div>
 
             <div>
                 <label class="block text-sm font-bold text-gray-500 uppercase tracking-wider">Tanggal Kejadian</label>
                 <p class="text-lg font-bold text-gray-900 mt-1">
-                    {{ $patientRequest->request_date->format('d F Y') }}
+                    {{ $patientRequest?->request_date?->format('d F Y') }}
                 </p>
             </div>
         </div>
@@ -33,13 +33,13 @@
             <div>
                 <label class="block text-sm font-bold text-gray-500 uppercase tracking-wider">Jam Kejadian</label>
                 <p class="text-lg font-bold text-gray-900 mt-1">
-                    {{ $patientRequest->pickup_time ? \Carbon\Carbon::parse($patientRequest->pickup_time)->format('H:i') : '-' }} WIB
+                    {{ $patientRequest?->pickup_time ? \Carbon\Carbon::parse($patientRequest->pickup_time)->format('H:i') : '-' }} WIB
                 </p>
             </div>
             
             <div>
                 <label class="block text-sm font-bold text-gray-500 uppercase tracking-wider">No. Telepon (WA)</label>
-                <p class="text-lg font-bold text-red-600 mt-1">{{ $patientRequest->phone }}</p>
+                <p class="text-lg font-bold text-red-600 mt-1">{{ $patientRequest?->phone }}</p>
             </div>
         </div>
 
@@ -47,12 +47,12 @@
             <div>
                 <label class="block text-sm font-bold text-gray-500 uppercase tracking-wider">Jenis Kejadian</label>
                 <p class="text-lg font-bold text-gray-900 mt-1">
-                    @if ($patientRequest->service_type === 'kebakaran')
+                    @if ($patientRequest?->service_type === 'kebakaran')
                         🔥 Kebakaran
-                    @elseif ($patientRequest->service_type === 'rescue')
+                    @elseif ($patientRequest?->service_type === 'rescue')
                         🚒 Rescue
                     @else
-                        {{ strtoupper($patientRequest->service_type) }}
+                        {{ strtoupper($patientRequest?->service_type ?? '') }}
                     @endif
                 </p>
             </div>
@@ -60,6 +60,7 @@
             <div>
                 <label class="block text-sm font-bold text-gray-500 uppercase tracking-wider">Kondisi / Ket. Tambahan</label>
                 <p class="text-lg font-bold text-gray-900 mt-1">
+                    @if($patientRequest->patient_condition === 'kebakaran') 🔥 @elseif($patientRequest->patient_condition === 'rescue') 🚒 @endif
                     {{ strtoupper(str_replace('_', ' ', $patientRequest->patient_condition ?? '-')) }}
                 </p>
             </div>

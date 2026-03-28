@@ -202,7 +202,7 @@
             </div>
             <div class="flex justify-between items-center">
                 ${statusBadges[d.status] || d.status}
-                ${d.patient_condition ? `<span class="text-xs text-red-600 font-semibold">${d.patient_condition}</span>` : ''}
+                ${d.patient_condition ? `<span class="text-[10px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded ${d.patient_condition === 'kebakaran' ? 'bg-red-50 text-red-600 border border-red-100' : 'bg-blue-50 text-blue-600 border border-blue-100'}">${d.patient_condition === 'kebakaran' ? '🔥 KEBAKARAN' : (d.patient_condition === 'rescue' ? '🚒 RESCUE' : d.patient_condition)}</span>` : ''}
             </div>
         </div>
     `).join('');
@@ -223,9 +223,9 @@
                 <div class="font-semibold text-gray-800">${r.patient_name}</div>
                 <div class="text-xs text-gray-500">${r.request_date}</div>
             </div>
-            <div class="text-sm text-gray-600 mb-2">
-                ${r.service_type === 'ambulance' ? '🚒 Unit Damkar' : '🚒 Rescue'}
-                ${r.patient_condition ? ` - ${r.patient_condition}` : ''}
+            <div class="text-xs font-bold text-gray-700 mb-2 flex items-center gap-1.5">
+                ${r.service_type === 'kebakaran' ? '🔥 KEBAKARAN' : (r.service_type === 'rescue' ? '🚒 RESCUE' : '🚒 ' + r.service_type.toUpperCase())}
+                ${r.patient_condition && r.patient_condition !== r.service_type ? `<span class="text-[10px] text-gray-400 font-medium">(${r.patient_condition})</span>` : ''}
             </div>
             <div>
                 ${statusBadges[r.status] || r.status}

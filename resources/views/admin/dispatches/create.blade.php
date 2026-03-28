@@ -97,14 +97,27 @@
             </div>
         </div>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 border-t border-gray-50 pt-6">
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 border-t border-gray-50 pt-6">
+            <div>
+                <label class="block text-sm font-bold text-gray-700 mb-1">Pilih Pleton</label>
+                <select id="filter_pleton" 
+                        class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-red-500 focus:border-red-500">
+                    <option value="">-- Semua Pleton --</option>
+                    @foreach($pletons as $p)
+                        <option value="{{ $p->id }}">{{ $p->name }}</option>
+                    @endforeach
+                </select>
+            </div>
+
             <div>
                 <label class="block text-sm font-bold text-gray-700 mb-1">Petugas (Driver)</label>
-                <select name="driver_id" required 
+                <select name="driver_id" id="driver_id" required 
                         class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-red-500 focus:border-red-500">
-                    <option value="">-- Pilih Petugas --</option>
+                    <option value="" data-pleton="">-- Pilih Petugas --</option>
                     @foreach($drivers as $d)
-                        <option value="{{ $d->id }}">{{ $d->name }} ({{ $d->status }})</option>
+                        <option value="{{ $d->id }}" data-pleton="{{ $d->pleton_id }}">
+                            {{ $d->name }} ({{ $d->pleton?->name ?? 'Tanpa Pleton' }})
+                        </option>
                     @endforeach
                 </select>
             </div>
@@ -133,4 +146,34 @@
 
     </form>
 </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const pletonSelect = document.getElementById('filter_pleton');
+            const driverSelect = document.getElementById('driver_id');
+            const driverOptions = Array.from(driverSelect.options);
+
+            pletonSelect.addEventListener('change', function() {
+                const selectedPletonId = this.value;
+                
+                // Clear and reset driver select
+                driverSelect.innerHTML = '';
+                
+                // Filter options
+                const filteredOptions = driverOptions.filter(option => {
+                    if (!selectedPletonId) return true; // Show all if no pleton selected
+                    if (!option.value) return true; // Keep placeholder
+                    return option.getAttribute('data-pleton') === selectedPletonId;
+                });
+
+                // Re-add filtered options
+                filteredOptions.forEach(option => {
+                    driverSelect.appendChild(option);
+                });
+
+                // Reset selection to placeholder
+                driverSelect.value = "";
+            });
+        });
+    </script>
 @endsection

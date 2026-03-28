@@ -16,8 +16,14 @@
                     <td class="px-6 py-4">
                         <div class="font-bold text-gray-900">{{ $d->patient_name }}</div>
                         <div
-                            class="text-[10px] @if($d->patient_condition === 'emergency') text-red-600 @else text-gray-500 @endif font-bold uppercase tracking-tighter">
-                            {{ $d->patient_condition }}
+                            class="text-[10px] font-bold uppercase tracking-tighter">
+                            @if($d->patient_condition === 'kebakaran')
+                                <span class="text-red-600">🔥 Kebakaran</span>
+                            @elseif($d->patient_condition === 'rescue')
+                                <span class="text-blue-600">🚒 Rescue</span>
+                            @else
+                                <span class="@if($d->patient_condition === 'emergency') text-red-600 @else text-gray-500 @endif">{{ $d->patient_condition }}</span>
+                            @endif
                         </div>
                     </td>
                     <td class="px-6 py-4">

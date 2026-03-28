@@ -8,7 +8,7 @@
     <!-- Header -->
     <div class="mb-6 flex justify-between items-center">
         <h1 class="text-2xl font-bold text-gray-800">
-            🚒 Detail Laporan #{{ $dispatch->nomor ?? $dispatch->id }}
+            🚒 Detail Laporan #{{ $dispatch?->nomor ?? $dispatch?->id }}
         </h1>
         <div class="flex items-center gap-4">
             <a href="{{ route('admin.dispatches.export-single.pdf', $dispatch->id) }}" 
@@ -35,6 +35,7 @@
                     @if(in_array($dispatch->patient_condition, ['emergency', 'kebakaran'])) bg-red-100 text-red-700
                     @elseif($dispatch->patient_condition === 'rescue') bg-blue-100 text-blue-700
                     @else bg-gray-100 text-gray-700 @endif">
+                    @if($dispatch->patient_condition === 'kebakaran') 🔥 @elseif($dispatch->patient_condition === 'rescue') 🚒 @endif
                     {{ strtoupper(str_replace('_', ' ', $dispatch->patient_condition)) }}
                 </span>
             </div>

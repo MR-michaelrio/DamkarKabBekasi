@@ -21,7 +21,7 @@
 
         <div>
             <label class="block text-sm font-bold text-gray-700 mb-1">Nama Driver</label>
-            <input name="name" value="{{ old('name', $driver->name) }}"
+            <input name="name" value="{{ old('name', $driver?->name) }}"
                 class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500" required>
         </div>
 

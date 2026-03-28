@@ -32,12 +32,14 @@ class PatientRequestController extends Controller
 
     public function createDispatch(PatientRequest $patientRequest)
     {
-        $drivers = Driver::where('status', 'available')->get();
+        $drivers = Driver::where('status', 'available')->with('pleton')->get();
         $ambulances = Ambulance::where('status', 'ready')->get();
+        $pletons = \App\Models\Pleton::all();
 
         return view('admin.dispatches.create', [
             'drivers' => $drivers,
             'ambulances' => $ambulances,
+            'pletons' => $pletons,
             'patientRequest' => $patientRequest,
         ]);
     }

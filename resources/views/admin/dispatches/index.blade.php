@@ -47,8 +47,14 @@
                         <!-- Pelapor -->
                         <td class="px-4 py-3">
                             <div class="font-semibold">{{ $d->patient_name }}</div>
-                            <div class="text-xs text-gray-500">
-                                {{ strtoupper($d->patient_condition) }}
+                            <div class="text-xs font-bold">
+                                @if($d->patient_condition === 'kebakaran')
+                                    <span class="text-red-600">🔥 KEBAKARAN</span>
+                                @elseif($d->patient_condition === 'rescue')
+                                    <span class="text-blue-600">🚒 RESCUE</span>
+                                @else
+                                    <span class="text-gray-500">{{ strtoupper($d->patient_condition) }}</span>
+                                @endif
                             </div>
                         </td>
 
