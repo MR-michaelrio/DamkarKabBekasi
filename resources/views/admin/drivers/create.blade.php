@@ -31,6 +31,12 @@
         </div>
 
         <div>
+            <label class="block text-sm font-bold text-gray-700 mb-1">Pleton</label>
+            <input name="pleton" placeholder="Contoh: 1, 2, atau Pleton 1" value="{{ old('pleton') }}"
+                class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500">
+        </div>
+
+        <div>
             <label class="block text-sm font-bold text-gray-700 mb-1">Nomor SIM</label>
             <input name="license_number" placeholder="No SIM" value="{{ old('license_number') }}"
                 class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500">

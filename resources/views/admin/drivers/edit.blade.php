@@ -25,9 +25,14 @@
                 class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500" required>
         </div>
 
-        <div>
             <label class="block text-sm font-bold text-gray-700 mb-1">No HP</label>
             <input name="phone" value="{{ old('phone', $driver->phone) }}"
+                class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500">
+        </div>
+
+        <div>
+            <label class="block text-sm font-bold text-gray-700 mb-1">Pleton</label>
+            <input name="pleton" value="{{ old('pleton', $driver->pleton) }}" placeholder="Contoh: 1, 2, atau Pleton 1"
                 class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500">
         </div>
 

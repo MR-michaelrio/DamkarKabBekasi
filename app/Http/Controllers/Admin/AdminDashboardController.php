@@ -8,10 +8,23 @@ use App\Models\Ambulance;
 use App\Models\Driver;
 use Carbon\Carbon;
 
+use Illuminate\Http\Request;
+
 class AdminDashboardController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
+        // Parameter Filter Bulan
+        $selectedMonth = $request->get('month', Carbon::now()->month);
+        $selectedYear = $request->get('year', Carbon::now()->year);
+
+        try {
+            $filterDate = Carbon::createFromDate($selectedYear, $selectedMonth, 1);
+        } catch (\Exception $e) {
+            $filterDate = Carbon::now();
+            $selectedMonth = $filterDate->month;
+            $selectedYear = $filterDate->year;
+        }
         // =====================
         // TIMEFRAME DISPATCHES
         // =====================
@@ -26,16 +39,16 @@ class AdminDashboardController extends Controller
             ->get();
 
         $monthDispatches = Dispatch::with(['driver', 'ambulance'])
-            ->whereMonth('created_at', Carbon::now()->month)
-            ->whereYear('created_at', Carbon::now()->year)
+            ->whereMonth('created_at', $selectedMonth)
+            ->whereYear('created_at', $selectedYear)
             ->orderByDesc('created_at')
             ->get();
 
         // =====================
-        // AMBULANCE ANALYTICS (Current Month)
+        // AMBULANCE ANALYTICS (Filtered Month)
         // =====================
-        $startOfMonth = Carbon::now()->startOfMonth();
-        $endOfMonth = Carbon::now()->endOfMonth();
+        $startOfMonth = $filterDate->copy()->startOfMonth();
+        $endOfMonth = $filterDate->copy()->endOfMonth();
 
         $ambulanceAnalytics = Ambulance::withCount(['dispatches' => function ($query) use ($startOfMonth, $endOfMonth) {
             $query->whereBetween('created_at', [$startOfMonth, $endOfMonth]);
@@ -61,7 +74,10 @@ class AdminDashboardController extends Controller
             'dispatchActive',
             'dispatchEmergency',
             'ambulanceReady',
-            'ambulanceOnDuty'
+            'ambulanceOnDuty',
+            'selectedMonth',
+            'selectedYear',
+            'filterDate'
         ));
     }
 }

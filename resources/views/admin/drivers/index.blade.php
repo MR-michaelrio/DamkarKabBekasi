@@ -33,6 +33,7 @@
                     <tr class="text-left text-gray-600 uppercase text-xs">
                         <th class="px-6 py-3 whitespace-nowrap">Nama</th>
                         <th class="px-6 py-3 whitespace-nowrap">No HP</th>
+                        <th class="px-6 py-3 whitespace-nowrap">Pleton</th>
                         <th class="px-6 py-3 whitespace-nowrap">No SIM</th>
                         <th class="px-6 py-3 whitespace-nowrap">Status</th>
                         <th class="px-6 py-3 text-right whitespace-nowrap">Aksi</th>
@@ -43,6 +44,7 @@
                     <tr class="hover:bg-gray-50 transition">
                         <td class="px-6 py-4 font-semibold text-gray-800 whitespace-nowrap">{{ $driver->name }}</td>
                         <td class="px-6 py-4 whitespace-nowrap">{{ $driver->phone ?? '-' }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap font-bold text-gray-700">{{ $driver->pleton ?? '-' }}</td>
                         <td class="px-6 py-4 whitespace-nowrap">{{ $driver->license_number ?? '-' }}</td>
                         <td class="px-6 py-4 whitespace-nowrap">
                             <span class="px-2 py-1 rounded text-xs font-bold
@@ -71,7 +73,7 @@
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="5" class="px-6 py-10 text-center text-gray-500 italic">
+                        <td colspan="6" class="px-6 py-10 text-center text-gray-500 italic">
                             👨‍✈️ Belum ada data driver
                         </td>
                     </tr>

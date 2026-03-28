@@ -169,11 +169,21 @@ class DispatchController extends Controller
             $endDate = Carbon::now()->endOfWeek();
         }
         elseif ($range === 'month') {
-            $query->whereMonth('created_at', Carbon::now()->month)
-                ->whereYear('created_at', Carbon::now()->year);
-            $title .= " Bulan Ini";
-            $startDate = Carbon::now()->startOfMonth();
-            $endDate = Carbon::now()->endOfMonth();
+            $month = $request->get('month', Carbon::now()->month);
+            $year = $request->get('year', Carbon::now()->year);
+            try {
+                $filterDate = Carbon::createFromDate($year, $month, 1);
+            } catch (\Exception $e) {
+                $filterDate = Carbon::now();
+                $month = $filterDate->month;
+                $year = $filterDate->year;
+            }
+
+            $query->whereMonth('created_at', $month)
+                ->whereYear('created_at', $year);
+            $title .= " Bulan " . $filterDate->translatedFormat('F Y');
+            $startDate = $filterDate->copy()->startOfMonth();
+            $endDate = $filterDate->copy()->endOfMonth();
         }
 
         $dispatches = $query->orderByDesc('created_at')->get();
@@ -182,10 +192,6 @@ class DispatchController extends Controller
         $analytics = Ambulance::with(['dispatches' => function ($q) use ($startDate, $endDate) {
             if ($startDate && $endDate) {
                 $q->whereBetween('created_at', [$startDate, $endDate]);
-            }
-            else {
-                $q->whereMonth('created_at', Carbon::now()->month)
-                    ->whereYear('created_at', Carbon::now()->year);
             }
         }])->get()->map(function ($ambulance) {
             $ambulance->dispatches_count = $ambulance->dispatches->count();

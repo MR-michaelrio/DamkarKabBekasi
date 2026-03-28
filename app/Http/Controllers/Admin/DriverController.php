@@ -24,6 +24,7 @@ class DriverController extends Controller
         $request->validate([
             'name' => 'required',
             'phone' => 'nullable',
+            'pleton' => 'nullable|string|max:50',
             'license_number' => 'nullable',
             'status' => 'required',
         ]);
@@ -44,6 +45,7 @@ class DriverController extends Controller
         $request->validate([
             'name' => 'required',
             'status' => 'required',
+            'pleton' => 'nullable|string|max:50',
         ]);
 
         $driver->update($request->all());
