@@ -9,7 +9,6 @@ class Driver extends Model
     protected $fillable = [
         'name',
         'phone',
-        'pleton',
         'pleton_id',
         'license_number',
         'status',
