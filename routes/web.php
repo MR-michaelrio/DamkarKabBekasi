@@ -12,6 +12,7 @@ use App\Http\Controllers\PatientRequestController;
 use App\Http\Controllers\Driver\DriverDashboardController;
 use App\Http\Controllers\Admin\AmbulanceMaintenanceController;
 use App\Http\Controllers\Admin\AmbulanceTypeController;
+use App\Http\Controllers\Admin\PletonController;
 use App\Http\Controllers\Api\DriverLocationController;
 
 /*
@@ -114,6 +115,7 @@ Route::middleware(['auth'])->group(function () {
             Route::delete('maintenance/{maintenance}', [AmbulanceMaintenanceController::class , 'destroy'])->name('maintenance.destroy');
 
             Route::resource('drivers', DriverController::class);
+            Route::resource('pletons', PletonController::class);
             Route::resource('users', UserController::class);
 
             // Dispatch Management

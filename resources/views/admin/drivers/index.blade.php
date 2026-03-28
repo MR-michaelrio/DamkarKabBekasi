@@ -44,7 +44,7 @@
                     <tr class="hover:bg-gray-50 transition">
                         <td class="px-6 py-4 font-semibold text-gray-800 whitespace-nowrap">{{ $driver->name }}</td>
                         <td class="px-6 py-4 whitespace-nowrap">{{ $driver->phone ?? '-' }}</td>
-                        <td class="px-6 py-4 whitespace-nowrap font-bold text-gray-700">{{ $driver->pleton ?? '-' }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap font-bold text-gray-700">{{ $driver->pleton->name ?? '-' }}</td>
                         <td class="px-6 py-4 whitespace-nowrap">{{ $driver->license_number ?? '-' }}</td>
                         <td class="px-6 py-4 whitespace-nowrap">
                             <span class="px-2 py-1 rounded text-xs font-bold

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Driver;
+use App\Models\Pleton;
 use Illuminate\Http\Request;
 
 class DriverController extends Controller
@@ -16,7 +17,8 @@ class DriverController extends Controller
 
     public function create()
     {
-        return view('admin.drivers.create');
+        $pletons = Pleton::orderBy('name')->get();
+        return view('admin.drivers.create', compact('pletons'));
     }
 
     public function store(Request $request)
@@ -24,7 +26,7 @@ class DriverController extends Controller
         $request->validate([
             'name' => 'required',
             'phone' => 'nullable',
-            'pleton' => 'nullable|string|max:50',
+            'pleton_id' => 'nullable|exists:pletons,id',
             'license_number' => 'nullable',
             'status' => 'required',
         ]);
@@ -37,7 +39,8 @@ class DriverController extends Controller
 
     public function edit(Driver $driver)
     {
-        return view('admin.drivers.edit', compact('driver'));
+        $pletons = Pleton::orderBy('name')->get();
+        return view('admin.drivers.edit', compact('driver', 'pletons'));
     }
 
     public function update(Request $request, Driver $driver)
@@ -45,7 +48,7 @@ class DriverController extends Controller
         $request->validate([
             'name' => 'required',
             'status' => 'required',
-            'pleton' => 'nullable|string|max:50',
+            'pleton_id' => 'nullable|exists:pletons,id',
         ]);
 
         $driver->update($request->all());

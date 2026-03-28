@@ -32,8 +32,15 @@
 
         <div>
             <label class="block text-sm font-bold text-gray-700 mb-1">Pleton</label>
-            <input name="pleton" placeholder="Contoh: 1, 2, atau Pleton 1" value="{{ old('pleton') }}"
+            <select name="pleton_id"
                 class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                <option value="">-- Pilih Pleton --</option>
+                @foreach($pletons as $pleton)
+                    <option value="{{ $pleton->id }}" {{ old('pleton_id') == $pleton->id ? 'selected' : '' }}>
+                        {{ $pleton->name }}
+                    </option>
+                @endforeach
+            </select>
         </div>
 
         <div>
