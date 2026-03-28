@@ -1,4 +1,4 @@
-<?php $__env->startSection('title', 'Detail Permintaan | GMCI Admin'); ?>
+<?php $__env->startSection('title', 'Detail Laporan | Damkar Admin'); ?>
 
 <?php $__env->startSection('content'); ?>
 <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -6,7 +6,7 @@
     <!-- Header -->
     <div class="mb-6">
         <h1 class="text-2xl font-bold text-gray-800">
-            📋 Detail Permintaan Pasien
+            📋 Detail Laporan Masyarakat
         </h1>
     </div>
 
@@ -15,12 +15,12 @@
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
             <div>
-                <label class="block text-sm font-bold text-gray-500 uppercase tracking-wider">Nama Pasien</label>
+                <label class="block text-sm font-bold text-gray-500 uppercase tracking-wider">Nama Pelapor</label>
                 <p class="text-lg font-bold text-gray-900 mt-1"><?php echo e($patientRequest->patient_name); ?></p>
             </div>
 
             <div>
-                <label class="block text-sm font-bold text-gray-500 uppercase tracking-wider">Tanggal</label>
+                <label class="block text-sm font-bold text-gray-500 uppercase tracking-wider">Tanggal Kejadian</label>
                 <p class="text-lg font-bold text-gray-900 mt-1">
                     <?php echo e($patientRequest->request_date->format('d F Y')); ?>
 
@@ -30,60 +30,45 @@
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
             <div>
-                <label class="block text-sm font-bold text-gray-500 uppercase tracking-wider">Jam Penjemputan</label>
+                <label class="block text-sm font-bold text-gray-500 uppercase tracking-wider">Jam Kejadian</label>
                 <p class="text-lg font-bold text-gray-900 mt-1">
                     <?php echo e($patientRequest->pickup_time ? \Carbon\Carbon::parse($patientRequest->pickup_time)->format('H:i') : '-'); ?> WIB
                 </p>
             </div>
+            
+            <div>
+                <label class="block text-sm font-bold text-gray-500 uppercase tracking-wider">No. Telepon (WA)</label>
+                <p class="text-lg font-bold text-red-600 mt-1"><?php echo e($patientRequest->phone); ?></p>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 border-t border-gray-50 pt-6">
+            <div>
+                <label class="block text-sm font-bold text-gray-500 uppercase tracking-wider">Jenis Kejadian</label>
+                <p class="text-lg font-bold text-gray-900 mt-1">
+                    <?php if($patientRequest->service_type === 'kebakaran'): ?>
+                        🔥 Kebakaran
+                    <?php elseif($patientRequest->service_type === 'rescue'): ?>
+                        🚒 Rescue
+                    <?php else: ?>
+                        <?php echo e(strtoupper($patientRequest->service_type)); ?>
+
+                    <?php endif; ?>
+                </p>
+            </div>
 
             <div>
-                <label class="block text-sm font-bold text-gray-500 uppercase tracking-wider">Tipe Perjalanan</label>
+                <label class="block text-sm font-bold text-gray-500 uppercase tracking-wider">Kondisi / Ket. Tambahan</label>
                 <p class="text-lg font-bold text-gray-900 mt-1">
-                    <?php if($patientRequest->trip_type === 'round_trip'): ?>
-                        🔄 Pulang Pergi (PP)
-                    <?php else: ?>
-                        ➡️ Sekali Jalan
-                    <?php endif; ?>
+                    <?php echo e(strtoupper(str_replace('_', ' ', $patientRequest->patient_condition ?? '-'))); ?>
+
                 </p>
             </div>
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 border-t border-gray-50 pt-6">
             <div>
-                <label class="block text-sm font-bold text-gray-500 uppercase tracking-wider">Jenis Layanan</label>
-                <p class="text-lg font-bold text-gray-900 mt-1">
-                    <?php if($patientRequest->service_type === 'ambulance'): ?>
-                        🚑 Pasien (Ambulance)
-                    <?php else: ?>
-                        ⚰️ Jenazah (Mobil Jenazah)
-                    <?php endif; ?>
-                </p>
-            </div>
-
-            <div>
-                <label class="block text-sm font-bold text-gray-500 uppercase tracking-wider">Kondisi / Status</label>
-                <p class="text-lg font-bold text-gray-900 mt-1">
-                    <?php if($patientRequest->patient_condition === 'emergency'): ?>
-                        <span class="text-red-600">🚨 EMERGENCY</span>
-                    <?php elseif($patientRequest->patient_condition === 'kontrol'): ?>
-                        <span class="text-blue-600">🏥 KONTROL</span>
-                    <?php elseif($patientRequest->patient_condition === 'pasien_pulang'): ?>
-                        <span class="text-emerald-600">🏠 PULANG</span>
-                    <?php else: ?>
-                        <span class="text-gray-400">-</span>
-                    <?php endif; ?>
-                </p>
-            </div>
-        </div>
-
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 border-t border-gray-50 pt-6">
-            <div>
-                <label class="block text-sm font-bold text-gray-500 uppercase tracking-wider">No. Telepon</label>
-                <p class="text-lg font-bold text-gray-900 mt-1"><?php echo e($patientRequest->phone); ?></p>
-            </div>
-
-            <div>
-                <label class="block text-sm font-bold text-gray-500 uppercase tracking-wider">Status</label>
+                <label class="block text-sm font-bold text-gray-500 uppercase tracking-wider">Status Laporan</label>
                 <div class="mt-2">
                     <?php if($patientRequest->status === 'pending'): ?>
                         <span class="px-3 py-1 bg-yellow-100 text-yellow-700 rounded text-sm font-bold shadow-sm">
@@ -107,26 +92,64 @@
         </div>
 
         <div class="border-t border-gray-50 pt-6">
-            <label class="block text-sm font-bold text-gray-500 uppercase tracking-wider">Alamat Jemput</label>
-            <p class="text-gray-900 mt-2 bg-gray-50 p-3 rounded-lg border border-gray-100"><?php echo e($patientRequest->pickup_address); ?></p>
-        </div>
-
-        <div>
-            <label class="block text-sm font-bold text-gray-500 uppercase tracking-wider">Tujuan</label>
-            <p class="text-gray-900 mt-2 bg-gray-50 p-3 rounded-lg border border-gray-100"><?php echo e($patientRequest->destination); ?></p>
-        </div>
-
-        <?php if($patientRequest->dispatch_id): ?>
-            <div class="border-t border-gray-50 pt-6">
-                <label class="block text-sm font-bold text-gray-500 uppercase tracking-wider">Dispatch ID</label>
-                <p class="text-xl font-bold text-blue-600 mt-1">
-                    #<?php echo e($patientRequest->dispatch_id); ?>
-
-                </p>
+            <label class="block text-sm font-bold text-gray-500 uppercase tracking-wider">Alamat TKP (Lokasi Kejadian)</label>
+            <p class="text-gray-900 mt-2 bg-gray-50 p-3 rounded-lg border border-gray-100 font-bold text-red-600"><?php echo e($patientRequest->pickup_address); ?></p>
+            <div class="grid grid-cols-2 gap-4 mt-2 text-xs text-gray-500">
+                <span>Blok: <?php echo e($patientRequest->blok ?? '-'); ?></span>
+                <span>RT/RW: <?php echo e($patientRequest->rt ?? '-'); ?>/<?php echo e($patientRequest->rw ?? '-'); ?></span>
+                <span>Kel: <?php echo e($patientRequest->kelurahan ?? '-'); ?></span>
+                <span>Kec: <?php echo e($patientRequest->kecamatan ?? '-'); ?></span>
             </div>
-        <?php endif; ?>
+        </div>
 
     </div>
+
+    <!-- Dispatches Card -->
+    <?php if($patientRequest->dispatches->count() > 0): ?>
+    <div class="bg-white shadow rounded-xl p-6 mt-6 border border-gray-100">
+        <h2 class="font-black text-gray-800 uppercase tracking-tight text-sm mb-4">🚑 Unit Ditugaskan (<?php echo e($patientRequest->dispatches->count()); ?>)</h2>
+        <div class="divide-y divide-gray-50">
+            <?php $__currentLoopData = $patientRequest->dispatches->sortByDesc('assigned_at'); $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $d): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                <div class="py-4 flex items-start justify-between">
+                    <div>
+                        <div class="flex items-center gap-2 mb-1">
+                            <span class="font-black text-gray-900"><?php echo e($d->ambulance?->code ?? '?'); ?></span>
+                            <span class="text-gray-400 text-sm"><?php echo e($d->ambulance?->plate_number); ?></span>
+                        </div>
+                        <p class="text-sm text-gray-600 mb-2">👤 <?php echo e($d->driver?->name ?? 'No driver'); ?></p>
+                        <?php
+                            $statusColors = [
+                                'pending'               => 'bg-blue-100 text-blue-700',
+                                'on_the_way_scene'      => 'bg-yellow-100 text-yellow-700',
+                                'on_scene'              => 'bg-green-100 text-green-700',
+                                'on_the_way_kantor_pos' => 'bg-orange-100 text-orange-700',
+                                'completed'             => 'bg-gray-100 text-gray-500',
+                            ];
+                            $sc = $statusColors[$d->status] ?? 'bg-gray-100 text-gray-600';
+                        ?>
+                        <span class="px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider <?php echo e($sc); ?>">
+                            <?php echo e(str_replace('_', ' ', $d->status)); ?>
+
+                        </span>
+                    </div>
+                    <div class="text-right flex flex-col items-end">
+                        <span class="text-xs text-gray-400 block"><?php echo e($d->assigned_at?->format('d M H:i')); ?></span>
+                        <div class="mt-auto flex items-center gap-2 mt-2">
+                            <?php if($d->status !== 'completed'): ?>
+                            <form action="<?php echo e(route('admin.dispatches.destroy', $d)); ?>" method="POST" class="inline" onsubmit="return confirm('Yakin ingin menghapus armada ini dari penugasan?\n\nArmada dan driver akan dikembalikan menjadi tersedia.')">
+                                <?php echo csrf_field(); ?>
+                                <?php echo method_field('DELETE'); ?>
+                                <button type="submit" class="text-red-500 hover:text-red-700 text-xs font-bold bg-white border border-red-500 rounded px-2 py-0.5 transition active:scale-95">Hapus</button>
+                            </form>
+                            <?php endif; ?>
+                            <a href="<?php echo e(route('admin.dispatches.show', $d)); ?>" class="text-emerald-600 hover:text-emerald-800 text-xs font-bold bg-emerald-50 rounded px-2 py-0.5 border border-emerald-100">Detail Dispatch →</a>
+                        </div>
+                    </div>
+                </div>
+            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+        </div>
+    </div>
+    <?php endif; ?>
 
     <!-- Actions -->
     <div class="mt-6 flex flex-col sm:flex-row justify-between items-center gap-4">
@@ -135,22 +158,25 @@
             ← Kembali
         </a>
 
-        <?php if($patientRequest->status === 'pending'): ?>
+        <?php if(in_array($patientRequest->status, ['pending', 'dispatched'])): ?>
             <div class="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
                 <a href="<?php echo e(route('admin.patient-requests.create-dispatch', $patientRequest)); ?>"
                    class="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-bold shadow-lg text-center transition transform active:scale-95">
-                    ✅ Buat Dispatch
+                    <?php echo e($patientRequest->status === 'dispatched' ? '➕ Tambah Armada' : '✅ Buat Dispatch'); ?>
+
                 </a>
 
+                <?php if($patientRequest->status === 'pending'): ?>
                 <form method="POST" action="<?php echo e(route('admin.patient-requests.reject', $patientRequest)); ?>"
                       class="inline"
-                      onsubmit="return confirm('Yakin ingin menolak permintaan ini?')">
+                      onsubmit="return confirm('Yakin ingin menolak laporan ini?')">
                     <?php echo csrf_field(); ?>
                     <button type="submit"
                             class="bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-lg font-bold shadow-lg w-full transition transform active:scale-95">
                         ❌ Tolak
                     </button>
                 </form>
+                <?php endif; ?>
             </div>
         <?php endif; ?>
     </div>

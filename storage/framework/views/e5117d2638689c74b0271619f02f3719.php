@@ -125,8 +125,7 @@
                 <div class="text-3xl mb-3">❤️</div>
                 <h3 class="font-bold text-lg mb-2">Misi Kemanusiaan</h3>
                 <p class="text-gray-600 text-sm">
-                    Mendukung pelayanan kesehatan dan sosial
-                    bagi masyarakat yang membutuhkan.
+                    Pelayanan pemadaman dan penyelamatan bagi warga masyarakat kabupaten Bekasi yang membutuhkan
                 </p>
             </div>
 

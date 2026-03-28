@@ -117,10 +117,11 @@
                                         Hapus
                                     </button>
                                 </form>
-                                <?php if($request->status === 'pending'): ?>
+                                <?php if(in_array($request->status, ['pending', 'dispatched'])): ?>
                                     <a href="<?php echo e(route('admin.patient-requests.create-dispatch', $request)); ?>"
                                        class="text-green-600 hover:text-green-800 font-bold">
-                                        Dispatch
+                                        <?php echo e($request->status === 'dispatched' ? 'Tambah Armada' : 'Dispatch'); ?>
+
                                     </a>
                                 <?php endif; ?>
                             </td>

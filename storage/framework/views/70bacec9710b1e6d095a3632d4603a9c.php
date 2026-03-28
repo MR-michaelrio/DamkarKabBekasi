@@ -4,7 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Laporan Kejadian | Damkar Bekasi</title>
+    <title>Laporan Kejadian | Damkar Kabupaten Bekasi</title>
+    <link rel="icon" href="<?php echo e(asset('logo-damkar.png')); ?>" type="image/png">
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 
@@ -157,8 +158,7 @@
         <!-- Footer Info -->
         <div class="mt-8 text-center text-sm text-gray-600">
             <p>Layanan Darurat Pemerintah Kabupaten Bekasi</p>
-            <p class="mt-2 text-lg font-bold">Layanan 24 Jam: <a href="tel:+6281286858680" class="text-red-600">+62
-                    812-8685-8680</a></p>
+            <p class="mt-2 text-lg font-bold">Layanan 24 Jam: <a href="tel:02122137870" class="text-red-600">02122137870</a> / <a href="tel:02122162577" class="text-red-600">02122162577</a></p>
         </div>
 
     </div>

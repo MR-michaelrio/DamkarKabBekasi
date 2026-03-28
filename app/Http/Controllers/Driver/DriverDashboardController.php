@@ -178,6 +178,7 @@ class DriverDashboardController extends Controller
             'kelurahan' => $patientRequest->kelurahan,
             'kecamatan' => $patientRequest->kecamatan,
             'nomor' => $patientRequest->nomor,
+            'patient_request_id' => $patientRequest->id,
         ]);
 
         // Update statuses
@@ -194,7 +195,6 @@ class DriverDashboardController extends Controller
         // Link to patient request
         $patientRequest->update([
             'status' => 'dispatched',
-            'dispatch_id' => $dispatch->id,
         ]);
 
         return redirect()->route('driver.dashboard')->with('success', 'Penugasan berhasil dibuat!');

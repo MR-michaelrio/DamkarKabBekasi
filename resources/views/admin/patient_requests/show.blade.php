@@ -132,7 +132,16 @@
                     </div>
                     <div class="text-right flex flex-col items-end">
                         <span class="text-xs text-gray-400 block">{{ $d->assigned_at?->format('d M H:i') }}</span>
-                        <a href="{{ route('admin.dispatches.show', $d) }}" class="text-emerald-600 hover:text-emerald-800 text-xs font-bold mt-2 mt-auto">Detail Dispatch →</a>
+                        <div class="mt-auto flex items-center gap-2 mt-2">
+                            @if($d->status !== 'completed')
+                            <form action="{{ route('admin.dispatches.destroy', $d) }}" method="POST" class="inline" onsubmit="return confirm('Yakin ingin menghapus armada ini dari penugasan?\n\nArmada dan driver akan dikembalikan menjadi tersedia.')">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="text-red-500 hover:text-red-700 text-xs font-bold bg-white border border-red-500 rounded px-2 py-0.5 transition active:scale-95">Hapus</button>
+                            </form>
+                            @endif
+                            <a href="{{ route('admin.dispatches.show', $d) }}" class="text-emerald-600 hover:text-emerald-800 text-xs font-bold bg-emerald-50 rounded px-2 py-0.5 border border-emerald-100">Detail Dispatch →</a>
+                        </div>
                     </div>
                 </div>
             @endforeach

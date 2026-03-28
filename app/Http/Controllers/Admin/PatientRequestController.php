@@ -17,7 +17,7 @@ class PatientRequestController extends Controller
         $direction = $request->get('direction', 'desc');
         $direction = in_array($direction, ['asc', 'desc']) ? $direction : 'desc';
 
-        $requests = PatientRequest::with('dispatch')
+        $requests = PatientRequest::with('dispatches')
             ->orderBy('request_date', $direction)
             ->orderBy('pickup_time', $direction)
             ->get();

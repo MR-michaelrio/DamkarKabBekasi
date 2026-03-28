@@ -119,10 +119,31 @@ class DispatchController extends Controller
 
     public function destroy(Dispatch $dispatch)
     {
+        // Free up the assigned unit and driver
+        if ($dispatch->ambulance_id) {
+            $dispatch->ambulance->update(['status' => 'ready']);
+        }
+        if ($dispatch->driver_id) {
+            $dispatch->driver->update(['status' => 'available']);
+        }
+
+        $patientRequestId = $dispatch->patient_request_id;
+        $eventRequestId = $dispatch->event_request_id;
+
         $dispatch->logs()->delete();
         $dispatch->delete();
 
-        return back();
+        // Revert parent status to pending if this was the last active dispatch for PatientRequest
+        if ($patientRequestId) {
+            $pr = \App\Models\PatientRequest::find($patientRequestId);
+            if ($pr && $pr->dispatches()->count() === 0) {
+                $pr->update(['status' => 'pending']);
+            }
+        }
+        
+        // Dispatches on Events don't strictly need automatic event status rollback, but could be handled if needed.
+
+        return back()->with('success', 'Armada berhasil dihapus dari lokasi kejadian.');
     }
 
     // ✅ EXPORT PDF
