@@ -80,7 +80,7 @@ Route::middleware(['auth'])->group(function () {
                 return redirect()->route('driver.dashboard');
             }
 
-            if (in_array(auth()->user()->role, ['admin', 'user'])) {
+            if (in_array(auth()->user()->role, ['admin', 'user', 'dispatcher'])) {
                 return redirect()->route('admin.dashboard');
             }
             else {

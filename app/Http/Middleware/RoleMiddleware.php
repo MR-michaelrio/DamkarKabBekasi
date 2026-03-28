@@ -10,7 +10,9 @@ class RoleMiddleware
 {
     public function handle(Request $request, Closure $next, string $role): Response
     {
-        if (!auth()->check() || auth()->user()->role !== $role) {
+        $roles = explode(',', $role);
+        
+        if (!auth()->check() || !in_array(auth()->user()->role, $roles)) {
             abort(403, 'ANDA TIDAK MEMILIKI AKSES');
         }
 

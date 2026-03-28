@@ -10,8 +10,8 @@ class AdminMiddleware
 {
     public function handle(Request $request, Closure $next): Response
     {
-        if (!auth()->check() || auth()->user()->role !== 'admin') {
-            abort(403, 'Akses khusus admin');
+        if (!auth()->check() || !in_array(auth()->user()->role, ['admin', 'user', 'dispatcher'])) {
+            abort(403, 'Akses khusus admin/operator');
         }
 
         return $next($request);
