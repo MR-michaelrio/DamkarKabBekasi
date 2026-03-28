@@ -3,7 +3,7 @@
 <?php $__env->startSection('content'); ?>
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
-    <div class="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div class="mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
             <h1 class="text-3xl font-extrabold text-gray-900 flex items-center gap-2">
                 🚒 Aktivitas Damkar
@@ -12,9 +12,37 @@
                 Laporan aktivitas unit damkar harian, mingguan, dan bulanan
             </p>
         </div>
-        <div class="flex items-center gap-3">
+        <div class="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+            <!-- Filter Form -->
+            <form method="GET" action="<?php echo e(route('admin.dashboard')); ?>" class="flex items-center gap-2 bg-white p-1 rounded-lg border border-gray-200 shadow-sm">
+                <?php
+                    $months = [
+                        1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April',
+                        5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus',
+                        9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'
+                    ];
+                    $currentYear = \Carbon\Carbon::now()->year;
+                ?>
+                <select name="month" class="text-sm border-none focus:ring-0 bg-transparent text-gray-700 font-medium py-1.5 pl-3 pr-8 w-32 cursor-pointer">
+                    <?php $__currentLoopData = $months; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $num => $name): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                        <option value="<?php echo e($num); ?>" <?php echo e($selectedMonth == $num ? 'selected' : ''); ?>><?php echo e($name); ?></option>
+                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                </select>
+                <div class="h-4 w-px bg-gray-300"></div>
+                <select name="year" class="text-sm border-none focus:ring-0 bg-transparent text-gray-700 font-medium py-1.5 pl-3 pr-8 cursor-pointer">
+                    <?php for($y = $currentYear; $y >= $currentYear - 2; $y--): ?>
+                        <option value="<?php echo e($y); ?>" <?php echo e($selectedYear == $y ? 'selected' : ''); ?>><?php echo e($y); ?></option>
+                    <?php endfor; ?>
+                </select>
+                <button type="submit" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 p-2 rounded-md transition ml-1" title="Terapkan Filter">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+                    </svg>
+                </button>
+            </form>
+
             <div class="bg-red-50 px-4 py-2 rounded-lg border border-red-100">
-                <span class="text-xs text-red-600 font-bold uppercase tracking-wider">Total Dispatch (Bulan Ini)</span>
+                <span class="text-xs text-red-600 font-bold uppercase tracking-wider">Total (Bulan Ini)</span>
                 <p class="text-2xl font-black text-red-900"><?php echo e($monthDispatches->count()); ?></p>
             </div>
         </div>
@@ -28,8 +56,7 @@
                 <h2 class="font-bold text-gray-800 flex items-center gap-2">
                     🚒 Analitik Per Unit
                 </h2>
-                <span class="text-[10px] bg-gray-200 text-gray-600 px-2 py-0.5 rounded-full font-bold uppercase">Bulan
-                    Ini</span>
+                <span class="text-[10px] bg-gray-200 text-gray-600 px-2 py-0.5 rounded-full font-bold uppercase">Bulan <?php echo e($filterDate->translatedFormat('F Y')); ?></span>
             </div>
             <div class="p-5 max-h-[400px] overflow-y-auto">
                 <div class="space-y-4">
@@ -103,9 +130,10 @@
         <section>
             <div class="flex items-center justify-between mb-4">
                 <h3 class="text-lg font-bold text-gray-800 flex items-center gap-2">
-                    📆 Bulan Ini
+                    📆 Bulan <?php echo e($filterDate->translatedFormat('F Y')); ?>
+
                 </h3>
-                <a href="<?php echo e(route('admin.dispatches.export.pdf', ['range' => 'month'])); ?>"
+                <a href="<?php echo e(route('admin.dispatches.export.pdf', ['range' => 'month', 'month' => $selectedMonth, 'year' => $selectedYear])); ?>"
                     class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-lg text-xs font-bold shadow-sm transition flex items-center gap-2">
                     📄 Export PDF
                 </a>

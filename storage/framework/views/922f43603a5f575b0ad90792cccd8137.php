@@ -17,6 +17,8 @@
                         class="text-sm font-medium text-gray-700 hover:text-indigo-600 transition">Tipe Armada</a>
                     <a href="<?php echo e(route('admin.drivers.index')); ?>"
                         class="text-sm font-medium text-gray-700 hover:text-indigo-600 transition">Driver</a>
+                    <a href="<?php echo e(route('admin.pletons.index')); ?>"
+                        class="text-sm font-medium text-gray-700 hover:text-indigo-600 transition">Pleton</a>
                     <a href="<?php echo e(route('admin.dispatches.index')); ?>"
                         class="text-sm font-medium text-gray-700 hover:text-indigo-600 transition">Dispatch</a>
                     <a href="<?php echo e(route('admin.patient-requests.index')); ?>"
@@ -69,6 +71,8 @@
                 Armada</a>
             <a href="<?php echo e(route('admin.drivers.index')); ?>"
                 class="block pl-3 pr-4 py-2 border-l-4 border-transparent text-base font-medium text-gray-600 hover:bg-gray-50 hover:border-gray-300 transition">Driver</a>
+            <a href="<?php echo e(route('admin.pletons.index')); ?>"
+                class="block pl-3 pr-4 py-2 border-l-4 border-transparent text-base font-medium text-gray-600 hover:bg-gray-50 hover:border-gray-300 transition">Pleton</a>
             <a href="<?php echo e(route('admin.dispatches.index')); ?>"
                 class="block pl-3 pr-4 py-2 border-l-4 border-transparent text-base font-medium text-gray-600 hover:bg-gray-50 hover:border-gray-300 transition">Dispatch</a>
             <a href="<?php echo e(route('admin.patient-requests.index')); ?>"
