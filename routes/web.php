@@ -105,7 +105,9 @@ Route::middleware(['auth'])->group(function () {
 
             // Resource Routes
             Route::resource('ambulances', AmbulanceController::class);
-            Route::resource('ambulance-types', AmbulanceTypeController::class);
+            Route::resource('armada-types', AmbulanceTypeController::class)->parameters([
+                'armada-types' => 'ambulance_type'
+            ])->names('ambulance-types');
             Route::get('ambulances/{ambulance}/maintenance', [AmbulanceMaintenanceController::class , 'index'])->name('ambulances.maintenance.index');
             Route::post('ambulances/{ambulance}/maintenance', [AmbulanceMaintenanceController::class , 'store'])->name('ambulances.maintenance.store');
             Route::put('maintenance/{maintenance}', [AmbulanceMaintenanceController::class , 'update'])->name('maintenance.update');
@@ -154,19 +156,19 @@ Route::middleware(['auth'])->group(function () {
                 ->name('event-requests.replace-unit');
 
             // Patient Requests Management
-            Route::get('patient-requests', [AdminPatientRequestController::class , 'index'])
+            Route::get('laporan-masyarakat', [AdminPatientRequestController::class , 'index'])
                 ->name('patient-requests.index');
-            Route::get('patient-requests/{patientRequest}', [AdminPatientRequestController::class , 'show'])
+            Route::get('laporan-masyarakat/{patientRequest}', [AdminPatientRequestController::class , 'show'])
                 ->name('patient-requests.show');
-            Route::get('patient-requests/{patientRequest}/edit', [AdminPatientRequestController::class , 'edit'])
+            Route::get('laporan-masyarakat/{patientRequest}/edit', [AdminPatientRequestController::class , 'edit'])
                 ->name('patient-requests.edit');
-            Route::put('patient-requests/{patientRequest}', [AdminPatientRequestController::class , 'update'])
+            Route::put('laporan-masyarakat/{patientRequest}', [AdminPatientRequestController::class , 'update'])
                 ->name('patient-requests.update');
-            Route::delete('patient-requests/{patientRequest}', [AdminPatientRequestController::class , 'destroy'])
+            Route::delete('laporan-masyarakat/{patientRequest}', [AdminPatientRequestController::class , 'destroy'])
                 ->name('patient-requests.destroy');
-            Route::get('patient-requests/{patientRequest}/dispatch', [AdminPatientRequestController::class , 'createDispatch'])
+            Route::get('laporan-masyarakat/{patientRequest}/dispatch', [AdminPatientRequestController::class , 'createDispatch'])
                 ->name('patient-requests.create-dispatch');
-            Route::post('patient-requests/{patientRequest}/reject', [AdminPatientRequestController::class , 'reject'])
+            Route::post('laporan-masyarakat/{patientRequest}/reject', [AdminPatientRequestController::class , 'reject'])
                 ->name('patient-requests.reject');
         }
         );
