@@ -145,7 +145,7 @@
             'color' => 'bg-blue-600 hover:bg-blue-700',
             ],
             'on_scene' => [
-            'label' => '🚒 OTW Kantor Pos',
+            'label' => '🚒 OTW MAKO / POS',
             'color' => 'bg-orange-600 hover:bg-orange-700',
             ],
             'on_the_way_kantor_pos' => [
