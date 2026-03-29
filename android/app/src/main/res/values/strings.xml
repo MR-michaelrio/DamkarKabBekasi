@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">GMCI DISPATCH</string>
-    <string name="title_activity_main">GMCI DISPATCH</string>
-    <string name="package_name">com.gmci.dispatch</string>
-    <string name="custom_url_scheme">com.gmci.dispatch</string>
+    <string name="app_name">DAMKAR DISPATCH</string>
+    <string name="title_activity_main">DAMKAR DISPATCH</string>
+    <string name="package_name">com.damkarkabbekasi.dispatch</string>
+    <string name="custom_url_scheme">com.damkarkabbekasi.dispatch</string>
 </resources>

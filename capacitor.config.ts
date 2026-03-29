@@ -1,14 +1,14 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'com.gmci.dispatch',
-  appName: 'GMCI DISPATCH',
+  appId: 'com.damkarkabbekasi.dispatch',
+  appName: 'DAMKAR DISPATCH',
   webDir: 'public',
   server: {
     androidScheme: 'https',
-    url: 'https://dispatch.gmci.or.id',
+    url: 'https://dispatch.damkarkabbekasi.go.id',
     allowNavigation: [
-      'dispatch.gmci.or.id'
+      'dispatch.damkarkabbekasi.go.id'
     ],
     cleartext: true
   }

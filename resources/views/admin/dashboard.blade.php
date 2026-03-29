@@ -100,6 +100,7 @@
     <!-- 3 Tables Section -->
     <div class="space-y-8">
 
+        @if(!$isFiltered)
         <!-- Today's Table -->
         <section>
             <div class="flex items-center justify-between mb-4">
@@ -127,6 +128,7 @@
             </div>
             @include('admin.dashboard.partials.dispatch_table', ['dispatches' => $weekDispatches])
         </section>
+        @endif
 
         <!-- Monthly Table -->
         <section>

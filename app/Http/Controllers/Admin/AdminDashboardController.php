@@ -18,12 +18,16 @@ class AdminDashboardController extends Controller
         $selectedMonth = $request->get('month', Carbon::now()->month);
         $selectedYear = $request->get('year', Carbon::now()->year);
 
+        // Detect if filter is active
+        $isFiltered = $request->has('month') || $request->has('year');
+
         try {
             $filterDate = Carbon::createFromDate($selectedYear, $selectedMonth, 1);
         } catch (\Exception $e) {
             $filterDate = Carbon::now();
             $selectedMonth = $filterDate->month;
             $selectedYear = $filterDate->year;
+            $isFiltered = false;
         }
         // =====================
         // TIMEFRAME DISPATCHES
@@ -77,7 +81,8 @@ class AdminDashboardController extends Controller
             'ambulanceOnDuty',
             'selectedMonth',
             'selectedYear',
-            'filterDate'
+            'filterDate',
+            'isFiltered'
         ));
     }
 }
