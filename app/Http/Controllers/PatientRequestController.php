@@ -48,10 +48,14 @@ class PatientRequestController extends Controller
 
             if (!empty($tokens)) {
                 $messaging = app('firebase.messaging');
+                $serviceType = ucfirst($validated['service_type']);
+                $address = $validated['pickup_address'];
+                $time = $validated['pickup_time'];
+                
                 $message = \Kreait\Firebase\Messaging\CloudMessage::new ()
                     ->withNotification(\Kreait\Firebase\Messaging\Notification::create(
                     'Permintaan Baru',
-                    "{$validated['patient_name']} ({$validated['pickup_address']})"
+                    "{$serviceType}\n{$address}\n{$time}"
                 ));
 
                 $messaging->sendMulticast($message, array_values($tokens));

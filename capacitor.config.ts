@@ -6,9 +6,9 @@ const config: CapacitorConfig = {
   webDir: 'public',
   server: {
     androidScheme: 'https',
-    url: 'https://dispatch.damkarkabbekasi.go.id',
+    url: 'https://damkarkabbekasi.my.id',
     allowNavigation: [
-      'dispatch.damkarkabbekasi.go.id'
+      'damkarkabbekasi.my.id'
     ],
     cleartext: true
   }

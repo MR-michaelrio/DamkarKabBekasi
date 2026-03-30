@@ -74,6 +74,38 @@ class DispatchController extends Controller
             ]);
         }
 
+        // Send Push Notification
+        try {
+            $dispatch->load(['ambulance', 'driver.pleton']);
+            
+            $ambulanceTokens = \App\Models\Ambulance::whereNotNull('fcm_token')
+                ->where('fcm_token', '!=', '')
+                ->pluck('fcm_token')->toArray();
+
+            $deviceTokens = \App\Models\DeviceToken::pluck('token')->toArray();
+
+            $tokens = array_unique(array_merge($ambulanceTokens, $deviceTokens));
+
+            if (!empty($tokens)) {
+                $messaging = app('firebase.messaging');
+                $plateNumber = $dispatch->ambulance->plate_number ?? '-';
+                $pletonName = $dispatch->driver->pleton->name ?? '-';
+                $address = $dispatch->pickup_address;
+                $serviceType = ucfirst($dispatch->patient_condition);
+                
+                $message = \Kreait\Firebase\Messaging\CloudMessage::new ()
+                    ->withNotification(\Kreait\Firebase\Messaging\Notification::create(
+                    'Dispatch Baru',
+                    "{$plateNumber}\n{$pletonName}\n{$address}\n{$serviceType}"
+                ));
+
+                $messaging->sendMulticast($message, array_values($tokens));
+            }
+        }
+        catch (\Exception $e) {
+            \Log::error('FCM Dispatch Send Error: ' . $e->getMessage());
+        }
+
         return redirect()->route('admin.dispatches.index');
     }
 
