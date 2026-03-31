@@ -5,6 +5,9 @@ namespace App\Http\Controllers;
 use App\Models\PatientRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Kreait\Firebase\Messaging\CloudMessage;
+use Kreait\Firebase\Messaging\Notification;
+use Kreait\Firebase\Messaging\AndroidConfig;
 
 class PatientRequestController extends Controller
 {
@@ -52,11 +55,17 @@ class PatientRequestController extends Controller
                 $address = $validated['pickup_address'];
                 $time = $validated['pickup_time'];
                 
-                $message = \Kreait\Firebase\Messaging\CloudMessage::new ()
-                    ->withNotification(\Kreait\Firebase\Messaging\Notification::create(
+                $message = CloudMessage::new ()
+                    ->withNotification(Notification::create(
                     'Permintaan Baru',
                     "{$serviceType}\n{$address}\n{$time}"
-                ));
+                ))
+                ->withAndroidConfig(AndroidConfig::fromArray([
+                    'notification' => [
+                        'channel_id' => 'emergency-channel',
+                        'sound' => 'emergency',
+                    ],
+                ]));
 
                 $messaging->sendMulticast($message, array_values($tokens));
             }

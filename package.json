@@ -26,6 +26,7 @@
         "vite": "^7.0.7"
     },
     "dependencies": {
+        "@capacitor-community/text-to-speech": "^5.1.0",
         "@capacitor/push-notifications": "^6.0.5"
     }
 }

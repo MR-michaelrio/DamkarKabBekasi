@@ -10,6 +10,9 @@ use App\Models\Ambulance;
 use App\Models\DispatchLog;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
+use Kreait\Firebase\Messaging\CloudMessage;
+use Kreait\Firebase\Messaging\Notification;
+use Kreait\Firebase\Messaging\AndroidConfig;
 
 class DispatchController extends Controller
 {
@@ -93,11 +96,17 @@ class DispatchController extends Controller
                 $address = $dispatch->pickup_address;
                 $serviceType = ucfirst($dispatch->patient_condition);
                 
-                $message = \Kreait\Firebase\Messaging\CloudMessage::new ()
-                    ->withNotification(\Kreait\Firebase\Messaging\Notification::create(
+                $message = CloudMessage::new ()
+                    ->withNotification(Notification::create(
                     'Dispatch Baru',
                     "{$plateNumber}\n{$pletonName}\n{$address}\n{$serviceType}"
-                ));
+                ))
+                ->withAndroidConfig(AndroidConfig::fromArray([
+                    'notification' => [
+                        'channel_id' => 'emergency-channel',
+                        'sound' => 'emergency',
+                    ],
+                ]));
 
                 $messaging->sendMulticast($message, array_values($tokens));
             }

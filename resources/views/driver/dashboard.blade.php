@@ -248,6 +248,7 @@
         // Capacitor Check
         const isCapacitor = window.hasOwnProperty('Capacitor') && window.Capacitor.hasOwnProperty('Plugins');
         const CapacitorPlugins = isCapacitor ? window.Capacitor.Plugins : {};
+        const { PushNotifications, TextToSpeech } = CapacitorPlugins;
 
         // HTTPS / Secure Context Check
         if (!window.isSecureContext && !isCapacitor && window.location.hostname !== 'localhost') {
@@ -267,9 +268,20 @@
                 }
             }
 
-            if (CapacitorPlugins.PushNotifications) {
-                const { PushNotifications } = CapacitorPlugins;
+            if (PushNotifications) {
                 try {
+                    // Create Notification Channel for Sound
+                    if (PushNotifications.createChannel) {
+                        await PushNotifications.createChannel({
+                            id: 'emergency-channel',
+                            name: 'Emergency Notifications',
+                            description: 'Notifications with emergency sound',
+                            importance: 5,
+                            visibility: 1,
+                            sound: 'emergency' 
+                        });
+                    }
+
                     let permStatus = await PushNotifications.checkPermissions();
                     if (permStatus.receive === 'prompt') {
                         permStatus = await PushNotifications.requestPermissions();
@@ -295,7 +307,18 @@
                         });
 
                         PushNotifications.addListener('pushNotificationReceived', (notification) => {
-                            // Optional: show native alert or toast here
+                            // Text to Speech
+                            if (TextToSpeech) {
+                                TextToSpeech.speak({
+                                    text: notification.title + ". " + notification.body,
+                                    lang: 'id-ID',
+                                    rate: 1.0,
+                                    pitch: 1.0,
+                                    volume: 1.0,
+                                    category: 'ambient'
+                                }).catch(err => console.error('TTS Error:', err));
+                            }
+                            
                             console.log('Push received: ', notification);
                             alert("Notifikasi Baru:\n" + notification.title + "\n" + notification.body);
                         });

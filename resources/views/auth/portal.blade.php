@@ -100,12 +100,24 @@
     <script>
         const isCapacitor = window.hasOwnProperty('Capacitor') && window.Capacitor.hasOwnProperty('Plugins');
         const CapacitorPlugins = isCapacitor ? window.Capacitor.Plugins : {};
+        const { PushNotifications, TextToSpeech } = CapacitorPlugins;
 
         async function initializePublicPushNotifications() {
-            if (!isCapacitor || !CapacitorPlugins.PushNotifications) return;
+            if (!isCapacitor || !PushNotifications) return;
 
-            const { PushNotifications } = CapacitorPlugins;
             try {
+                // Create Notification Channel for Sound
+                if (PushNotifications.createChannel) {
+                    await PushNotifications.createChannel({
+                        id: 'emergency-channel',
+                        name: 'Emergency Notifications',
+                        description: 'Notifications with emergency sound',
+                        importance: 5,
+                        visibility: 1,
+                        sound: 'emergency' 
+                    });
+                }
+
                 let permStatus = await PushNotifications.checkPermissions();
                 if (permStatus.receive === 'prompt') {
                     permStatus = await PushNotifications.requestPermissions();
@@ -124,6 +136,18 @@
                     });
 
                     PushNotifications.addListener('pushNotificationReceived', (notification) => {
+                        // Text to Speech
+                        if (TextToSpeech) {
+                            TextToSpeech.speak({
+                                text: notification.title + ". " + notification.body,
+                                lang: 'id-ID',
+                                rate: 1.0,
+                                pitch: 1.0,
+                                volume: 1.0,
+                                category: 'ambient'
+                            }).catch(err => console.error('TTS Error:', err));
+                        }
+                        
                         alert("Informasi Baru:\n" + notification.title + "\n" + notification.body);
                     });
 
