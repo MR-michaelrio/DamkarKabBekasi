@@ -13,7 +13,7 @@ class TTSService
     public function __construct()
     {
         // Define these in your .env or handle defaults
-        $this->piperPath = env('PIPER_PATH', base_path('piper/piper'));
+        $this->piperPath = env('PIPER_PATH', base_path('piper/'));
         $this->modelPath = env('PIPER_MODEL', base_path('piper/id_ID-news_tts-medium.onnx'));
     }
 
@@ -25,7 +25,8 @@ class TTSService
      */
     public function generate($text)
     {
-        if (empty($text)) return null;
+        if (empty($text))
+            return null;
 
         $filename = md5($text) . '.wav';
         $directory = 'public/tts';
@@ -42,7 +43,7 @@ class TTSService
         }
 
         $fullPath = storage_path('app/' . $filePath);
-        
+
         // Command execution
         // echo "text" | ./piper --model model.onnx --output_file out.wav
         $escapedText = escapeshellarg($text);
