@@ -44,6 +44,16 @@ class TTSService
 
         $fullPath = storage_path('app/' . $filePath);
 
+        // Check if piper binary or model exists
+        if (!file_exists($this->piperPath)) {
+            Log::error("Piper TTS: Binary not found at {$this->piperPath}");
+            return null;
+        }
+        if (!file_exists($this->modelPath)) {
+            Log::error("Piper TTS: Model not found at {$this->modelPath}");
+            return null;
+        }
+
         // Command execution
         // echo "text" | ./piper --model model.onnx --output_file out.wav
         $escapedText = \escapeshellarg($text);
@@ -52,7 +62,12 @@ class TTSService
         \exec($command, $output, $returnCode);
 
         if ($returnCode !== 0) {
-            Log::error("Piper TTS Error: " . implode("\n", $output));
+            Log::error("Piper TTS Command Failed [Code {$returnCode}]: " . implode("\n", $output));
+            return null;
+        }
+
+        if (!file_exists($fullPath)) {
+            Log::error("Piper TTS: Command succeeded but file was not created at {$fullPath}");
             return null;
         }
 
