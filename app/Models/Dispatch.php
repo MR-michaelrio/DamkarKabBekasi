@@ -40,6 +40,7 @@ class Dispatch extends Model
         'kecamatan',
         'nomor',
         'patient_request_id',
+        'otw_scene_at',
     ];
 
     protected function casts(): array
@@ -50,6 +51,7 @@ class Dispatch extends Model
             'pickup_at'    => 'datetime',
             'hospital_at'  => 'datetime',
             'completed_at' => 'datetime',
+            'otw_scene_at' => 'datetime',
             'is_replacement' => 'boolean',
         ];
     }

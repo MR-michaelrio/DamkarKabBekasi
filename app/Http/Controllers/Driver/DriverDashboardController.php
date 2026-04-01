@@ -48,7 +48,10 @@ class DriverDashboardController extends Controller
         $updateData = ['status' => $newStatus];
 
         // Dynamic timestamps
-        if ($newStatus === 'on_scene') {
+        if ($newStatus === 'on_the_way_scene') {
+            $updateData['otw_scene_at'] = now();
+        }
+        elseif ($newStatus === 'on_scene') {
             $updateData['pickup_at'] = now();
         }
         elseif ($newStatus === 'on_the_way_kantor_pos') {

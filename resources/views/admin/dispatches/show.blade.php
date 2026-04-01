@@ -109,6 +109,62 @@
                     </span>
                 </div>
             </div>
+
+            <!-- Log Waktu & Durasi -->
+            <div class="pt-4 border-t border-gray-100">
+                <h2 class="text-xl font-bold text-gray-800 border-b pb-2 mb-4">⏱ Log Waktu & Durasi</h2>
+                <div class="space-y-4">
+                    @php
+                        $otwToScene = ($dispatch->otw_scene_at && $dispatch->pickup_at) 
+                            ? $dispatch->otw_scene_at->diffInMinutes($dispatch->pickup_at) 
+                            : '-';
+                        $atScene = ($dispatch->pickup_at && $dispatch->hospital_at) 
+                            ? $dispatch->pickup_at->diffInMinutes($dispatch->hospital_at) 
+                            : '-';
+                        $sceneToBase = ($dispatch->hospital_at && $dispatch->completed_at) 
+                            ? $dispatch->hospital_at->diffInMinutes($dispatch->completed_at) 
+                            : '-';
+                    @endphp
+
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <span class="text-xs font-bold text-gray-400 uppercase block">Berangkat (OTW)</span>
+                            <span class="text-sm font-bold text-gray-700">{{ $dispatch->otw_scene_at ? $dispatch->otw_scene_at->format('H:i:s') : '-' }}</span>
+                        </div>
+                        <div class="text-right">
+                            <span class="text-xs font-bold text-gray-400 uppercase block">Respon Time</span>
+                            <span class="text-sm font-bold text-red-600">{{ $otwToScene }} mnt</span>
+                        </div>
+                    </div>
+
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <span class="text-xs font-bold text-gray-400 uppercase block">Tiba di TKP</span>
+                            <span class="text-sm font-bold text-gray-700">{{ $dispatch->pickup_at ? $dispatch->pickup_at->format('H:i:s') : '-' }}</span>
+                        </div>
+                        <div class="text-right">
+                            <span class="text-xs font-bold text-gray-400 uppercase block">Lama di TKP</span>
+                            <span class="text-sm font-bold text-blue-600">{{ $atScene }} mnt</span>
+                        </div>
+                    </div>
+
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <span class="text-xs font-bold text-gray-400 uppercase block">Kembali ke Mako</span>
+                            <span class="text-sm font-bold text-gray-700">{{ $dispatch->hospital_at ? $dispatch->hospital_at->format('H:i:s') : '-' }}</span>
+                        </div>
+                        <div class="text-right">
+                            <span class="text-xs font-bold text-gray-400 uppercase block">Waktu Kembali</span>
+                            <span class="text-sm font-bold text-green-600">{{ $sceneToBase }} mnt</span>
+                        </div>
+                    </div>
+
+                    <div class="pt-2">
+                        <span class="text-xs font-bold text-gray-400 uppercase block">Selesai (Standby Mako)</span>
+                        <span class="text-sm font-bold text-gray-900">{{ $dispatch->completed_at ? $dispatch->completed_at->format('H:i:s') : '-' }}</span>
+                    </div>
+                </div>
+            </div>
             
         </div>
 

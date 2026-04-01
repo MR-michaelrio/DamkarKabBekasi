@@ -157,7 +157,9 @@
                 <th>Pelapor</th>
                 <th>Armada</th>
                 <th>Driver</th>
-                <th>Tujuan</th>
+                <th>Respon</th>
+                <th>TKP</th>
+                <th>Pulang</th>
                 <th>Status</th>
             </tr>
         </thead>
@@ -171,7 +173,14 @@
                 </td>
                 <td>{{ $d->ambulance?->plate_number ?? '-' }}</td>
                 <td>{{ $d->driver?->name ?? '-' }}</td>
-                <td>{{ $d->destination ?? '-' }}</td>
+                @php
+                    $otwToScene = ($d->otw_scene_at && $d->pickup_at) ? $d->otw_scene_at->diffInMinutes($d->pickup_at) : '-';
+                    $atScene = ($d->pickup_at && $d->hospital_at) ? $d->pickup_at->diffInMinutes($d->hospital_at) : '-';
+                    $sceneToBase = ($d->hospital_at && $d->completed_at) ? $d->hospital_at->diffInMinutes($d->completed_at) : '-';
+                @endphp
+                <td style="text-align: center;">{{ $otwToScene }}m</td>
+                <td style="text-align: center;">{{ $atScene }}m</td>
+                <td style="text-align: center;">{{ $sceneToBase }}m</td>
                 <td><span class="status">{{ str_replace('_', ' ', $d->status) }}</span></td>
             </tr>
             @empty

@@ -67,7 +67,7 @@
         <tr>
             <td class="label">Hari</td>
             <td class="colon">:</td>
-            <td>{{ \Carbon\Carbon::parse($dispatch->request_date)->translatedFormat('l') }}</td>
+            <td>{{ $dispatch->request_date ? \Carbon\Carbon::parse($dispatch->request_date)->translatedFormat('l') : '-' }}</td>
         </tr>
         <tr>
             <td class="label">Tanggal</td>
@@ -138,6 +138,45 @@
             <td class="label">Nomor</td>
             <td class="colon">:</td>
             <td>{{ $dispatch->nomor ?? '…' }}</td>
+        </tr>
+    </table>
+
+    <h3 style="margin-top: 20px;">LOG WAKTU & RESPON TIME</h3>
+    <table class="content-table" style="border: 1px solid #000; border-collapse: collapse;">
+        @php
+            $otwToScene = ($dispatch->otw_scene_at && $dispatch->pickup_at) 
+                ? $dispatch->otw_scene_at->diffInMinutes($dispatch->pickup_at) 
+                : '-';
+            $atScene = ($dispatch->pickup_at && $dispatch->hospital_at) 
+                ? $dispatch->pickup_at->diffInMinutes($dispatch->hospital_at) 
+                : '-';
+            $sceneToBase = ($dispatch->hospital_at && $dispatch->completed_at) 
+                ? $dispatch->hospital_at->diffInMinutes($dispatch->completed_at) 
+                : '-';
+        @endphp
+        <tr>
+            <td style="border: 1px solid #000; padding: 5px; font-weight: bold;">KETERANGAN</td>
+            <td style="border: 1px solid #000; padding: 5px; font-weight: bold; text-align: center;">JAM (WIB)</td>
+            <td style="border: 1px solid #000; padding: 5px; font-weight: bold; text-align: center;">DURASI</td>
+        </tr>
+        <tr>
+            <td style="border: 1px solid #000; padding: 5px;">Berangkat (OTW)</td>
+            <td style="border: 1px solid #000; padding: 5px; text-align: center;">{{ $dispatch->otw_scene_at ? $dispatch->otw_scene_at->format('H:i:s') : '…' }}</td>
+            <td style="border: 1px solid #000; padding: 5px; text-align: center;" rowspan="2">{{ $otwToScene }} Menit (Respon Time)</td>
+        </tr>
+        <tr>
+            <td style="border: 1px solid #000; padding: 5px;">Tiba di TKP</td>
+            <td style="border: 1px solid #000; padding: 5px; text-align: center;">{{ $dispatch->pickup_at ? $dispatch->pickup_at->format('H:i:s') : '…' }}</td>
+        </tr>
+        <tr>
+            <td style="border: 1px solid #000; padding: 5px;">Selesai Penanganan (Kembali)</td>
+            <td style="border: 1px solid #000; padding: 5px; text-align: center;">{{ $dispatch->hospital_at ? $dispatch->hospital_at->format('H:i:s') : '…' }}</td>
+            <td style="border: 1px solid #000; padding: 5px; text-align: center;">{{ $atScene }} Menit (Di TKP)</td>
+        </tr>
+        <tr>
+            <td style="border: 1px solid #000; padding: 5px;">Sampai di Mako (Standby)</td>
+            <td style="border: 1px solid #000; padding: 5px; text-align: center;">{{ $dispatch->completed_at ? $dispatch->completed_at->format('H:i:s') : '…' }}</td>
+            <td style="border: 1px solid #000; padding: 5px; text-align: center;">{{ $sceneToBase }} Menit (Perjalanan Pulang)</td>
         </tr>
     </table>
 

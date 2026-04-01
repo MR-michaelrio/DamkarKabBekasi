@@ -140,8 +140,19 @@ class DispatchController extends Controller
 
         // Simplified flow, no special round trip logic needed anymore per requirements
         $nextStatus = $flow[$dispatch->status];
+        $updateData = ['status' => $nextStatus];
 
-        $dispatch->update(['status' => $nextStatus]);
+        if ($nextStatus === 'on_the_way_scene') {
+            $updateData['otw_scene_at'] = now();
+        } elseif ($nextStatus === 'on_scene') {
+            $updateData['pickup_at'] = now();
+        } elseif ($nextStatus === 'on_the_way_kantor_pos') {
+            $updateData['hospital_at'] = now();
+        } elseif ($nextStatus === 'completed') {
+            $updateData['completed_at'] = now();
+        }
+
+        $dispatch->update($updateData);
 
         DispatchLog::create([
             'dispatch_id' => $dispatch->id,
