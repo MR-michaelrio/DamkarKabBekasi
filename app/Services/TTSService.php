@@ -44,22 +44,24 @@ class TTSService
 
         $fullPath = storage_path('app/' . $filePath);
 
-        // Check if piper binary or model exists
-        if (!file_exists($this->piperPath)) {
-            Log::error("Piper TTS: Binary not found at {$this->piperPath}");
-            return null;
-        }
-        if (!file_exists($this->modelPath)) {
-            Log::error("Piper TTS: Model not found at {$this->modelPath}");
+        // Test directory write access
+        if (!is_writable(storage_path('app/' . $directory))) {
+            Log::error("Piper TTS: Directory not writable: " . storage_path('app/' . $directory));
             return null;
         }
 
         // Command execution
-        // echo "text" | ./piper --model model.onnx --output_file out.wav
         $escapedText = \escapeshellarg($text);
-        $command = "echo {$escapedText} | {$this->piperPath} --model {$this->modelPath} --output_file {$fullPath} 2>&1";
+        // We 'cd' into the piper directory first to ensure libraries are found
+        $piperDir = dirname($this->piperPath);
+        $binaryFile = basename($this->piperPath);
+        $command = "cd {$piperDir} && echo {$escapedText} | ./{$binaryFile} --model {$this->modelPath} --output_file {$fullPath} 2>&1";
 
         \exec($command, $output, $returnCode);
+
+        Log::info("Piper Debug - Command: {$command}");
+        Log::info("Piper Debug - Return Code: {$returnCode}");
+        Log::info("Piper Debug - Output: " . implode("\n", $output));
 
         if ($returnCode !== 0) {
             Log::error("Piper TTS Command Failed [Code {$returnCode}]: " . implode("\n", $output));
