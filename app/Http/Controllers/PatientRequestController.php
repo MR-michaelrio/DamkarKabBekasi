@@ -62,7 +62,7 @@ class PatientRequestController extends Controller
                 ))
                 ->withAndroidConfig(AndroidConfig::fromArray([
                     'notification' => [
-                        'channel_id' => 'emergency-channel',
+                        'channel_id' => 'damkar-emergency',
                         'sound' => 'emergency',
                     ],
                 ]));

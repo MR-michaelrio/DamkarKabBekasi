@@ -109,8 +109,8 @@
                 // Create Notification Channel for Sound
                 if (PushNotifications.createChannel) {
                     await PushNotifications.createChannel({
-                        id: 'emergency-channel',
-                        name: 'Emergency Notifications',
+                        id: 'damkar-emergency',
+                        name: 'Damkar Emergency',
                         description: 'Notifications with emergency sound',
                         importance: 5,
                         visibility: 1,
@@ -146,9 +146,11 @@
                                 volume: 1.0,
                                 category: 'ambient'
                             }).catch(err => console.error('TTS Error:', err));
+                        } else {
+                            console.warn('TTS Plugin not found. Please run npx cap sync.');
                         }
                         
-                        alert("Informasi Baru:\n" + notification.title + "\n" + notification.body);
+                        alert("Notifikasi Baru:\n" + notification.title + "\n" + notification.body);
                     });
 
                     await PushNotifications.register();

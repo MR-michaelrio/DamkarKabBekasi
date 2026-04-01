@@ -270,17 +270,17 @@
 
             if (PushNotifications) {
                 try {
-                    // Create Notification Channel for Sound
-                    if (PushNotifications.createChannel) {
-                        await PushNotifications.createChannel({
-                            id: 'emergency-channel',
-                            name: 'Emergency Notifications',
-                            description: 'Notifications with emergency sound',
-                            importance: 5,
-                            visibility: 1,
-                            sound: 'emergency' 
-                        });
-                    }
+                // Create Notification Channel for Sound
+                if (PushNotifications.createChannel) {
+                    await PushNotifications.createChannel({
+                        id: 'damkar-emergency',
+                        name: 'Damkar Emergency',
+                        description: 'Notifications with emergency sound',
+                        importance: 5,
+                        visibility: 1,
+                        sound: 'emergency' 
+                    });
+                }
 
                     let permStatus = await PushNotifications.checkPermissions();
                     if (permStatus.receive === 'prompt') {
@@ -317,6 +317,8 @@
                                     volume: 1.0,
                                     category: 'ambient'
                                 }).catch(err => console.error('TTS Error:', err));
+                            } else {
+                                console.warn('TTS Plugin not found. Please run npx cap sync.');
                             }
                             
                             console.log('Push received: ', notification);
