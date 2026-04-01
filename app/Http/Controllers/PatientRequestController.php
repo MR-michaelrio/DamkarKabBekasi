@@ -59,18 +59,13 @@ class PatientRequestController extends Controller
                 $ttsUrl = $ttsService->generate("Laporan baru. {$serviceType}. {$address}.");
 
                 $message = CloudMessage::new ()
-                    ->withNotification(Notification::create(
-                    'Permintaan Baru',
-                    "{$serviceType}\n{$address}\n{$time}"
-                ))
                 ->withData([
+                    'title' => 'Permintaan Baru',
+                    'body' => "{$serviceType}\n{$address}\n{$time}",
                     'tts_url' => $ttsUrl ? url($ttsUrl) : '',
                 ])
                 ->withAndroidConfig(AndroidConfig::fromArray([
-                    'notification' => [
-                        'channel_id' => 'damkar-emergency',
-                        'sound' => 'emergency',
-                    ],
+                    'priority' => 'high',
                 ]));
 
                 $messaging->sendMulticast($message, array_values($tokens));

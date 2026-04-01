@@ -100,18 +100,13 @@ class DispatchController extends Controller
                 $ttsUrl = $ttsService->generate("Dispatch baru. Unit {$plateNumber}. Untuk {$serviceType}. Di {$address}.");
 
                 $message = CloudMessage::new ()
-                    ->withNotification(Notification::create(
-                    'Dispatch Baru',
-                    "{$plateNumber}\n{$pletonName}\n{$address}\n{$serviceType}"
-                ))
                 ->withData([
+                    'title' => 'Dispatch Baru',
+                    'body' => "{$plateNumber}\n{$pletonName}\n{$address}\n{$serviceType}",
                     'tts_url' => $ttsUrl ? url($ttsUrl) : '',
                 ])
                 ->withAndroidConfig(AndroidConfig::fromArray([
-                    'notification' => [
-                        'channel_id' => 'damkar-emergency',
-                        'sound' => 'emergency',
-                    ],
+                    'priority' => 'high',
                 ]));
 
                 $messaging->sendMulticast($message, array_values($tokens));

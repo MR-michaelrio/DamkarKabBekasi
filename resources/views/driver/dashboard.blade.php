@@ -309,23 +309,13 @@
                         PushNotifications.addListener('pushNotificationReceived', (notification) => {
                             console.log('Push received: ', notification);
 
-                            // Piper TTS Logic
-                            if (notification.data && notification.data.tts_url) {
-                                const audio = new Audio(notification.data.tts_url);
-                                audio.play().catch(err => console.error('Audio play error:', err));
-                            } else if (TextToSpeech) {
-                                // Fallback to system TTS
-                                TextToSpeech.speak({
-                                    text: notification.title + ". " + notification.body,
-                                    lang: 'id-ID',
-                                    rate: 1.0,
-                                    pitch: 1.0,
-                                    volume: 1.0,
-                                    category: 'ambient'
-                                }).catch(err => console.error('TTS Error:', err));
-                            }
+                            // Audio is now handled by Native Java code (FCMService.java)
+                            // for both background and foreground to ensure reliability.
                             
-                            alert("Notifikasi Baru:\n" + notification.title + "\n" + notification.body);
+                            const title = notification.data.title || notification.title || "Notifikasi Baru";
+                            const body = notification.data.body || notification.body || "";
+                            
+                            alert("Notifikasi Baru:\n" + title + "\n" + body);
                         });
 
                         await PushNotifications.register();
