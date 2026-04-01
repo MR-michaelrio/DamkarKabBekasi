@@ -77,31 +77,35 @@ public class FCMService extends FirebaseMessagingService {
             mediaPlayer.release();
         }
 
-        mediaPlayer = new MediaPlayer();
-        try {
-            mediaPlayer.setAudioAttributes(
-                new AudioAttributes.Builder()
-                    .setContentType(AudioAttributes.CONTENT_TYPE_SPEECH)
-                    .setUsage(AudioAttributes.USAGE_ALARM)
-                    .build()
-            );
-            mediaPlayer.setDataSource(url);
-            mediaPlayer.prepareAsync();
-            mediaPlayer.setOnPreparedListener(mp -> mp.start());
-            mediaPlayer.setOnCompletionListener(mp -> {
-                mp.release();
-                mediaPlayer = null;
-            });
-            mediaPlayer.setOnErrorListener((mp, what, extra) -> {
-                Log.e(TAG, "MediaPlayer error: " + what + ", " + extra);
-                mp.release();
-                mediaPlayer = null;
-                return true;
-            });
+        // Add a 3-second delay before playing the TTS
+        // This allows the default notification sound (emergency.mp3) to play first
+        new android.os.Handler(android.os.Looper.getMainLooper()).postDelayed(() -> {
+            mediaPlayer = new MediaPlayer();
+            try {
+                mediaPlayer.setAudioAttributes(
+                    new AudioAttributes.Builder()
+                        .setContentType(AudioAttributes.CONTENT_TYPE_SPEECH)
+                        .setUsage(AudioAttributes.USAGE_ALARM)
+                        .build()
+                );
+                mediaPlayer.setDataSource(url);
+                mediaPlayer.prepareAsync();
+                mediaPlayer.setOnPreparedListener(mp -> mp.start());
+                mediaPlayer.setOnCompletionListener(mp -> {
+                    mp.release();
+                    mediaPlayer = null;
+                });
+                mediaPlayer.setOnErrorListener((mp, what, extra) -> {
+                    Log.e(TAG, "MediaPlayer error: " + what + ", " + extra);
+                    mp.release();
+                    mediaPlayer = null;
+                    return true;
+                });
 
-        } catch (IOException e) {
-            Log.e(TAG, "Error playing audio", e);
-        }
+            } catch (IOException e) {
+                Log.e(TAG, "Error playing audio", e);
+            }
+        }, 3000); // 3000ms = 3 seconds delay
     }
 
     @Override
