@@ -13,7 +13,7 @@ class TTSService
     public function __construct()
     {
         // Define these in your .env or handle defaults
-        $this->piperPath = env('PIPER_PATH', base_path('piper/'));
+        $this->piperPath = env('PIPER_PATH', base_path('piper/piper'));
         $this->modelPath = env('PIPER_MODEL', base_path('piper/id_ID-news_tts-medium.onnx'));
     }
 
@@ -46,10 +46,10 @@ class TTSService
 
         // Command execution
         // echo "text" | ./piper --model model.onnx --output_file out.wav
-        $escapedText = escapeshellarg($text);
+        $escapedText = \escapeshellarg($text);
         $command = "echo {$escapedText} | {$this->piperPath} --model {$this->modelPath} --output_file {$fullPath} 2>&1";
 
-        exec($command, $output, $returnCode);
+        \exec($command, $output, $returnCode);
 
         if ($returnCode !== 0) {
             Log::error("Piper TTS Error: " . implode("\n", $output));
