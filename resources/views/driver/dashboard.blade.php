@@ -307,8 +307,14 @@
                         });
 
                         PushNotifications.addListener('pushNotificationReceived', (notification) => {
-                            // Text to Speech
-                            if (TextToSpeech) {
+                            console.log('Push received: ', notification);
+
+                            // Piper TTS Logic
+                            if (notification.data && notification.data.tts_url) {
+                                const audio = new Audio(notification.data.tts_url);
+                                audio.play().catch(err => console.error('Audio play error:', err));
+                            } else if (TextToSpeech) {
+                                // Fallback to system TTS
                                 TextToSpeech.speak({
                                     text: notification.title + ". " + notification.body,
                                     lang: 'id-ID',
@@ -317,11 +323,8 @@
                                     volume: 1.0,
                                     category: 'ambient'
                                 }).catch(err => console.error('TTS Error:', err));
-                            } else {
-                                console.warn('TTS Plugin not found. Please run npx cap sync.');
                             }
                             
-                            console.log('Push received: ', notification);
                             alert("Notifikasi Baru:\n" + notification.title + "\n" + notification.body);
                         });
 

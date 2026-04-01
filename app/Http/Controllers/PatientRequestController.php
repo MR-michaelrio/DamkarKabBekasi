@@ -55,11 +55,17 @@ class PatientRequestController extends Controller
                 $address = $validated['pickup_address'];
                 $time = $validated['pickup_time'];
                 
+                $ttsService = new \App\Services\TTSService();
+                $ttsUrl = $ttsService->generate("Laporan baru. {$serviceType}. {$address}.");
+
                 $message = CloudMessage::new ()
                     ->withNotification(Notification::create(
                     'Permintaan Baru',
                     "{$serviceType}\n{$address}\n{$time}"
                 ))
+                ->withData([
+                    'tts_url' => $ttsUrl ? url($ttsUrl) : '',
+                ])
                 ->withAndroidConfig(AndroidConfig::fromArray([
                     'notification' => [
                         'channel_id' => 'damkar-emergency',

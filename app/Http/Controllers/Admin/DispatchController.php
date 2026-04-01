@@ -96,11 +96,17 @@ class DispatchController extends Controller
                 $address = $dispatch->pickup_address;
                 $serviceType = ucfirst($dispatch->patient_condition);
                 
+                $ttsService = new \App\Services\TTSService();
+                $ttsUrl = $ttsService->generate("Dispatch baru. Unit {$plateNumber}. Untuk {$serviceType}. Di {$address}.");
+
                 $message = CloudMessage::new ()
                     ->withNotification(Notification::create(
                     'Dispatch Baru',
                     "{$plateNumber}\n{$pletonName}\n{$address}\n{$serviceType}"
                 ))
+                ->withData([
+                    'tts_url' => $ttsUrl ? url($ttsUrl) : '',
+                ])
                 ->withAndroidConfig(AndroidConfig::fromArray([
                     'notification' => [
                         'channel_id' => 'damkar-emergency',
