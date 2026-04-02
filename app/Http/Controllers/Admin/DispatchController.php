@@ -54,6 +54,7 @@ class DispatchController extends Controller
             'kelurahan' => 'nullable|string',
             'kecamatan' => 'nullable|string',
             'nomor' => 'nullable|string',
+            'patient_phone' => 'nullable|string',
             'patient_request_id' => 'nullable|exists:patient_requests,id',
         ]) + [
             'status' => 'pending',
