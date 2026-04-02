@@ -65,6 +65,11 @@
 
     <table class="content-table">
         <tr>
+            <td class="label">Unit</td>
+            <td class="colon">:</td>
+            <td style="font-weight: bold;">{{ $dispatch->ambulance?->plate_number ?? '-' }} - {{ $dispatch->ambulance?->type ?? '-' }} - {{ $dispatch->driver?->name ?? '-' }}</td>
+        </tr>
+        <tr>
             <td class="label">Hari</td>
             <td class="colon">:</td>
             <td>{{ $dispatch->request_date ? \Carbon\Carbon::parse($dispatch->request_date)->translatedFormat('l') : '-' }}</td>
@@ -181,7 +186,7 @@
     </table>
 
     <div class="footer-section">
-        <p>1. Damkar : 1 unit ({{ $dispatch->ambulance?->plate_number ?? '…..' }})</p>
+        <p>Demkar Kabupaten Bekasi - Dispatch System</p>
     </div>
 
 </body>
