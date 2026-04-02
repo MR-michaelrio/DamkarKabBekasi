@@ -176,7 +176,7 @@
                     <td style="border: 1px solid #ccc; padding: 3px; text-align: center;">{{ $d->otw_scene_at ?
                         $d->otw_scene_at->format('H:i:s') : '-' }}</td>
                     <td style="border: 1px solid #ccc; padding: 3px; text-align: center;" rowspan="2">{{ $otwToScene }}
-                        mnt</td>
+                        Menit (Respon Time)</td>
                 </tr>
                 <tr>
                     <td style="border: 1px solid #ccc; padding: 3px;">Tiba di TKP</td>
@@ -187,13 +187,15 @@
                     <td style="border: 1px solid #ccc; padding: 3px;">Selesai TKP (Kembali)</td>
                     <td style="border: 1px solid #ccc; padding: 3px; text-align: center;">{{ $d->hospital_at ?
                         $d->hospital_at->format('H:i:s') : '-' }}</td>
-                    <td style="border: 1px solid #ccc; padding: 3px; text-align: center;">{{ $atScene }} mnt</td>
+                    <td style="border: 1px solid #ccc; padding: 3px; text-align: center;">{{ $atScene }} Menit (Di TKP)
+                    </td>
                 </tr>
                 <tr>
                     <td style="border: 1px solid #ccc; padding: 3px;">Sampai di Mako</td>
                     <td style="border: 1px solid #ccc; padding: 3px; text-align: center;">{{ $d->completed_at ?
                         $d->completed_at->format('H:i:s') : '-' }}</td>
-                    <td style="border: 1px solid #ccc; padding: 3px; text-align: center;">{{ $sceneToBase }} mnt</td>
+                    <td style="border: 1px solid #ccc; padding: 3px; text-align: center;">{{ $sceneToBase }} Menit
+                        (Perjalanan Pulang)</td>
                 </tr>
             </table>
         </div>
