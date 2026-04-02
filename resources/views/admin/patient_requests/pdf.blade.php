@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <meta charset="utf-8">
     <title>Laporan Masyarakat - Damkar Kabupaten Bekasi</title>
@@ -7,45 +8,66 @@
         @page {
             margin: 1cm;
         }
+
         body {
             font-family: 'Helvetica', 'Arial', sans-serif;
             font-size: 12px;
             line-height: 1.6;
             color: #000;
         }
+
         .header {
             text-align: center;
             margin-bottom: 20px;
             border-bottom: 2px solid #000;
             padding-bottom: 10px;
         }
-        .header h1, .header h2, .header h3 {
+
+        .header h1,
+        .header h2,
+        .header h3 {
             margin: 0;
             text-transform: uppercase;
         }
-        .header h1 { font-size: 16px; }
-        .header h2 { font-size: 14px; }
-        .header h3 { font-size: 14px; text-decoration: underline; margin-top: 10px; }
-        
+
+        .header h1 {
+            font-size: 16px;
+        }
+
+        .header h2 {
+            font-size: 14px;
+        }
+
+        .header h3 {
+            font-size: 14px;
+            text-decoration: underline;
+            margin-top: 10px;
+        }
+
         .content-table {
             width: 100%;
             margin-top: 10px;
         }
+
         .content-table td {
             padding: 4px 0;
             vertical-align: top;
         }
+
         .label {
             width: 250px;
         }
+
         .colon {
             width: 10px;
         }
+
         .footer-section {
             margin-top: 30px;
             border-top: 1px solid #eee;
             padding-top: 10px;
         }
+
         .dispatch-item {
             margin-bottom: 10px;
             padding: 5px;
@@ -53,6 +75,7 @@
         }
     </style>
 </head>
+
 <body>
 
     <div class="header">
@@ -105,7 +128,8 @@
         <tr>
             <td class="label">Detail Lokasi (Blok/RT/RW)</td>
             <td class="colon">:</td>
-            <td>Blok: {{ $patientRequest->blok ?? '-' }}, RT: {{ $patientRequest->rt ?? '-' }}, RW: {{ $patientRequest->rw ?? '-' }}</td>
+            <td>Blok: {{ $patientRequest->blok ?? '-' }}, RT: {{ $patientRequest->rt ?? '-' }}, RW: {{
+                $patientRequest->rw ?? '-' }}</td>
         </tr>
         <tr>
             <td class="label">Kelurahan / Kecamatan</td>
@@ -127,48 +151,55 @@
     <div class="footer-section">
         <h3>UNIT ARMADA YANG DITUGASKAN</h3>
         @if($patientRequest->dispatches->count() > 0)
-            @foreach($patientRequest->dispatches as $index => $d)
-                <div class="dispatch-item" style="border-bottom: 1px solid #ddd; padding-bottom: 15px;">
-                    <strong>Unit {{ $index + 1 }}:</strong> 🚒 {{ $d->ambulance?->plate_number }} ({{ $d->ambulance?->code }})<br>
-                    <strong>Petugas:</strong> {{ $d->driver?->name }}<br>
-                    <strong>Waktu Penugasan:</strong> {{ $d->assigned_at?->format('d-m-Y H:i') }}<br>
-                    <strong>Status Unit:</strong> {{ strtoupper(str_replace('_', ' ', $d->status)) }}<br>
-                    
-                    <table style="width: 100%; margin-top: 10px; border-collapse: collapse; font-size: 10px;">
-                        @php
-                            $otwToScene = ($d->otw_scene_at && $d->pickup_at) ? $d->otw_scene_at->diffInMinutes($d->pickup_at) : '-';
-                            $atScene = ($d->pickup_at && $d->hospital_at) ? $d->pickup_at->diffInMinutes($d->hospital_at) : '-';
-                            $sceneToBase = ($d->hospital_at && $d->completed_at) ? $d->hospital_at->diffInMinutes($d->completed_at) : '-';
-                        @endphp
-                        <tr style="background: #eee;">
-                            <th style="border: 1px solid #ccc; padding: 3px; text-align: left;">Keterangan Waktu</th>
-                            <th style="border: 1px solid #ccc; padding: 3px; text-align: center;">Jam</th>
-                            <th style="border: 1px solid #ccc; padding: 3px; text-align: center;">Durasi</th>
-                        </tr>
-                        <tr>
-                            <td style="border: 1px solid #ccc; padding: 3px;">Berangkat (OTW)</td>
-                            <td style="border: 1px solid #ccc; padding: 3px; text-align: center;">{{ $d->otw_scene_at ? $d->otw_scene_at->format('H:i:s') : '-' }}</td>
-                            <td style="border: 1px solid #ccc; padding: 3px; text-align: center;" rowspan="2">{{ $otwToScene }} mnt</td>
-                        </tr>
-                        <tr>
-                            <td style="border: 1px solid #ccc; padding: 3px;">Tiba di TKP</td>
-                            <td style="border: 1px solid #ccc; padding: 3px; text-align: center;">{{ $d->pickup_at ? $d->pickup_at->format('H:i:s') : '-' }}</td>
-                        </tr>
-                        <tr>
-                            <td style="border: 1px solid #ccc; padding: 3px;">Selesai TKP (Kembali)</td>
-                            <td style="border: 1px solid #ccc; padding: 3px; text-align: center;">{{ $d->hospital_at ? $d->hospital_at->format('H:i:s') : '-' }}</td>
-                            <td style="border: 1px solid #ccc; padding: 3px; text-align: center;">{{ $atScene }} mnt</td>
-                        </tr>
-                        <tr>
-                            <td style="border: 1px solid #ccc; padding: 3px;">Sampai di Mako</td>
-                            <td style="border: 1px solid #ccc; padding: 3px; text-align: center;">{{ $d->completed_at ? $d->completed_at->format('H:i:s') : '-' }}</td>
-                            <td style="border: 1px solid #ccc; padding: 3px; text-align: center;">{{ $sceneToBase }} mnt</td>
-                        </tr>
-                    </table>
-                </div>
-            @endforeach
+        @foreach($patientRequest->dispatches as $index => $d)
+        <div class="dispatch-item" style="border-bottom: 1px solid #ddd; padding-bottom: 15px;">
+            <strong>Unit {{ $index + 1 }}:</strong> {{ $d->ambulance?->plate_number }} ({{ $d->ambulance?->code }})<br>
+            <strong>Petugas:</strong> {{ $d->driver?->name }}<br>
+            <strong>Waktu Penugasan:</strong> {{ $d->assigned_at?->format('d-m-Y H:i') }}<br>
+            <strong>Status Unit:</strong> {{ strtoupper(str_replace('_', ' ', $d->status)) }}<br>
+
+            <table style="width: 100%; margin-top: 10px; border-collapse: collapse; font-size: 10px;">
+                @php
+                $otwToScene = ($d->otw_scene_at && $d->pickup_at) ? $d->otw_scene_at->diffInMinutes($d->pickup_at) :
+                '-';
+                $atScene = ($d->pickup_at && $d->hospital_at) ? $d->pickup_at->diffInMinutes($d->hospital_at) : '-';
+                $sceneToBase = ($d->hospital_at && $d->completed_at) ? $d->hospital_at->diffInMinutes($d->completed_at)
+                : '-';
+                @endphp
+                <tr style="background: #eee;">
+                    <th style="border: 1px solid #ccc; padding: 3px; text-align: left;">Keterangan Waktu</th>
+                    <th style="border: 1px solid #ccc; padding: 3px; text-align: center;">Jam</th>
+                    <th style="border: 1px solid #ccc; padding: 3px; text-align: center;">Durasi</th>
+                </tr>
+                <tr>
+                    <td style="border: 1px solid #ccc; padding: 3px;">Berangkat (OTW)</td>
+                    <td style="border: 1px solid #ccc; padding: 3px; text-align: center;">{{ $d->otw_scene_at ?
+                        $d->otw_scene_at->format('H:i:s') : '-' }}</td>
+                    <td style="border: 1px solid #ccc; padding: 3px; text-align: center;" rowspan="2">{{ $otwToScene }}
+                        mnt</td>
+                </tr>
+                <tr>
+                    <td style="border: 1px solid #ccc; padding: 3px;">Tiba di TKP</td>
+                    <td style="border: 1px solid #ccc; padding: 3px; text-align: center;">{{ $d->pickup_at ?
+                        $d->pickup_at->format('H:i:s') : '-' }}</td>
+                </tr>
+                <tr>
+                    <td style="border: 1px solid #ccc; padding: 3px;">Selesai TKP (Kembali)</td>
+                    <td style="border: 1px solid #ccc; padding: 3px; text-align: center;">{{ $d->hospital_at ?
+                        $d->hospital_at->format('H:i:s') : '-' }}</td>
+                    <td style="border: 1px solid #ccc; padding: 3px; text-align: center;">{{ $atScene }} mnt</td>
+                </tr>
+                <tr>
+                    <td style="border: 1px solid #ccc; padding: 3px;">Sampai di Mako</td>
+                    <td style="border: 1px solid #ccc; padding: 3px; text-align: center;">{{ $d->completed_at ?
+                        $d->completed_at->format('H:i:s') : '-' }}</td>
+                    <td style="border: 1px solid #ccc; padding: 3px; text-align: center;">{{ $sceneToBase }} mnt</td>
+                </tr>
+            </table>
+        </div>
+        @endforeach
         @else
-            <p>Belum ada unit armada yang ditugaskan untuk laporan ini.</p>
+        <p>Belum ada unit armada yang ditugaskan untuk laporan ini.</p>
         @endif
     </div>
 
@@ -179,4 +210,5 @@
     </div>
 
 </body>
+
 </html>
