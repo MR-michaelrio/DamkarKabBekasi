@@ -84,7 +84,7 @@
     <div class="header">
         <h1>PEMERINTAH KABUPATEN BEKASI</h1>
         <h2>DINAS PEMADAM KEBAKARAN DAN PENYELAMATAN</h2>
-        <h3>FORMULIR LAPORAN TELEPON KEJADIAN</h3>
+        <h3>FORMULIR LAPORAN KEJADIAN</h3>
     </div>
 
     <table class="content-table">
@@ -213,7 +213,7 @@
     </table>
 
     <div class="footer-section">
-        <p>Demkar Kabupaten Bekasi - Dispatch System</p>
+        <p>Damkar Kabupaten Bekasi - Dispatch System</p>
     </div>
 
 </body>
