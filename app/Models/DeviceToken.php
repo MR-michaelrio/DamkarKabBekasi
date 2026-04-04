@@ -9,5 +9,5 @@ class DeviceToken extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['token'];
+    protected $fillable = ['token', 'firebase_project', 'name', 'phone', 'is_whitelisted'];
 }

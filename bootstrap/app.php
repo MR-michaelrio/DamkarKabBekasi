@@ -36,7 +36,10 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->validateCsrfTokens(except: [
             'logout',
             'ambulance/logout',
-            'ambulance/login', // Optional but helpful sometimes
+            'ambulance/login',
+            'public-fcm-token',
+            'driver/fcm-token',
+            'api/*',
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
