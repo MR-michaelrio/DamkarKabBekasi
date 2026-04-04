@@ -80,9 +80,12 @@ Route::match (['post', 'options'], '/public-fcm-token', function (\Illuminate\Ht
         'project' => 'nullable|string'
     ]);
 
+    $project = strtolower(trim($request->project ?? 'damkar'));
+    if (empty($project)) $project = 'damkar';
+
     \App\Models\DeviceToken::updateOrCreate(
-    ['token' => $request->token],
-    ['firebase_project' => $request->project]
+        ['token' => $request->token],
+        ['firebase_project' => $project]
     );
 
     return response()->json(['success' => true], 201)
