@@ -82,7 +82,7 @@ Route::match (['post', 'options'], '/public-fcm-token', function (\Illuminate\Ht
 
     \App\Models\DeviceToken::updateOrCreate(
     ['token' => $request->token],
-    ['project' => $request->project]
+    ['firebase_project' => $request->project]
     );
 
     return response()->json(['success' => true], 201)
