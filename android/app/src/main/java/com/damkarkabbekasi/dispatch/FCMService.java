@@ -9,6 +9,7 @@ import android.media.AudioAttributes;
 import android.media.MediaPlayer;
 import android.os.Build;
 import android.util.Log;
+import android.net.Uri;
 import androidx.core.app.NotificationCompat;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
@@ -48,11 +49,19 @@ public class FCMService extends FirebaseMessagingService {
 
     private void showNotification(String title, String body) {
         NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        Uri soundUri = Uri.parse("android.resource://" + getPackageName() + "/" + R.raw.emergency);
 
         // Create Channel for Android O+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             NotificationChannel channel = new NotificationChannel(CHANNEL_ID, "Emergency Notifications", NotificationManager.IMPORTANCE_HIGH);
             channel.setDescription("Emergency alerts for Damkar");
+            
+            AudioAttributes audioAttributes = new AudioAttributes.Builder()
+                    .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                    .setUsage(AudioAttributes.USAGE_NOTIFICATION_EVENT)
+                    .build();
+            channel.setSound(soundUri, audioAttributes);
+            
             notificationManager.createNotificationChannel(channel);
         }
 
@@ -65,6 +74,7 @@ public class FCMService extends FirebaseMessagingService {
                 .setContentTitle(title)
                 .setContentText(body)
                 .setAutoCancel(true)
+                .setSound(soundUri)
                 .setPriority(NotificationCompat.PRIORITY_HIGH)
                 .setCategory(NotificationCompat.CATEGORY_ALARM)
                 .setContentIntent(pendingIntent);
