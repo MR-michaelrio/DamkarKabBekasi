@@ -68,7 +68,10 @@ class PatientRequestController extends Controller
                     'priority' => 'high',
                 ]));
 
-                $projects = ['damkar', 'pmi', 'gmci'];
+                $projects = ['damkar'];
+                if ($validated['service_type'] === 'kebakaran') {
+                    $projects = ['damkar', 'pmi', 'gmci'];
+                }
                 foreach ($projects as $projectName) {
                     $tokens = $deviceTokensByProject->get($projectName, collect())->pluck('token')->toArray();
                     

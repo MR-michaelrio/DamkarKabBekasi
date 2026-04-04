@@ -272,7 +272,10 @@ class EventRequestController extends Controller
                         "Kegiatan: {$validated['event_name']} ({$validated['needs']})"
                     ));
 
-                $projects = ['damkar', 'pmi', 'gmci'];
+                $projects = ['damkar'];
+                if ($validated['type'] === 'disaster') { // Assuming disaster is closer to fire/emergency for events
+                    $projects = ['damkar', 'pmi', 'gmci'];
+                }
                 foreach ($projects as $projectName) {
                     $tokens = $deviceTokensByProject->get($projectName, collect())->pluck('token')->toArray();
                     
