@@ -69,6 +69,10 @@ class AdminDashboardController extends Controller
         $ambulanceReady = Ambulance::where('status', 'ready')->count();
         $ambulanceOnDuty = Ambulance::where('status', 'on_duty')->count();
 
+        $pendingEvents = \App\Models\EventRequest::where('status', 'pending')
+            ->orderByDesc('created_at')
+            ->get();
+
         return view('admin.dashboard', compact(
             'todayDispatches',
             'weekDispatches',
@@ -82,7 +86,8 @@ class AdminDashboardController extends Controller
             'selectedMonth',
             'selectedYear',
             'filterDate',
-            'isFiltered'
+            'isFiltered',
+            'pendingEvents'
         ));
     }
 }

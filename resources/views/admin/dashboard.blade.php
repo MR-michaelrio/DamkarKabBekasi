@@ -97,6 +97,47 @@
         </div>
     </div>
 
+    <!-- Pending Event Requests -->
+    @if($pendingEvents->isNotEmpty())
+    <section class="mb-8">
+        <h3 class="text-lg font-bold text-orange-600 flex items-center gap-2 mb-4">
+            🚨 Permintaan Event Baru
+        </h3>
+        <div class="bg-white shadow rounded-xl overflow-hidden border border-orange-100">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-orange-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-bold text-orange-700 uppercase tracking-wider">Nama Event</th>
+                        <th class="px-6 py-3 text-left text-xs font-bold text-orange-700 uppercase tracking-wider">Waktu</th>
+                        <th class="px-6 py-3 text-right text-xs font-bold text-orange-700 uppercase tracking-wider">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-100">
+                    @foreach($pendingEvents as $event)
+                    <tr class="hover:bg-orange-50/30 transition-colors">
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="font-bold text-gray-900">{{ $event->event_name }}</div>
+                            <div class="text-[10px] text-gray-400 truncate max-w-xs">{{ $event->needs }}</div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm font-semibold text-gray-700">{{ $event->start_date->format('d M Y') }}</div>
+                        </td>
+                        <td class="px-6 py-4 text-right">
+                            <a href="{{ route('admin.event-requests.index') }}" class="inline-flex items-center gap-1 text-orange-600 hover:text-orange-800 font-bold text-xs uppercase tracking-wider transition">
+                                Kelola Event
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+                                </svg>
+                            </a>
+                        </td>
+                    </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
+    </section>
+    @endif
+
     <!-- 3 Tables Section -->
     <div class="space-y-8">
 

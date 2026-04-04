@@ -13,6 +13,7 @@ use Carbon\Carbon;
 use Kreait\Firebase\Messaging\CloudMessage;
 use Kreait\Firebase\Messaging\Notification;
 use Kreait\Firebase\Messaging\AndroidConfig;
+use Kreait\Laravel\Firebase\Facades\Firebase;
 
 class DispatchController extends Controller
 {
@@ -119,7 +120,7 @@ class DispatchController extends Controller
 
                     if (!empty($tokens)) {
                         try {
-                            $messaging = app("firebase.project.{$projectName}")->messaging();
+                            $messaging = Firebase::project($projectName)->messaging();
                             $messaging->sendMulticast($message, array_values($tokens));
                         } catch (\Exception $e) {
                             \Log::error("FCM Send Error for Project {$projectName}: " . $e->getMessage());

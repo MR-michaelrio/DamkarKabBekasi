@@ -10,6 +10,8 @@ use App\Models\Dispatch;
 use App\Models\Ambulance;
 use App\Models\Driver;
 use App\Models\DispatchLog;
+use Kreait\Laravel\Firebase\Facades\Firebase;
+use Illuminate\Support\Facades\Log;
 
 class EventRequestController extends Controller
 {
@@ -259,19 +261,34 @@ class EventRequestController extends Controller
                 ->where('fcm_token', '!=', '')
                 ->pluck('fcm_token')->toArray();
                 
-            $deviceTokens = \App\Models\DeviceToken::pluck('token')->toArray();
+            $deviceTokensByProject = \App\Models\DeviceToken::select('token', 'firebase_project')
+                ->get()
+                ->groupBy('firebase_project');
             
-            $tokens = array_unique(array_merge($ambulanceTokens, $deviceTokens));
-
-            if (!empty($tokens)) {
-                $messaging = app('firebase.messaging');
+            if ($ambulanceTokens || $deviceTokensByProject->isNotEmpty()) {
                 $message = \Kreait\Firebase\Messaging\CloudMessage::new()
                     ->withNotification(\Kreait\Firebase\Messaging\Notification::create(
                         $validated['type'] === 'disaster' ? '🚨 Laporan Disaster Baru' : '📅 Permintaan Event Baru',
                         "Kegiatan: {$validated['event_name']} ({$validated['needs']})"
                     ));
 
-                $messaging->sendMulticast($message, array_values($tokens));
+                $projects = ['damkar', 'pmi', 'gmci'];
+                foreach ($projects as $projectName) {
+                    $tokens = $deviceTokensByProject->get($projectName, collect())->pluck('token')->toArray();
+                    
+                    if ($projectName === 'damkar') {
+                        $tokens = array_unique(array_merge($tokens, $ambulanceTokens));
+                    }
+
+                    if (!empty($tokens)) {
+                        try {
+                            $messaging = Firebase::project($projectName)->messaging();
+                            $messaging->sendMulticast($message, array_values($tokens));
+                        } catch (\Exception $e) {
+                            Log::error("FCM Send Error for Project {$projectName} (EventRequest): " . $e->getMessage());
+                        }
+                    }
+                }
             }
         } catch (\Exception $e) {
             \Log::error('FCM Send Error: ' . $e->getMessage());

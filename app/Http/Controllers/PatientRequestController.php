@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Log;
 use Kreait\Firebase\Messaging\CloudMessage;
 use Kreait\Firebase\Messaging\Notification;
 use Kreait\Firebase\Messaging\AndroidConfig;
+use Kreait\Laravel\Firebase\Facades\Firebase;
 
 class PatientRequestController extends Controller
 {
@@ -77,10 +78,10 @@ class PatientRequestController extends Controller
 
                     if (!empty($tokens)) {
                         try {
-                            $messaging = app("firebase.project.{$projectName}")->messaging();
+                            $messaging = Firebase::project($projectName)->messaging();
                             $messaging->sendMulticast($message, array_values($tokens));
                         } catch (\Exception $e) {
-                            \Log::error("FCM Send Error for Project {$projectName} (PatientRequest): " . $e->getMessage());
+                            Log::error("FCM Send Error for Project {$projectName} (PatientRequest): " . $e->getMessage());
                         }
                     }
                 }
