@@ -77,7 +77,7 @@ Route::match (['post', 'options'], '/public-fcm-token', function (\Illuminate\Ht
 
     $request->validate([
         'token' => 'required|string',
-        'project' => 'nullable|string|'
+        'project' => 'nullable|string'
     ]);
 
     \App\Models\DeviceToken::updateOrCreate(
