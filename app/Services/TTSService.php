@@ -17,36 +17,32 @@ class TTSService
         $this->modelPath = env('PIPER_MODEL', base_path('piper/id_ID-news_tts-medium.onnx'));
     }
 
-    /**
-     * Generate TTS audio file and return the public URL.
-     * 
-     * @param string $text
-     * @return string|null
-     */
     public function generate($text)
     {
         if (empty($text))
             return null;
 
         $filename = md5($text) . '.wav';
-        $directory = 'public/tts';
+        $directory = 'tts'; // Relative to storage/app/public
         $filePath = $directory . '/' . $filename;
 
+        $disk = Storage::disk('public');
+
         // Check if file already exists (caching)
-        if (Storage::exists($filePath)) {
-            return Storage::url($filePath);
+        if ($disk->exists($filePath)) {
+            return $disk->url($filePath);
         }
 
         // Ensure directory exists
-        if (!Storage::exists($directory)) {
-            Storage::makeDirectory($directory);
+        if (!$disk->exists($directory)) {
+            $disk->makeDirectory($directory);
         }
 
-        $fullPath = storage_path('app/' . $filePath);
+        $fullPath = $disk->path($filePath);
 
         // Test directory write access
-        if (!is_writable(storage_path('app/' . $directory))) {
-            Log::error("Piper TTS: Directory not writable: " . storage_path('app/' . $directory));
+        if (!is_writable(dirname($fullPath))) {
+            Log::error("Piper TTS: Directory not writable: " . dirname($fullPath));
             return null;
         }
 
@@ -73,6 +69,6 @@ class TTSService
             return null;
         }
 
-        return Storage::url($filePath);
+        return $disk->url($filePath);
     }
 }
