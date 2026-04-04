@@ -114,7 +114,7 @@
                         description: 'Notifications with emergency sound',
                         importance: 5,
                         visibility: 1,
-                        sound: 'emergency' 
+                        sound: 'emergency'
                     });
                 }
 
@@ -131,7 +131,7 @@
                                 'X-CSRF-TOKEN': '{{ csrf_token() }}',
                                 'Accept': 'application/json'
                             },
-                            body: JSON.stringify({ token: token.value })
+                            body: JSON.stringify({ token: token.value, project: "damkar" })
                         }).catch(err => console.error(err));
                     });
 
@@ -140,10 +140,10 @@
 
                         // Audio is now handled by Native Java code (FCMService.java)
                         // for both background and foreground to ensure reliability.
-                        
+
                         const title = notification.data.title || notification.title || "Notifikasi Baru";
                         const body = notification.data.body || notification.body || "";
-                        
+
                         alert("Notifikasi Baru:\n" + title + "\n" + body);
                     });
 
