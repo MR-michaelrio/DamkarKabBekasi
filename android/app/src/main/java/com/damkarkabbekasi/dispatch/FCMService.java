@@ -87,11 +87,14 @@ public class FCMService extends FirebaseMessagingService {
             mediaPlayer.release();
         }
 
+        Log.d(TAG, "Starting TTS delay for: " + url);
+
         // Add a 3-second delay before playing the TTS
         // This allows the default notification sound (emergency.mp3) to play first
         new android.os.Handler(android.os.Looper.getMainLooper()).postDelayed(() -> {
             mediaPlayer = new MediaPlayer();
             try {
+                Log.d(TAG, "Setting data source to: " + url);
                 mediaPlayer.setAudioAttributes(
                     new AudioAttributes.Builder()
                         .setContentType(AudioAttributes.CONTENT_TYPE_SPEECH)
@@ -100,20 +103,24 @@ public class FCMService extends FirebaseMessagingService {
                 );
                 mediaPlayer.setDataSource(url);
                 mediaPlayer.prepareAsync();
-                mediaPlayer.setOnPreparedListener(mp -> mp.start());
+                mediaPlayer.setOnPreparedListener(mp -> {
+                    Log.d(TAG, "MediaPlayer prepared, starting playback");
+                    mp.start();
+                });
                 mediaPlayer.setOnCompletionListener(mp -> {
+                    Log.d(TAG, "MediaPlayer playback complete");
                     mp.release();
                     mediaPlayer = null;
                 });
                 mediaPlayer.setOnErrorListener((mp, what, extra) -> {
-                    Log.e(TAG, "MediaPlayer error: " + what + ", " + extra);
+                    Log.e(TAG, "MediaPlayer error. What: " + what + ", Extra: " + extra + ", URL: " + url);
                     mp.release();
                     mediaPlayer = null;
                     return true;
                 });
 
             } catch (IOException e) {
-                Log.e(TAG, "Error playing audio", e);
+                Log.e(TAG, "Error playing audio: " + e.getMessage(), e);
             }
         }, 3000); // 3000ms = 3 seconds delay
     }

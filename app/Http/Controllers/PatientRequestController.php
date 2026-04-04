@@ -56,7 +56,17 @@ class PatientRequestController extends Controller
                 $time = $validated['pickup_time'];
                 
                 $ttsService = new \App\Services\TTSService();
-                $ttsUrl = $ttsService->generate("Laporan baru. {$serviceType}. {$address}.");
+                $ttsGeneratedName = $ttsService->generate("Laporan baru. {$serviceType}. {$address}.");
+                
+                // Robust URL generation
+                $ttsUrl = '';
+                if ($ttsGeneratedName) {
+                    $ttsUrl = url($ttsGeneratedName);
+                    if (str_contains($ttsUrl, 'localhost') && request()->getHost() !== 'localhost') {
+                        $ttsUrl = request()->getSchemeAndHttpHost() . $ttsGeneratedName;
+                    }
+                }
+                \Log::info("FCM PatientRequest TTS URL: " . $ttsUrl);
 
                 $message = CloudMessage::new ()
                 ->withData([

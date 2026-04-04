@@ -98,7 +98,17 @@ class DispatchController extends Controller
                 $serviceType = ucfirst($dispatch->patient_condition);
                 
                 $ttsService = new \App\Services\TTSService();
-                $ttsUrl = $ttsService->generate("Dispatch baru. Unit {$plateNumber}. Untuk {$serviceType}. Di {$address}.");
+                $ttsGeneratedName = $ttsService->generate("Dispatch baru. Unit {$plateNumber}. Untuk {$serviceType}. Di {$address}.");
+                
+                // Robust URL generation
+                $ttsUrl = '';
+                if ($ttsGeneratedName) {
+                    $ttsUrl = url($ttsGeneratedName);
+                    if (str_contains($ttsUrl, 'localhost') && request()->getHost() !== 'localhost') {
+                        $ttsUrl = request()->getSchemeAndHttpHost() . $ttsGeneratedName;
+                    }
+                }
+                \Log::info("FCM Dispatch TTS URL: " . $ttsUrl);
 
                 $message = CloudMessage::new ()
                 ->withData([
