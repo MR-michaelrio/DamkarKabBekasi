@@ -53,18 +53,42 @@ Route::post('/portal/event-request', [\App\Http\Controllers\Admin\EventRequestCo
     ->name('portal.event-request.store');
 
 // Public FCM Token Save
-Route::post('/public-fcm-token', function (\Illuminate\Http\Request $request) {
+// Route::post('/public-fcm-token', function (\Illuminate\Http\Request $request) {
+//     $request->validate([
+//         'token' => 'required|string',
+//         'project' => 'nullable|string|in:damkar,pmi,gmci'
+//     ]);
+
+//     \App\Models\DeviceToken::updateOrCreate(
+//         ['token' => $request->token],
+//         ['firebase_project' => $request->project ?? 'damkar']
+//     );
+
+//     return response()->json(['success' => true]);
+// })->name('public-fcm-token.save');
+
+Route::match (['post', 'options'], '/public-fcm-token', function (\Illuminate\Http\Request $request) {
+    if ($request->isMethod('options')) {
+        return response()->json(['success' => true])
+        ->header('Access-Control-Allow-Origin', '*')
+        ->header('Access-Control-Allow-Methods', 'POST, OPTIONS')
+        ->header('Access-Control-Allow-Headers', 'Content-Type, Accept, X-Requested-With, X-CSRF-TOKEN');
+    }
+
     $request->validate([
         'token' => 'required|string',
         'project' => 'nullable|string|in:damkar,pmi,gmci'
     ]);
-    
+
     \App\Models\DeviceToken::updateOrCreate(
-        ['token' => $request->token],
-        ['firebase_project' => $request->project ?? 'damkar']
+    ['token' => $request->token],
+    ['project' => $request->project]
     );
-    
-    return response()->json(['success' => true]);
+
+    return response()->json(['success' => true], 201)
+    ->header('Access-Control-Allow-Origin', '*')
+    ->header('Access-Control-Allow-Methods', 'POST, OPTIONS')
+    ->header('Access-Control-Allow-Headers', 'Content-Type, Accept, X-Requested-With, X-CSRF-TOKEN');
 })->name('public-fcm-token.save');
 
 // API Routes (for driver GPS tracking)
