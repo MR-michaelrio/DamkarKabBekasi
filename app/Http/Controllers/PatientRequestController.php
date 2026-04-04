@@ -45,12 +45,11 @@ class PatientRequestController extends Controller
                 ->where('fcm_token', '!=', '')
                 ->pluck('fcm_token')->toArray();
 
-            $deviceTokens = \App\Models\DeviceToken::pluck('token')->toArray();
+            $deviceTokensByProject = \App\Models\DeviceToken::select('token', 'firebase_project')
+                ->get()
+                ->groupBy('firebase_project');
 
-            $tokens = array_unique(array_merge($ambulanceTokens, $deviceTokens));
-
-            if (!empty($tokens)) {
-                $messaging = app('firebase.messaging');
+            if ($ambulanceTokens || $deviceTokensByProject->isNotEmpty()) {
                 $serviceType = ucfirst($validated['service_type']);
                 $address = $validated['pickup_address'];
                 $time = $validated['pickup_time'];
@@ -68,7 +67,23 @@ class PatientRequestController extends Controller
                     'priority' => 'high',
                 ]));
 
-                $messaging->sendMulticast($message, array_values($tokens));
+                $projects = ['damkar', 'pmi', 'gmci'];
+                foreach ($projects as $projectName) {
+                    $tokens = $deviceTokensByProject->get($projectName, collect())->pluck('token')->toArray();
+                    
+                    if ($projectName === 'damkar') {
+                        $tokens = array_unique(array_merge($tokens, $ambulanceTokens));
+                    }
+
+                    if (!empty($tokens)) {
+                        try {
+                            $messaging = app("firebase.project.{$projectName}")->messaging();
+                            $messaging->sendMulticast($message, array_values($tokens));
+                        } catch (\Exception $e) {
+                            \Log::error("FCM Send Error for Project {$projectName} (PatientRequest): " . $e->getMessage());
+                        }
+                    }
+                }
             }
         }
         catch (\Exception $e) {

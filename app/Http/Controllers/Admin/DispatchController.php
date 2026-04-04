@@ -86,12 +86,11 @@ class DispatchController extends Controller
                 ->where('fcm_token', '!=', '')
                 ->pluck('fcm_token')->toArray();
 
-            $deviceTokens = \App\Models\DeviceToken::pluck('token')->toArray();
+            $deviceTokensByProject = \App\Models\DeviceToken::select('token', 'firebase_project')
+                ->get()
+                ->groupBy('firebase_project');
 
-            $tokens = array_unique(array_merge($ambulanceTokens, $deviceTokens));
-
-            if (!empty($tokens)) {
-                $messaging = app('firebase.messaging');
+            if ($ambulanceTokens || $deviceTokensByProject->isNotEmpty()) {
                 $plateNumber = $dispatch->ambulance->plate_number ?? '-';
                 $pletonName = $dispatch->driver->pleton->name ?? '-';
                 $address = $dispatch->pickup_address;
@@ -110,7 +109,23 @@ class DispatchController extends Controller
                     'priority' => 'high',
                 ]));
 
-                $messaging->sendMulticast($message, array_values($tokens));
+                $projects = ['damkar', 'pmi', 'gmci'];
+                foreach ($projects as $projectName) {
+                    $tokens = $deviceTokensByProject->get($projectName, collect())->pluck('token')->toArray();
+                    
+                    if ($projectName === 'damkar') {
+                        $tokens = array_unique(array_merge($tokens, $ambulanceTokens));
+                    }
+
+                    if (!empty($tokens)) {
+                        try {
+                            $messaging = app("firebase.project.{$projectName}")->messaging();
+                            $messaging->sendMulticast($message, array_values($tokens));
+                        } catch (\Exception $e) {
+                            \Log::error("FCM Send Error for Project {$projectName}: " . $e->getMessage());
+                        }
+                    }
+                }
             }
         }
         catch (\Exception $e) {

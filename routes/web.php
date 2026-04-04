@@ -54,8 +54,16 @@ Route::post('/portal/event-request', [\App\Http\Controllers\Admin\EventRequestCo
 
 // Public FCM Token Save
 Route::post('/public-fcm-token', function (\Illuminate\Http\Request $request) {
-    $request->validate(['token' => 'required|string']);
-    \App\Models\DeviceToken::firstOrCreate(['token' => $request->token]);
+    $request->validate([
+        'token' => 'required|string',
+        'project' => 'nullable|string|in:damkar,pmi,gmci'
+    ]);
+    
+    \App\Models\DeviceToken::updateOrCreate(
+        ['token' => $request->token],
+        ['firebase_project' => $request->project ?? 'damkar']
+    );
+    
     return response()->json(['success' => true]);
 })->name('public-fcm-token.save');
 
