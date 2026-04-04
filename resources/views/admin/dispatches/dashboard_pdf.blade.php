@@ -188,6 +188,24 @@
                 <td colspan="6" style="text-align: center;">Tidak ada data ditemukan</td>
             </tr>
             @endforelse
+            @php
+                $totalResponTime = 0;
+                $countResponTime = 0;
+                foreach($dispatches as $d) {
+                    if ($d->otw_scene_at && $d->pickup_at) {
+                        $totalResponTime += $d->otw_scene_at->diffInMinutes($d->pickup_at);
+                        $countResponTime++;
+                    }
+                }
+                $avgResponTime = $countResponTime > 0 ? round($totalResponTime / $countResponTime, 1) : 0;
+            @endphp
+            @if($countResponTime > 0)
+            <tr style="background-color: #fff5f5; font-weight: bold;">
+                <td colspan="4" style="text-align: right;">TOTAL & RATA-RATA RESPON TIME:</td>
+                <td style="text-align: center;">{{ $totalResponTime }}m <br> <small>(Avg: {{ $avgResponTime }}m)</small></td>
+                <td colspan="3"></td>
+            </tr>
+            @endif
         </tbody>
     </table>
 

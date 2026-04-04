@@ -82,6 +82,11 @@
                     🚒 Buat Laporan Kejadian
                 </a>
 
+                <a href="{{ route('portal.jadwal') }}"
+                    class="px-6 py-3 rounded-xl border border-red-200 bg-red-50 hover:bg-red-100 text-red-700 font-semibold shadow-sm">
+                    🗓️ Jadwal Event
+                </a>
+
                 <a href="#tentang"
                     class="px-6 py-3 rounded-xl border border-gray-300 hover:bg-gray-100 text-gray-700 font-semibold">
                     ℹ️ Tentang Kami
