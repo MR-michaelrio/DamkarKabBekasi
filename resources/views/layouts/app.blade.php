@@ -54,78 +54,88 @@
     </main>
 
     <!-- Notification Script -->
-    @auth
-        <script type="module">
-            // Wait for Firebase to be ready
-            const checkFirebaseReady = () => {
-                return new Promise((resolve) => {
-                    const check = () => {
-                        if (window.FirebaseDB) {
-                            resolve(window.FirebaseDB);
-                        } else {
-                            setTimeout(check, 100);
-                        }
+    <script type="module">
+        // Wait for Firebase to be ready
+        const checkFirebaseReady = () => {
+            return new Promise((resolve) => {
+                const check = () => {
+                    if (window.FirebaseDB) {
+                        resolve(window.FirebaseDB);
+                    } else {
+                        setTimeout(check, 100);
+                    }
+                };
+                check();
+            });
+        };
+
+        checkFirebaseReady().then(async (database) => {
+            const { ref, onChildAdded, query, orderByKey, limitToLast } = await import("https://www.gstatic.com/firebasejs/12.11.0/firebase-database.js");
+
+            // Request notification permission
+            if ('Notification' in window && Notification.permission === 'default') {
+                Notification.requestPermission();
+            }
+
+            // Listen for new patient requests in Firebase
+            const requestsRef = ref(database, 'patient_requests');
+            const recentRequestsQuery = query(requestsRef, orderByKey(), limitToLast(1));
+
+            onChildAdded(recentRequestsQuery, (snapshot) => {
+                const request = snapshot.val();
+                console.log('New patient request from Firebase:', request);
+
+                // Show browser notification
+                if ('Notification' in window && Notification.permission === 'granted') {
+                    const notification = new Notification('Permintaan Baru Masuk!', {
+                        body: `${request.patient_name} - ${request.service_type} di ${request.pickup_address}`,
+                        icon: '{{ asset("logo-damkar.png") }}',
+                        tag: 'new-patient-request'
+                    });
+
+                    notification.onclick = function () {
+                        window.focus();
+                        notification.close();
                     };
-                    check();
-                });
-            };
-
-            checkFirebaseReady().then((database) => {
-                const { ref, onChildAdded, query, orderByKey, limitToLast } = await import("https://www.gstatic.com/firebasejs/12.11.0/firebase-database.js");
-
-                // Request notification permission
-                if ('Notification' in window && Notification.permission === 'default') {
-                    Notification.requestPermission();
                 }
 
-                // Listen for new patient requests in Firebase
-                const requestsRef = ref(database, 'patient_requests');
-                const recentRequestsQuery = query(requestsRef, orderByKey(), limitToLast(1));
+                // Play emergency sound first
+                const audio = new Audio('{{ asset("emergency.mp3") }}');
+                audio.volume = 0.8;
 
-                onChildAdded(recentRequestsQuery, (snapshot) => {
-                    const request = snapshot.val();
-                    console.log('New patient request from Firebase:', request);
+                const playPromise = audio.play();
+                if (playPromise !== undefined) {
+                    playPromise.then(() => {
+                        console.log('Emergency sound played successfully');
+                    }).catch(error => {
+                        console.log('Audio play failed (likely due to autoplay policy):', error);
+                        if ('vibrate' in navigator) {
+                            navigator.vibrate(500);
+                        }
+                    });
+                }
 
-                    // Show browser notification
-                    if ('Notification' in window && Notification.permission === 'granted') {
-                        const notification = new Notification('Permintaan Baru Masuk!', {
-                            body: `${request.patient_name} - ${request.service_type} di ${request.pickup_address}`,
-                            icon: '{{ asset("logo-damkar.png") }}',
-                            tag: 'new-patient-request'
-                        });
-
-                        notification.onclick = function () {
-                            window.focus();
-                            notification.close();
-                        };
-                    }
-
-                    // Play emergency sound
-                    const audio = new Audio('{{ asset("emergency.mp3") }}');
-                    audio.volume = 0.8;
-
-                    const playPromise = audio.play();
-                    if (playPromise !== undefined) {
-                        playPromise.then(() => {
-                            console.log('Emergency sound played successfully');
+                // Play TTS audio if available (with delay after emergency sound)
+                if (request.tts_url) {
+                    setTimeout(() => {
+                        const ttsAudio = new Audio(request.tts_url);
+                        ttsAudio.volume = 0.9;
+                        ttsAudio.play().then(() => {
+                            console.log('TTS audio played successfully');
                         }).catch(error => {
-                            console.log('Audio play failed (likely due to autoplay policy):', error);
-                            if ('vibrate' in navigator) {
-                                navigator.vibrate(500);
-                            }
+                            console.log('TTS audio play failed:', error);
                         });
-                    }
+                    }, 1000); // Wait 1 second after emergency sound
+                }
 
-                    // Trigger table refresh if on patient requests or dispatch page
-                    if (window.location.pathname.includes('laporan-masyarakat') || window.location.pathname.includes('dispatches')) {
-                        window.dispatchEvent(new CustomEvent('newPatientRequest'));
-                    }
-                });
-
-                console.log('Firebase real-time listener active');
+                // Trigger table refresh if on patient requests or dispatch page
+                if (window.location.pathname.includes('laporan-masyarakat') || window.location.pathname.includes('dispatches')) {
+                    window.dispatchEvent(new CustomEvent('new-patient-request'));
+                }
             });
-        </script>
-    @endauth
+            console.log('Firebase real-time listener active');
+        });
+    </script>
 
 </body>
 

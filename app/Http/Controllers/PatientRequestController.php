@@ -40,6 +40,21 @@ class PatientRequestController extends Controller
 
         $patientRequest = PatientRequest::create($validated);
 
+        // Generate TTS first
+        $serviceType = ucfirst($validated['service_type']);
+        $address = $validated['pickup_address'];
+        $time = $validated['pickup_time'];
+        
+        $ttsService = new \App\Services\TTSService();
+        $ttsGeneratedName = $ttsService->generate("Laporan baru. {$serviceType}. {$address}.");
+        
+        // Robust URL generation
+        $ttsUrl = '';
+        if ($ttsGeneratedName) {
+            $ttsUrl = asset($ttsGeneratedName);
+        }
+        \Log::info("FCM PatientRequest TTS URL: " . $ttsUrl);
+
         // Save to Firebase Realtime Database for real-time notifications
         try {
             $firebaseUrl = 'https://damkarkabbekasi-default-rtdb.firebaseio.com/patient_requests/' . $patientRequest->id . '.json';
@@ -51,6 +66,7 @@ class PatientRequestController extends Controller
                 'pickup_address' => $patientRequest->pickup_address,
                 'patient_condition' => $patientRequest->patient_condition,
                 'created_at' => $patientRequest->created_at->toISOString(),
+                'tts_url' => $ttsUrl,
             ];
 
             $ch = curl_init($firebaseUrl);
@@ -88,22 +104,6 @@ class PatientRequestController extends Controller
                 ->groupBy('firebase_project');
 
             if ($ambulanceTokens || $deviceTokensByProject->isNotEmpty()) {
-                $serviceType = ucfirst($validated['service_type']);
-                $address = $validated['pickup_address'];
-                $time = $validated['pickup_time'];
-                
-                $ttsService = new \App\Services\TTSService();
-                $ttsGeneratedName = $ttsService->generate("Laporan baru. {$serviceType}. {$address}.");
-                
-                // Robust URL generation
-                $ttsUrl = '';
-                if ($ttsGeneratedName) {
-                    $ttsUrl = url($ttsGeneratedName);
-                    if (str_contains($ttsUrl, 'localhost') && request()->getHost() !== 'localhost') {
-                        $ttsUrl = request()->getSchemeAndHttpHost() . $ttsGeneratedName;
-                    }
-                }
-                \Log::info("FCM PatientRequest TTS URL: " . $ttsUrl);
 
                 $message = CloudMessage::new ()
                 ->withData([

@@ -22,10 +22,10 @@
         </div>
     @endif
 
-    <!-- Requests Table -->
     <div class="bg-white shadow rounded-xl overflow-hidden"
         x-data="{
             loading: false,
+            lastRequestId: {{ $requests->first()?->id ?? 0 }},
             refresh() {
                 if (this.loading) return;
                 this.loading = true;
@@ -35,10 +35,85 @@
                 .then(response => response.text())
                 .then(html => {
                     this.$refs.tableContainer.innerHTML = html;
+                    // Check for new requests after refresh
+                    this.checkForNewRequests();
                 })
                 .finally(() => {
                     this.loading = false;
                 });
+            },
+            checkForNewRequests() {
+                fetch('/api/check-new-requests?last_id=' + this.lastRequestId)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.new_requests && data.new_requests.length > 0) {
+                        // Update last request ID
+                        this.lastRequestId = Math.max(...data.new_requests.map(r => r.id));
+                        // Trigger notifications for new requests
+                        data.new_requests.forEach(request => {
+                            this.triggerNotifications(request);
+                        });
+                    }
+                })
+                .catch(error => console.log('Error checking for new requests:', error));
+            },
+            triggerNotifications(request) {
+                console.log('New patient request detected:', request);
+
+                // Show browser notification
+                if ('Notification' in window) {
+                    if (Notification.permission === 'default') {
+                        Notification.requestPermission().then(permission => {
+                            if (permission === 'granted') {
+                                this.showNotification(request);
+                            }
+                        });
+                    } else if (Notification.permission === 'granted') {
+                        this.showNotification(request);
+                    }
+                }
+
+                // Play emergency sound
+                const audio = new Audio('{{ asset('emergency.mp3') }}');
+                audio.volume = 0.8;
+                const playPromise = audio.play();
+                if (playPromise !== undefined) {
+                    playPromise.then(() => {
+                        console.log('Emergency sound played successfully');
+                    }).catch(error => {
+                        console.log('Audio play failed (likely due to autoplay policy):', error);
+                        // Fallback to vibration if available
+                        if ('vibrate' in navigator) {
+                            navigator.vibrate(500);
+                        }
+                    });
+                }
+
+                // Play TTS if available (simulate for now since we don't have the URL)
+                // In a real implementation, you'd fetch the TTS URL from the API
+                setTimeout(() => {
+                    // This would be replaced with actual TTS URL from the request data
+                    console.log('TTS would play here for request:', request.id);
+                }, 1000);
+            },
+            showNotification(request) {
+                const notification = new Notification('🚨 Permintaan Baru Masuk!', {
+                    body: `${request.patient_name} - ${request.service_type} di ${request.pickup_address}`,
+                    icon: '{{ asset('logo-damkar.png') }}',
+                    tag: 'new-patient-request-' + request.id,
+                    requireInteraction: true
+                });
+
+                notification.onclick = function() {
+                    window.focus();
+                    notification.close();
+                    // Could scroll to the new request or highlight it
+                };
+
+                // Auto-close after 10 seconds
+                setTimeout(() => {
+                    notification.close();
+                }, 10000);
             }
         }"
         x-init="setInterval(() => refresh(), 10000)"

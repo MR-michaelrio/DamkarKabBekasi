@@ -40,8 +40,30 @@ class PatientRequestController extends Controller
         return view('admin.patient_requests.index', compact('requests', 'direction'));
     }
 
-    public function show(PatientRequest $patientRequest)
+    public function show(Request $request, PatientRequest $patientRequest)
     {
+        if ($request->ajax()) {
+            // Generate TTS URL on-demand
+            $serviceType = ucfirst($patientRequest->service_type);
+            $address = $patientRequest->pickup_address;
+            $ttsText = "Laporan baru. {$serviceType}. {$address}.";
+            $filename = md5($ttsText) . '.mp3';
+            $ttsUrl = asset('storage/tts/' . $filename);
+
+            return response()->json([
+                'id' => $patientRequest->id,
+                'patient_name' => $patientRequest->patient_name,
+                'service_type' => $patientRequest->service_type,
+                'pickup_address' => $patientRequest->pickup_address,
+                'patient_condition' => $patientRequest->patient_condition,
+                'request_date' => $patientRequest->request_date,
+                'pickup_time' => $patientRequest->pickup_time,
+                'phone' => $patientRequest->phone,
+                'status' => $patientRequest->status,
+                'tts_url' => $ttsUrl,
+            ]);
+        }
+
         return view('admin.patient_requests.show', compact('patientRequest'));
     }
 
