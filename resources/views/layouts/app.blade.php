@@ -117,12 +117,11 @@
         // Global notification polling for all admin pages
         if (window.location.pathname.startsWith('/admin/')) {
             window.notificationPoller = {
-                lastRequestId: 0,
+                lastRequestId: parseInt(localStorage.getItem('lastNotifiedRequestId') || '0'),
                 pollingInterval: null,
 
                 init() {
-                    // Get initial last ID
-                    this.checkForNewRequests();
+                    console.log('Initializing global notification poller with lastRequestId:', this.lastRequestId);
                     // Start polling every 10 seconds
                     this.pollingInterval = setInterval(() => {
                         this.checkForNewRequests();
@@ -136,8 +135,9 @@
                         if (data.new_requests && data.new_requests.length > 0) {
                             console.log('New requests detected via polling:', data.new_requests);
                             
-                            // Update last request ID
+                            // Update last request ID and store in localStorage
                             this.lastRequestId = Math.max(...data.new_requests.map(r => r.id));
+                            localStorage.setItem('lastNotifiedRequestId', this.lastRequestId.toString());
                             
                             // Trigger notifications for each new request
                             data.new_requests.forEach(request => {
