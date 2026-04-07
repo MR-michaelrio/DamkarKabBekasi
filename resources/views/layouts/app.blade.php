@@ -139,32 +139,33 @@
                 const request = snapshot.val();
                 console.log('New patient request from Firebase:', request);
 
-                // Show browser notification
-                if ('Notification' in window && Notification.permission === 'granted') {
-                    const notification = new Notification('🚨 Permintaan Baru Masuk!', {
-                        body: `${request.patient_name} - ${request.service_type} di ${request.pickup_address}`,
-                        icon: '{{ asset("logo-damkar.png") }}',
-                        tag: 'new-patient-request',
-                        requireInteraction: true
-                    });
+                // Always show notifications and play audio on admin pages
+                if (window.location.pathname.startsWith('/admin/')) {
+                    // Show browser notification
+                    if ('Notification' in window && Notification.permission === 'granted') {
+                        const notification = new Notification('🚨 Permintaan Baru Masuk!', {
+                            body: `${request.patient_name} - ${request.service_type} di ${request.pickup_address}`,
+                            icon: '{{ asset("logo-damkar.png") }}',
+                            tag: 'new-patient-request',
+                            requireInteraction: true
+                        });
 
-                    notification.onclick = function () {
-                        window.focus();
-                        // Play audio on notification click (user interaction)
+                        notification.onclick = function () {
+                            // Redirect to patient requests page
+                            window.location.href = '/admin/laporan-masyarakat';
+                            notification.close();
+                        };
+                    }
+
+                    // Play audio immediately if user has interacted
+                    if (window.audioContext && window.audioContext.userInteracted) {
                         window.audioContext.playEmergency();
                         window.audioContext.playTTS(request.tts_url);
-                        notification.close();
-                    };
+                    }
                 }
 
-                // Try to play audio immediately if user has interacted
-                if (window.audioContext && window.audioContext.userInteracted) {
-                    window.audioContext.playEmergency();
-                    window.audioContext.playTTS(request.tts_url);
-                }
-
-                // Trigger table refresh if on patient requests or dispatch page
-                if (window.location.pathname.includes('laporan-masyarakat') || window.location.pathname.includes('dispatches')) {
+                // Trigger table refresh only if on patient requests page
+                if (window.location.pathname.includes('laporan-masyarakat')) {
                     window.dispatchEvent(new CustomEvent('new-patient-request'));
                 }
             });
