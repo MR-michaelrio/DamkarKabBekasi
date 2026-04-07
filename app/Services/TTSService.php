@@ -22,6 +22,12 @@ class TTSService
         if (empty($text))
             return null;
 
+        // Check if exec function is available
+        if (!function_exists('exec')) {
+            Log::warning('TTS: exec() function is disabled. Using fallback TTS method.');
+            return $this->generateFallback($text);
+        }
+
         $filename = md5($text) . '.wav';
         $directory = 'tts'; // Relative to storage/app/public
         $filePath = $directory . '/' . $filename;
@@ -61,7 +67,8 @@ class TTSService
 
         if ($returnCode !== 0) {
             Log::error("Piper TTS Command Failed [Code {$returnCode}]: " . implode("\n", $output));
-            return null;
+            Log::warning('TTS: Piper TTS failed. Using Google TTS fallback.');
+            return $this->generateFallback($text);
         }
 
         if (!file_exists($fullPath)) {
@@ -70,5 +77,53 @@ class TTSService
         }
 
         return $disk->url($filePath);
+    }
+
+    /**
+     * Fallback TTS method when exec() is disabled
+     */
+    protected function generateFallback($text)
+    {
+        // Use Google Translate TTS as fallback
+        return $this->generateWithGoogleTTS($text);
+    }
+
+    /**
+     * Generate TTS using Google Translate TTS API (as fallback)
+     */
+    protected function generateWithGoogleTTS($text)
+    {
+        try {
+            $filename = md5($text) . '.mp3';
+            $directory = 'tts';
+            $filePath = $directory . '/' . $filename;
+
+            $disk = Storage::disk('public');
+
+            // Create directory if it doesn't exist
+            $disk->makeDirectory($directory);
+
+            $fullPath = $disk->path($filePath);
+
+            // Use Google Translate TTS API
+            $encodedText = urlencode($text);
+            $ttsUrl = "https://translate.google.com/translate_tts?ie=UTF-8&client=tw-ob&q={$encodedText}&tl=id&ttsspeed=1";
+
+            // Download the audio file
+            $audioContent = file_get_contents($ttsUrl);
+
+            if ($audioContent !== false) {
+                file_put_contents($fullPath, $audioContent);
+                Log::info('Google TTS: Audio file generated successfully');
+                return $disk->url($filePath);
+            } else {
+                Log::error('Google TTS: Failed to download audio');
+                return null;
+            }
+
+        } catch (\Exception $e) {
+            Log::error('Google TTS Error: ' . $e->getMessage());
+            return null;
+        }
     }
 }
