@@ -104,7 +104,7 @@
                     audio.play().catch(error => {
                         console.log('TTS audio play failed:', error);
                     });
-                }, 1000);
+                }, 3000);
             }
         };
         
