@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\PatientRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Kreait\Firebase\Messaging\CloudMessage;
 
 class PatientRequestController extends Controller
 {
