@@ -13,6 +13,7 @@ import android.net.Uri;
 import androidx.core.app.NotificationCompat;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
+import android.os.PowerManager;
 import java.io.IOException;
 import java.util.Map;
 
@@ -20,6 +21,7 @@ public class FCMService extends FirebaseMessagingService {
     private static final String TAG = "FCMService";
     private static final String CHANNEL_ID = "damkar-emergency";
     private MediaPlayer mediaPlayer;
+    private PowerManager.WakeLock wakeLock;
 
     @Override
     public void onMessageReceived(RemoteMessage remoteMessage) {
@@ -32,17 +34,14 @@ public class FCMService extends FirebaseMessagingService {
             String body = data.get("body");
             String ttsUrl = data.get("tts_url");
 
-            // 1. Play TTS Audio
-            if (ttsUrl != null && !ttsUrl.isEmpty()) {
-                Log.d(TAG, "TTS URL found: " + ttsUrl);
-                playAudio(ttsUrl);
-            }
-
-            // 2. Show Manual Notification (If not already shown by system)
-            // System only shows notification if 'notification' key exists in FCM payload.
-            // If we send only 'data', we must show it manually here.
+            // Show Manual Notification
             if (title != null && body != null) {
                 showNotification(title, body);
+            }
+
+            // Play TTS Audio (Moved to follow notification display)
+            if (ttsUrl != null && !ttsUrl.isEmpty()) {
+                playAudio(ttsUrl);
             }
         }
     }
@@ -83,46 +82,74 @@ public class FCMService extends FirebaseMessagingService {
     }
 
     private void playAudio(String url) {
+        Log.d(TAG, "playAudio: Requested URL -> " + url);
+
+        // Terminate any existing player first
         if (mediaPlayer != null) {
-            mediaPlayer.release();
+            try {
+                mediaPlayer.stop();
+                mediaPlayer.release();
+            } catch (Exception e) {}
+            mediaPlayer = null;
         }
 
-        Log.d(TAG, "Starting TTS delay for: " + url);
+        // Use PowerManager to keep the CPU awake during the 3s delay & playback
+        PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
+        wakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "Damkar:TTSWakeLock");
+        wakeLock.acquire(15 * 1000); // Max 15 seconds
 
-        // Add a 3-second delay before playing the TTS
-        // This allows the default notification sound (emergency.mp3) to play first
-        new android.os.Handler(android.os.Looper.getMainLooper()).postDelayed(() -> {
+        try {
+            Log.d(TAG, "playAudio: Waiting 3 seconds for notification sound...");
+            Thread.sleep(3000); // 3 seconds synchronous wait on the FCM worker thread
+
             mediaPlayer = new MediaPlayer();
-            try {
-                Log.d(TAG, "Setting data source to: " + url);
-                mediaPlayer.setAudioAttributes(
-                    new AudioAttributes.Builder()
-                        .setContentType(AudioAttributes.CONTENT_TYPE_SPEECH)
-                        .setUsage(AudioAttributes.USAGE_ALARM)
-                        .build()
-                );
-                mediaPlayer.setDataSource(url);
-                mediaPlayer.prepareAsync();
-                mediaPlayer.setOnPreparedListener(mp -> {
-                    Log.d(TAG, "MediaPlayer prepared, starting playback");
-                    mp.start();
-                });
-                mediaPlayer.setOnCompletionListener(mp -> {
-                    Log.d(TAG, "MediaPlayer playback complete");
-                    mp.release();
-                    mediaPlayer = null;
-                });
-                mediaPlayer.setOnErrorListener((mp, what, extra) -> {
-                    Log.e(TAG, "MediaPlayer error. What: " + what + ", Extra: " + extra + ", URL: " + url);
-                    mp.release();
-                    mediaPlayer = null;
-                    return true;
-                });
+            mediaPlayer.setAudioAttributes(
+                new AudioAttributes.Builder()
+                    .setContentType(AudioAttributes.CONTENT_TYPE_SPEECH)
+                    .setUsage(AudioAttributes.USAGE_MEDIA)
+                    .build()
+            );
+            
+            Log.d(TAG, "playAudio: Setting Data Source -> " + url);
+            mediaPlayer.setDataSource(url);
+            mediaPlayer.setVolume(1.0f, 1.0f);
 
-            } catch (IOException e) {
-                Log.e(TAG, "Error playing audio: " + e.getMessage(), e);
-            }
-        }, 3000); // 3000ms = 3 seconds delay
+            mediaPlayer.setOnCompletionListener(mp -> {
+                Log.d(TAG, "playAudio: Playback completed.");
+                mp.release();
+                mediaPlayer = null;
+                if (wakeLock != null && wakeLock.isHeld()) {
+                    wakeLock.release();
+                }
+            });
+
+            mediaPlayer.setOnErrorListener((mp, what, extra) -> {
+                Log.e(TAG, "playAudio error. What: " + what + ", Extra: " + extra + ", URL: " + url);
+                mp.release();
+                mediaPlayer = null;
+                if (wakeLock != null && wakeLock.isHeld()) {
+                    wakeLock.release();
+                }
+                return true;
+            });
+
+            // Using synchronous prepare() to block the FCM thread until audio is loaded.
+            // This prevents the Service from being killed prematurely.
+            Log.d(TAG, "playAudio: Preparing player (Synchronous)...");
+            mediaPlayer.prepare();
+            Log.d(TAG, "playAudio: MediaPlayer prepared. Starting playback.");
+            mediaPlayer.start();
+
+        } catch (InterruptedException e) {
+            Log.e(TAG, "playAudio: Interrupted delay", e);
+            if (wakeLock != null && wakeLock.isHeld()) wakeLock.release();
+        } catch (IOException e) {
+            Log.e(TAG, "playAudio: IOException during setup/prepare", e);
+            if (wakeLock != null && wakeLock.isHeld()) wakeLock.release();
+        } catch (Exception e) {
+            Log.e(TAG, "playAudio: Unexpected error", e);
+            if (wakeLock != null && wakeLock.isHeld()) wakeLock.release();
+        }
     }
 
     @Override
@@ -130,6 +157,9 @@ public class FCMService extends FirebaseMessagingService {
         if (mediaPlayer != null) {
             mediaPlayer.release();
             mediaPlayer = null;
+        }
+        if (wakeLock != null && wakeLock.isHeld()) {
+            wakeLock.release();
         }
         super.onDestroy();
     }
