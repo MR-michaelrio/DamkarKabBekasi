@@ -104,7 +104,7 @@
                     audio.play().catch(error => {
                         console.log('TTS audio play failed:', error);
                     });
-                }, 1000);
+                }, 3000);
             }
         };
         
@@ -121,35 +121,41 @@
                 pollingInterval: null,
 
                 init() {
-                    console.log('Initializing global notification poller with lastRequestId:', this.lastRequestId);
-                    // Start polling every 10 seconds
+                    console.log('🔄 Initializing global notification poller with lastRequestId:', this.lastRequestId);
+                    // Start polling immediately, then every 10 seconds
+                    this.checkForNewRequests();
                     this.pollingInterval = setInterval(() => {
                         this.checkForNewRequests();
                     }, 10000);
                 },
 
                 checkForNewRequests() {
+                    console.log('🔍 Checking for new requests with last_id:', this.lastRequestId);
                     fetch('/api/check-new-requests?last_id=' + this.lastRequestId)
                     .then(response => response.json())
                     .then(data => {
+                        console.log('📡 API Response:', data);
                         if (data.new_requests && data.new_requests.length > 0) {
-                            console.log('New requests detected via polling:', data.new_requests);
+                            console.log('🚨 New requests detected:', data.new_requests);
                             
                             // Update last request ID and store in localStorage
                             this.lastRequestId = Math.max(...data.new_requests.map(r => r.id));
                             localStorage.setItem('lastNotifiedRequestId', this.lastRequestId.toString());
+                            console.log('💾 Updated lastRequestId to:', this.lastRequestId);
                             
                             // Trigger notifications for each new request
                             data.new_requests.forEach(request => {
                                 this.triggerNotifications(request);
                             });
+                        } else {
+                            console.log('✅ No new requests found');
                         }
                     })
-                    .catch(error => console.log('Polling error:', error));
+                    .catch(error => console.log('❌ Polling error:', error));
                 },
 
                 triggerNotifications(request) {
-                    console.log('Triggering notifications for:', request);
+                    console.log('🔔 Triggering notifications for:', request);
 
                     // Show browser notification
                     if ('Notification' in window) {
@@ -165,9 +171,13 @@
                     }
 
                     // Play audio immediately if user has interacted
+                    console.log('🎵 Audio context userInteracted:', window.audioContext ? window.audioContext.userInteracted : 'no audioContext');
                     if (window.audioContext && window.audioContext.userInteracted) {
+                        console.log('🔊 Playing emergency sound...');
                         window.audioContext.playEmergency();
                         window.audioContext.playTTS(request.tts_url);
+                    } else {
+                        console.log('🔇 Not playing audio - user has not interacted or audioContext not ready');
                     }
                 },
 
@@ -204,6 +214,28 @@
             window.addEventListener('beforeunload', () => {
                 window.notificationPoller.destroy();
             });
+
+            // Debug commands available in console
+            window.debugNotifications = {
+                checkStorage: () => {
+                    console.log('Current lastNotifiedRequestId:', localStorage.getItem('lastNotifiedRequestId'));
+                    return localStorage.getItem('lastNotifiedRequestId');
+                },
+                resetStorage: () => {
+                    localStorage.removeItem('lastNotifiedRequestId');
+                    window.notificationPoller.lastRequestId = 0;
+                    console.log('Reset lastNotifiedRequestId to 0');
+                },
+                testAudio: () => {
+                    if (window.audioContext) {
+                        console.log('Testing emergency audio...');
+                        window.audioContext.playEmergency();
+                    } else {
+                        console.log('Audio context not available');
+                    }
+                }
+            };
+            console.log('🔧 Debug commands available: window.debugNotifications.checkStorage(), window.debugNotifications.resetStorage(), window.debugNotifications.testAudio()');
         }
     </script>
 
