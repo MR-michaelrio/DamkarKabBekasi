@@ -118,6 +118,7 @@
         if (window.location.pathname.startsWith('/admin/')) {
             window.notificationPoller = {
                 lastRequestId: parseInt(localStorage.getItem('lastNotifiedRequestId') || '0'),
+                notifiedIds: new Set(JSON.parse(localStorage.getItem('notifiedRequestIds') || '[]')),
                 pollingInterval: null,
 
                 init() {
@@ -129,6 +130,13 @@
                     }, 10000);
                 },
 
+                saveNotifiedId(id) {
+                    this.notifiedIds.add(id);
+                    localStorage.setItem('notifiedRequestIds', JSON.stringify(Array.from(this.notifiedIds)));
+                    this.lastRequestId = Math.max(this.lastRequestId, id);
+                    localStorage.setItem('lastNotifiedRequestId', this.lastRequestId.toString());
+                },
+
                 checkForNewRequests() {
                     console.log('🔍 Checking for new requests with last_id:', this.lastRequestId);
                     fetch('/api/check-new-requests?last_id=' + this.lastRequestId)
@@ -136,17 +144,27 @@
                     .then(data => {
                         console.log('📡 API Response:', data);
                         if (data.new_requests && data.new_requests.length > 0) {
-                            console.log('🚨 New requests detected:', data.new_requests);
-                            
-                            // Update last request ID and store in localStorage
-                            this.lastRequestId = Math.max(...data.new_requests.map(r => r.id));
-                            localStorage.setItem('lastNotifiedRequestId', this.lastRequestId.toString());
-                            console.log('💾 Updated lastRequestId to:', this.lastRequestId);
-                            
-                            // Trigger notifications for each new request
-                            data.new_requests.forEach(request => {
-                                this.triggerNotifications(request);
-                            });
+                            const maxRequestId = Math.max(...data.new_requests.map(request => request.id));
+
+                            // If this is the first sync and we have no stored IDs,
+                            // do not notify existing historical requests.
+                            if (this.lastRequestId === 0 && this.notifiedIds.size === 0) {
+                                console.log('📥 Initial sync: storing latest request id without notifying older entries');
+                                this.lastRequestId = maxRequestId;
+                                localStorage.setItem('lastNotifiedRequestId', this.lastRequestId.toString());
+                                return;
+                            }
+
+                            const unseenRequests = data.new_requests.filter(request => !this.notifiedIds.has(request.id));
+                            if (unseenRequests.length > 0) {
+                                console.log('🚨 Unseen new requests:', unseenRequests);
+                                unseenRequests.forEach(request => {
+                                    this.triggerNotifications(request);
+                                    this.saveNotifiedId(request.id);
+                                });
+                            } else {
+                                console.log('✅ New requests already notified before');
+                            }
                         } else {
                             console.log('✅ No new requests found');
                         }
@@ -157,7 +175,6 @@
                 triggerNotifications(request) {
                     console.log('🔔 Triggering notifications for:', request);
 
-                    // Show browser notification
                     if ('Notification' in window) {
                         if (Notification.permission === 'default') {
                             Notification.requestPermission().then(permission => {
@@ -170,8 +187,6 @@
                         }
                     }
 
-                    // Play audio immediately if user has interacted
-                    console.log('🎵 Audio context userInteracted:', window.audioContext ? window.audioContext.userInteracted : 'no audioContext');
                     if (window.audioContext && window.audioContext.userInteracted) {
                         console.log('🔊 Playing emergency sound...');
                         window.audioContext.playEmergency();
@@ -194,7 +209,6 @@
                         notification.close();
                     };
 
-                    // Auto-close after 15 seconds
                     setTimeout(() => {
                         notification.close();
                     }, 15000);
