@@ -82,6 +82,7 @@ Route::prefix('api')->group(function () {
                     'service_type' => $request->service_type,
                     'pickup_address' => $request->pickup_address,
                     'patient_condition' => $request->patient_condition,
+                    'tts_url' => $request->tts_url,
                 ];
             });
 

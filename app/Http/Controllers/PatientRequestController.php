@@ -52,6 +52,8 @@ class PatientRequestController extends Controller
         $ttsUrl = '';
         if ($ttsGeneratedName) {
             $ttsUrl = asset($ttsGeneratedName);
+            // Save TTS URL to database
+            $patientRequest->update(['tts_url' => $ttsUrl]);
         }
         \Log::info("FCM PatientRequest TTS URL: " . $ttsUrl);
 

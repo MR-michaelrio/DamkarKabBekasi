@@ -28,6 +28,7 @@ class PatientRequest extends Model
         'kelurahan',
         'kecamatan',
         'nomor',
+        'tts_url',
     ];
 
     protected function casts(): array
