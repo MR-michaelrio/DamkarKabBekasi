@@ -6,6 +6,9 @@ use App\Models\PatientRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Kreait\Firebase\Messaging\CloudMessage;
+use Kreait\Firebase\Messaging\Notification;
+use Kreait\Firebase\Messaging\AndroidConfig;
+use Kreait\Laravel\Firebase\Facades\Firebase;
 
 class PatientRequestController extends Controller
 {
