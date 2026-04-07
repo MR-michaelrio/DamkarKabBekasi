@@ -5,10 +5,6 @@ namespace App\Http\Controllers;
 use App\Models\PatientRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
-use Kreait\Firebase\Messaging\CloudMessage;
-use Kreait\Firebase\Messaging\Notification;
-use Kreait\Firebase\Messaging\AndroidConfig;
-use Kreait\Laravel\Firebase\Facades\Firebase;
 
 class PatientRequestController extends Controller
 {
@@ -39,6 +35,40 @@ class PatientRequestController extends Controller
         ]);
 
         $patientRequest = PatientRequest::create($validated);
+
+        // Save to Firebase Realtime Database for real-time notifications
+        try {
+            $firebaseUrl = 'https://damkarkabbekasi-default-rtdb.firebaseio.com/patient_requests/' . $patientRequest->id . '.json';
+            
+            $data = [
+                'id' => $patientRequest->id,
+                'patient_name' => $patientRequest->patient_name,
+                'service_type' => $patientRequest->service_type,
+                'pickup_address' => $patientRequest->pickup_address,
+                'patient_condition' => $patientRequest->patient_condition,
+                'created_at' => $patientRequest->created_at->toISOString(),
+            ];
+
+            $ch = curl_init($firebaseUrl);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'PUT');
+            curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
+            curl_setopt($ch, CURLOPT_HTTPHEADER, [
+                'Content-Type: application/json',
+            ]);
+            
+            $response = curl_exec($ch);
+            $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            curl_close($ch);
+
+            if ($httpCode >= 200 && $httpCode < 300) {
+                Log::info('Patient request saved to Firebase: ' . $patientRequest->id);
+            } else {
+                Log::error('Failed to save to Firebase. HTTP Code: ' . $httpCode . ', Response: ' . $response);
+            }
+        } catch (\Exception $e) {
+            Log::error('Failed to save to Firebase: ' . $e->getMessage());
+        }
 
         // Broadcast event for real-time notifications
         broadcast(new \App\Events\NewPatientRequest($patientRequest));
