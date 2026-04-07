@@ -73,28 +73,13 @@
                     }
                 }
 
-                // Play emergency sound
-                const audio = new Audio('{{ asset('emergency.mp3') }}');
-                audio.volume = 0.8;
-                const playPromise = audio.play();
-                if (playPromise !== undefined) {
-                    playPromise.then(() => {
-                        console.log('Emergency sound played successfully');
-                    }).catch(error => {
-                        console.log('Audio play failed (likely due to autoplay policy):', error);
-                        // Fallback to vibration if available
-                        if ('vibrate' in navigator) {
-                            navigator.vibrate(500);
-                        }
-                    });
+                // Play audio immediately if user has interacted, otherwise it will play on notification click
+                if (window.audioContext) {
+                    if (window.audioContext.userInteracted) {
+                        window.audioContext.playEmergency();
+                        window.audioContext.playTTS(request.tts_url);
+                    }
                 }
-
-                // Play TTS if available (simulate for now since we don't have the URL)
-                // In a real implementation, you'd fetch the TTS URL from the API
-                setTimeout(() => {
-                    // This would be replaced with actual TTS URL from the request data
-                    console.log('TTS would play here for request:', request.id);
-                }, 1000);
             },
             showNotification(request) {
                 const notification = new Notification('🚨 Permintaan Baru Masuk!', {
@@ -106,14 +91,18 @@
 
                 notification.onclick = function() {
                     window.focus();
+                    // Play audio on notification click (this is user interaction)
+                    if (window.audioContext) {
+                        window.audioContext.playEmergency();
+                        window.audioContext.playTTS(request.tts_url);
+                    }
                     notification.close();
-                    // Could scroll to the new request or highlight it
                 };
 
-                // Auto-close after 10 seconds
+                // Auto-close after 15 seconds
                 setTimeout(() => {
                     notification.close();
-                }, 10000);
+                }, 15000);
             }
         }"
         x-init="setInterval(() => refresh(), 10000)"

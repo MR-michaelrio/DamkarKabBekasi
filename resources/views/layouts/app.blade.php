@@ -53,6 +53,65 @@
         @yield('content')
     </main>
 
+    <!-- Audio Notification System -->
+    <script>
+        // Create global audio context for autoplay policy
+        window.audioContext = {
+            emergency: null,
+            tts: null,
+            userInteracted: false,
+            
+            // Initialize and request notification permission on first interaction
+            init() {
+                // Request notification permission (counts as user interaction)
+                if ('Notification' in window && Notification.permission === 'default') {
+                    Notification.requestPermission().then(permission => {
+                        if (permission === 'granted') {
+                            this.userInteracted = true;
+                            console.log('Notification permission granted');
+                        }
+                    });
+                } else if ('Notification' in window && Notification.permission === 'granted') {
+                    this.userInteracted = true;
+                }
+                
+                // Also listen for any user interaction
+                document.addEventListener('click', () => {
+                    this.userInteracted = true;
+                }, { once: true });
+                document.addEventListener('keydown', () => {
+                    this.userInteracted = true;
+                }, { once: true });
+            },
+            
+            playEmergency() {
+                const audio = new Audio('{{ asset("emergency.mp3") }}');
+                audio.volume = 0.8;
+                audio.play().catch(error => {
+                    console.log('Emergency audio play failed:', error);
+                    // Fallback to vibration
+                    if ('vibrate' in navigator) {
+                        navigator.vibrate([500, 100, 500]);
+                    }
+                });
+            },
+            
+            playTTS(url) {
+                if (!url) return;
+                setTimeout(() => {
+                    const audio = new Audio(url);
+                    audio.volume = 0.9;
+                    audio.play().catch(error => {
+                        console.log('TTS audio play failed:', error);
+                    });
+                }, 1000);
+            }
+        };
+        
+        // Initialize audio context
+        window.audioContext.init();
+    </script>
+
     <!-- Notification Script -->
     <script type="module">
         // Wait for Firebase to be ready
@@ -72,11 +131,6 @@
         checkFirebaseReady().then(async (database) => {
             const { ref, onChildAdded, query, orderByKey, limitToLast } = await import("https://www.gstatic.com/firebasejs/12.11.0/firebase-database.js");
 
-            // Request notification permission
-            if ('Notification' in window && Notification.permission === 'default') {
-                Notification.requestPermission();
-            }
-
             // Listen for new patient requests in Firebase
             const requestsRef = ref(database, 'patient_requests');
             const recentRequestsQuery = query(requestsRef, orderByKey(), limitToLast(1));
@@ -87,45 +141,26 @@
 
                 // Show browser notification
                 if ('Notification' in window && Notification.permission === 'granted') {
-                    const notification = new Notification('Permintaan Baru Masuk!', {
+                    const notification = new Notification('🚨 Permintaan Baru Masuk!', {
                         body: `${request.patient_name} - ${request.service_type} di ${request.pickup_address}`,
                         icon: '{{ asset("logo-damkar.png") }}',
-                        tag: 'new-patient-request'
+                        tag: 'new-patient-request',
+                        requireInteraction: true
                     });
 
                     notification.onclick = function () {
                         window.focus();
+                        // Play audio on notification click (user interaction)
+                        window.audioContext.playEmergency();
+                        window.audioContext.playTTS(request.tts_url);
                         notification.close();
                     };
                 }
 
-                // Play emergency sound first
-                const audio = new Audio('{{ asset("emergency.mp3") }}');
-                audio.volume = 0.8;
-
-                const playPromise = audio.play();
-                if (playPromise !== undefined) {
-                    playPromise.then(() => {
-                        console.log('Emergency sound played successfully');
-                    }).catch(error => {
-                        console.log('Audio play failed (likely due to autoplay policy):', error);
-                        if ('vibrate' in navigator) {
-                            navigator.vibrate(500);
-                        }
-                    });
-                }
-
-                // Play TTS audio if available (with delay after emergency sound)
-                if (request.tts_url) {
-                    setTimeout(() => {
-                        const ttsAudio = new Audio(request.tts_url);
-                        ttsAudio.volume = 0.9;
-                        ttsAudio.play().then(() => {
-                            console.log('TTS audio played successfully');
-                        }).catch(error => {
-                            console.log('TTS audio play failed:', error);
-                        });
-                    }, 1000); // Wait 1 second after emergency sound
+                // Try to play audio immediately if user has interacted
+                if (window.audioContext && window.audioContext.userInteracted) {
+                    window.audioContext.playEmergency();
+                    window.audioContext.playTTS(request.tts_url);
                 }
 
                 // Trigger table refresh if on patient requests or dispatch page
