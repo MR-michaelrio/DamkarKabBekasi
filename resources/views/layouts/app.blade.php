@@ -112,6 +112,101 @@
         window.audioContext.init();
     </script>
 
+    <!-- Global Notification Polling System -->
+    <script>
+        // Global notification polling for all admin pages
+        if (window.location.pathname.startsWith('/admin/')) {
+            window.notificationPoller = {
+                lastRequestId: 0,
+                pollingInterval: null,
+
+                init() {
+                    // Get initial last ID
+                    this.checkForNewRequests();
+                    // Start polling every 10 seconds
+                    this.pollingInterval = setInterval(() => {
+                        this.checkForNewRequests();
+                    }, 10000);
+                },
+
+                checkForNewRequests() {
+                    fetch('/api/check-new-requests?last_id=' + this.lastRequestId)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.new_requests && data.new_requests.length > 0) {
+                            console.log('New requests detected via polling:', data.new_requests);
+                            
+                            // Update last request ID
+                            this.lastRequestId = Math.max(...data.new_requests.map(r => r.id));
+                            
+                            // Trigger notifications for each new request
+                            data.new_requests.forEach(request => {
+                                this.triggerNotifications(request);
+                            });
+                        }
+                    })
+                    .catch(error => console.log('Polling error:', error));
+                },
+
+                triggerNotifications(request) {
+                    console.log('Triggering notifications for:', request);
+
+                    // Show browser notification
+                    if ('Notification' in window) {
+                        if (Notification.permission === 'default') {
+                            Notification.requestPermission().then(permission => {
+                                if (permission === 'granted') {
+                                    this.showNotification(request);
+                                }
+                            });
+                        } else if (Notification.permission === 'granted') {
+                            this.showNotification(request);
+                        }
+                    }
+
+                    // Play audio immediately if user has interacted
+                    if (window.audioContext && window.audioContext.userInteracted) {
+                        window.audioContext.playEmergency();
+                        window.audioContext.playTTS(request.tts_url);
+                    }
+                },
+
+                showNotification(request) {
+                    const notification = new Notification('🚨 Permintaan Baru Masuk!', {
+                        body: `${request.patient_name} - ${request.service_type} di ${request.pickup_address}`,
+                        icon: '{{ asset("logo-damkar.png") }}',
+                        tag: 'new-patient-request-' + request.id,
+                        requireInteraction: true
+                    });
+
+                    notification.onclick = function() {
+                        window.location.href = '/admin/laporan-masyarakat';
+                        notification.close();
+                    };
+
+                    // Auto-close after 15 seconds
+                    setTimeout(() => {
+                        notification.close();
+                    }, 15000);
+                },
+
+                destroy() {
+                    if (this.pollingInterval) {
+                        clearInterval(this.pollingInterval);
+                    }
+                }
+            };
+
+            // Initialize polling when page loads
+            window.notificationPoller.init();
+
+            // Clean up when page unloads
+            window.addEventListener('beforeunload', () => {
+                window.notificationPoller.destroy();
+            });
+        }
+    </script>
+
     <!-- Notification Script -->
     <script type="module">
         // Wait for Firebase to be ready

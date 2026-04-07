@@ -25,7 +25,6 @@
     <div class="bg-white shadow rounded-xl overflow-hidden"
         x-data="{
             loading: false,
-            lastRequestId: {{ $requests->first()?->id ?? 0 }},
             refresh() {
                 if (this.loading) return;
                 this.loading = true;
@@ -35,74 +34,10 @@
                 .then(response => response.text())
                 .then(html => {
                     this.$refs.tableContainer.innerHTML = html;
-                    // Check for new requests after refresh
-                    this.checkForNewRequests();
                 })
                 .finally(() => {
                     this.loading = false;
                 });
-            },
-            checkForNewRequests() {
-                fetch('/api/check-new-requests?last_id=' + this.lastRequestId)
-                .then(response => response.json())
-                .then(data => {
-                    if (data.new_requests && data.new_requests.length > 0) {
-                        // Update last request ID
-                        this.lastRequestId = Math.max(...data.new_requests.map(r => r.id));
-                        // Trigger notifications for new requests
-                        data.new_requests.forEach(request => {
-                            this.triggerNotifications(request);
-                        });
-                    }
-                })
-                .catch(error => console.log('Error checking for new requests:', error));
-            },
-            triggerNotifications(request) {
-                console.log('New patient request detected:', request);
-
-                // Show browser notification
-                if ('Notification' in window) {
-                    if (Notification.permission === 'default') {
-                        Notification.requestPermission().then(permission => {
-                            if (permission === 'granted') {
-                                this.showNotification(request);
-                            }
-                        });
-                    } else if (Notification.permission === 'granted') {
-                        this.showNotification(request);
-                    }
-                }
-
-                // Play audio immediately if user has interacted, otherwise it will play on notification click
-                if (window.audioContext) {
-                    if (window.audioContext.userInteracted) {
-                        window.audioContext.playEmergency();
-                        window.audioContext.playTTS(request.tts_url);
-                    }
-                }
-            },
-            showNotification(request) {
-                const notification = new Notification('🚨 Permintaan Baru Masuk!', {
-                    body: `${request.patient_name} - ${request.service_type} di ${request.pickup_address}`,
-                    icon: '{{ asset('logo-damkar.png') }}',
-                    tag: 'new-patient-request-' + request.id,
-                    requireInteraction: true
-                });
-
-                notification.onclick = function() {
-                    window.focus();
-                    // Play audio on notification click (this is user interaction)
-                    if (window.audioContext) {
-                        window.audioContext.playEmergency();
-                        window.audioContext.playTTS(request.tts_url);
-                    }
-                    notification.close();
-                };
-
-                // Auto-close after 15 seconds
-                setTimeout(() => {
-                    notification.close();
-                }, 15000);
             }
         }"
         x-init="setInterval(() => refresh(), 10000)"
