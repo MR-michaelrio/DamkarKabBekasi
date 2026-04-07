@@ -1,0 +1,107 @@
+<table class="min-w-full divide-y divide-gray-200 text-sm">
+    <thead class="bg-gray-50">
+        <tr>
+            <th class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider whitespace-nowrap">
+                <a href="{{ route('admin.patient-requests.index', ['direction' => ($direction === 'asc' ? 'desc' : 'asc')]) }}" class="flex items-center gap-1 hover:text-blue-600 transition">
+                    Tanggal
+                    @if($direction === 'asc')
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" />
+                        </svg>
+                    @else
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                        </svg>
+                    @endif
+                </a>
+            </th>
+            <th class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider whitespace-nowrap">Nama Pelapor</th>
+            <th class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider whitespace-nowrap">Layanan</th>
+            <th class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider whitespace-nowrap">Kondisi</th>
+            <th class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider whitespace-nowrap">Status</th>
+            <th class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider whitespace-nowrap">Aksi</th>
+        </tr>
+    </thead>
+    <tbody class="bg-white divide-y divide-gray-100">
+        @forelse ($requests as $request)
+            <tr class="hover:bg-gray-50 transition">
+                <td class="px-6 py-4 whitespace-nowrap text-gray-900">
+                    {{ $request->request_date->format('d/m/Y') }}
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap font-bold text-gray-900">
+                    {{ $request->patient_name }}
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-gray-900">
+                    @if ($request->service_type === 'kebakaran')
+                        🔥 Kebakaran
+                    @elseif ($request->service_type === 'rescue')
+                        🚒 Rescue
+                    @else
+                        {{ strtoupper($request->service_type) }}
+                    @endif
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-gray-900">
+                    @if ($request->patient_condition === 'emergency')
+                        <span class="px-2 py-1 bg-red-100 text-red-700 rounded text-xs font-bold">
+                            🚨 Emergency
+                        </span>
+                    @elseif ($request->patient_condition === 'kontrol')
+                        <span class="px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs font-bold">
+                            🏥 Kontrol
+                        </span>
+                    @else
+                        <span class="text-gray-400">-</span>
+                    @endif
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm">
+                    @if ($request->status === 'pending')
+                        <span class="px-2 py-1 bg-yellow-100 text-yellow-700 rounded text-xs font-bold">
+                            ⏳ Pending
+                        </span>
+                    @elseif ($request->status === 'dispatched')
+                        <span class="px-2 py-1 bg-green-100 text-green-700 rounded text-xs font-bold">
+                            ✅ Dispatched
+                        </span>
+                    @elseif ($request->status === 'completed')
+                        <span class="px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs font-bold">
+                            🏁 Selesai
+                        </span>
+                    @else
+                        <span class="px-2 py-1 bg-red-100 text-red-700 rounded text-xs font-bold">
+                            ❌ Rejected
+                        </span>
+                    @endif
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm flex items-center gap-3">
+                    <a href="{{ route('admin.patient-requests.show', $request) }}"
+                       class="text-blue-600 hover:text-blue-800 font-bold">
+                        Lihat
+                    </a>
+                    <a href="{{ route('admin.patient-requests.edit', $request) }}"
+                       class="text-amber-600 hover:text-amber-800 font-bold">
+                        Edit
+                    </a>
+                    <form action="{{ route('admin.patient-requests.destroy', $request) }}" method="POST" onsubmit="return confirm('Yakin ingin menghapus permintaan ini?')" class="inline">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="text-red-600 hover:text-red-800 font-bold">
+                            Hapus
+                        </button>
+                    </form>
+                    @if (in_array($request->status, ['pending', 'dispatched']))
+                        <a href="{{ route('admin.patient-requests.create-dispatch', $request) }}"
+                           class="text-green-600 hover:text-green-800 font-bold">
+                            {{ $request->status === 'dispatched' ? 'Tambah Armada' : 'Dispatch' }}
+                        </a>
+                    @endif
+                </td>
+            </tr>
+        @empty
+            <tr>
+                <td colspan="6" class="px-6 py-10 text-center text-gray-500 italic">
+                    Belum ada laporan masuk
+                </td>
+            </tr>
+        @endforelse
+    </tbody>
+</table>

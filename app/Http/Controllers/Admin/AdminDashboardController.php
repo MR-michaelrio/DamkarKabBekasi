@@ -54,9 +54,11 @@ class AdminDashboardController extends Controller
         $startOfMonth = $filterDate->copy()->startOfMonth();
         $endOfMonth = $filterDate->copy()->endOfMonth();
 
-        $ambulanceAnalytics = Ambulance::withCount(['dispatches' => function ($query) use ($startOfMonth, $endOfMonth) {
-            $query->whereBetween('created_at', [$startOfMonth, $endOfMonth]);
-        }])->get();
+        $ambulanceAnalytics = Ambulance::withCount([
+            'dispatches' => function ($query) use ($startOfMonth, $endOfMonth) {
+                $query->whereBetween('created_at', [$startOfMonth, $endOfMonth]);
+            }
+        ])->get();
 
         // =====================
         // SUMMARY STATS (Keep existing for potential use)

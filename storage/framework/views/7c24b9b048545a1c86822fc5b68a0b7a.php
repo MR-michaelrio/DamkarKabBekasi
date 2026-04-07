@@ -4,9 +4,9 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <meta name="csrf-token" content="<?php echo e(csrf_token()); ?>">
 
-    <title>@yield('title', 'Damkar Kabupaten Bekasi')</title>
+    <title><?php echo $__env->yieldContent('title', 'Damkar Kabupaten Bekasi'); ?></title>
 
     <!-- Tailwind CSS (CDN, tanpa Vite) -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -16,24 +16,24 @@
 
     <!-- Laravel Echo & Pusher -->
     <script src="https://js.pusherapp.com/8.2.0/pusher.min.js"></script>
-    @vite(['resources/js/app.js'])
+    <?php echo app('Illuminate\Foundation\Vite')(['resources/js/app.js']); ?>
 
     <!-- Favicon -->
-    <link rel="icon" href="{{ asset('logo-damkar.png') }}" type="image/png">
+    <link rel="icon" href="<?php echo e(asset('logo-damkar.png')); ?>" type="image/png">
 </head>
 
 <body class="font-sans antialiased bg-gray-50 min-h-screen">
 
-    {{-- Navigation --}}
-    @include('layouts.navigation')
+    
+    <?php echo $__env->make('layouts.navigation', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
 
-    {{-- Main Content --}}
+    
     <main class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-        @yield('content')
+        <?php echo $__env->yieldContent('content'); ?>
     </main>
 
     <!-- Notification Script -->
-    @auth
+    <?php if(auth()->guard()->check()): ?>
         <script>
             // Request notification permission
             if ('Notification' in window && Notification.permission === 'default') {
@@ -58,7 +58,7 @@
                             if ('Notification' in window && Notification.permission === 'granted') {
                                 const notification = new Notification('Permintaan Baru Masuk!', {
                                     body: `${request.patient_name} - ${request.service_type} di ${request.pickup_address}`,
-                                    icon: '{{ asset("logo-damkar.png") }}',
+                                    icon: '<?php echo e(asset("logo-damkar.png")); ?>',
                                     tag: 'new-patient-request'
                                 });
 
@@ -69,7 +69,7 @@
                             }
 
                             // Play emergency sound
-                            const audio = new Audio('{{ asset("emergency.mp3") }}');
+                            const audio = new Audio('<?php echo e(asset("emergency.mp3")); ?>');
                             audio.volume = 0.8;
 
                             const playPromise = audio.play();
@@ -114,7 +114,7 @@
                         if ('Notification' in window && Notification.permission === 'granted') {
                             const notification = new Notification('Permintaan Baru Masuk!', {
                                 body: `${e.patient_name} - ${e.service_type} di ${e.pickup_address}`,
-                                icon: '{{ asset("logo-damkar.png") }}',
+                                icon: '<?php echo e(asset("logo-damkar.png")); ?>',
                                 tag: 'new-patient-request'
                             });
 
@@ -125,7 +125,7 @@
                         }
 
                         // Play emergency sound
-                        const audio = new Audio('{{ asset("emergency.mp3") }}');
+                        const audio = new Audio('<?php echo e(asset("emergency.mp3")); ?>');
                         audio.volume = 0.8;
 
                         const playPromise = audio.play();
@@ -149,8 +149,8 @@
                 console.log('WebSocket not available, using polling instead');
             }
         </script>
-    @endauth
+    <?php endif; ?>
 
 </body>
 
-</html>
+</html><?php /**PATH /Applications/Dev/damkar-dispatch/resources/views/layouts/app.blade.php ENDPATH**/ ?>

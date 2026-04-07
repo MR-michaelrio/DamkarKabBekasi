@@ -33,6 +33,10 @@ class PatientRequestController extends Controller
             ->orderBy('pickup_time', $direction)
             ->get();
 
+        if ($request->ajax()) {
+            return view('admin.patient_requests._table', compact('requests', 'direction'));
+        }
+
         return view('admin.patient_requests.index', compact('requests', 'direction'));
     }
 

@@ -23,6 +23,10 @@ class DispatchController extends Controller
             ->orderByDesc('created_at')
             ->get();
 
+        if (request()->ajax()) {
+            return view('admin.dispatches._table', compact('dispatches'));
+        }
+
         return view('admin.dispatches.index', compact('dispatches'));
     }
 

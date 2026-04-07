@@ -38,7 +38,10 @@ class PatientRequestController extends Controller
             'nomor' => 'nullable|string',
         ]);
 
-        PatientRequest::create($validated);
+        $patientRequest = PatientRequest::create($validated);
+
+        // Broadcast event for real-time notifications
+        broadcast(new \App\Events\NewPatientRequest($patientRequest));
 
         // Send Push Notification
         try {
