@@ -76,12 +76,15 @@
                 }
                 
                 // Also listen for any user interaction
-                document.addEventListener('click', () => {
+                const interactionHandler = () => {
                     this.userInteracted = true;
-                }, { once: true });
-                document.addEventListener('keydown', () => {
-                    this.userInteracted = true;
-                }, { once: true });
+                };
+
+                document.addEventListener('click', interactionHandler, { once: true });
+                document.addEventListener('keydown', interactionHandler, { once: true });
+                document.addEventListener('pointerdown', interactionHandler, { once: true });
+                document.addEventListener('touchstart', interactionHandler, { once: true });
+                document.addEventListener('mousemove', interactionHandler, { once: true });
             },
             
             playEmergency() {
