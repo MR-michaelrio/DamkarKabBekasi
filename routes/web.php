@@ -70,21 +70,37 @@ Route::post('/portal/event-request', [\App\Http\Controllers\Admin\EventRequestCo
 // API Routes for real-time notifications
 Route::prefix('api')->group(function () {
     Route::get('/check-new-requests', function (\Illuminate\Http\Request $request) {
-        $lastId = $request->get('last_id', 0);
-        
-        $newRequests = \App\Models\PatientRequest::where('id', '>', $lastId)
-            ->orderBy('id', 'asc')
-            ->get()
-            ->map(function ($request) {
-                return [
-                    'id' => $request->id,
-                    'patient_name' => $request->patient_name,
-                    'service_type' => $request->service_type,
-                    'pickup_address' => $request->pickup_address,
-                    'patient_condition' => $request->patient_condition,
-                    'tts_url' => $request->tts_url,
-                ];
-            });
+        $lastId = (int) $request->get('last_id', 0);
+        $limit = (int) $request->get('limit', 0);
+        $direction = $request->get('direction', 'asc');
+
+        $query = \App\Models\PatientRequest::query();
+
+        if ($lastId > 0) {
+            $query->where('id', '>', $lastId);
+        }
+
+        if ($limit > 0) {
+            if ($direction === 'desc') {
+                $query->orderBy('id', 'desc');
+            } else {
+                $query->orderBy('id', 'asc');
+            }
+            $query->limit($limit);
+        } else {
+            $query->orderBy('id', 'asc');
+        }
+
+        $newRequests = $query->get()->map(function ($request) {
+            return [
+                'id' => $request->id,
+                'patient_name' => $request->patient_name,
+                'service_type' => $request->service_type,
+                'pickup_address' => $request->pickup_address,
+                'patient_condition' => $request->patient_condition,
+                'tts_url' => $request->tts_url,
+            ];
+        });
 
         return response()->json([
             'new_requests' => $newRequests

@@ -170,9 +170,34 @@
                             }
                         } else {
                             console.log('✅ No new requests found');
+                            this.syncLatestIdIfStale();
                         }
                     })
                     .catch(error => console.log('❌ Polling error:', error));
+                },
+
+                syncLatestIdIfStale() {
+                    if (this.lastRequestId === 0) {
+                        return;
+                    }
+
+                    console.log('🔄 Verifying latest request id because no new requests were found');
+                    fetch('/api/check-new-requests?last_id=0&limit=1&direction=desc')
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.new_requests && data.new_requests.length > 0) {
+                            const latestId = data.new_requests[0].id;
+                            console.log('📌 Latest request id from DB:', latestId);
+                            if (latestId < this.lastRequestId) {
+                                console.log('⚠️ local lastRequestId is stale; resetting to latestId');
+                                this.lastRequestId = latestId;
+                                localStorage.setItem('lastNotifiedRequestId', this.lastRequestId.toString());
+                                this.notifiedIds = new Set();
+                                localStorage.setItem('notifiedRequestIds', JSON.stringify([]));
+                            }
+                        }
+                    })
+                    .catch(error => console.log('❌ Stale sync error:', error));
                 },
 
                 triggerNotifications(request) {
@@ -240,8 +265,10 @@
                 },
                 resetStorage: () => {
                     localStorage.removeItem('lastNotifiedRequestId');
+                    localStorage.removeItem('notifiedRequestIds');
                     window.notificationPoller.lastRequestId = 0;
-                    console.log('Reset lastNotifiedRequestId to 0');
+                    window.notificationPoller.notifiedIds = new Set();
+                    console.log('Reset lastNotifiedRequestId and notifiedRequestIds');
                 },
                 testAudio: () => {
                     if (window.audioContext) {
