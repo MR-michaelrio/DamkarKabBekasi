@@ -491,9 +491,14 @@ class DriverDashboardController extends Controller
             ->whereIn('status', ['pending', 'on_the_way_scene', 'on_scene', 'on_the_way_kantor_pos'])
             ->first();
 
-        $pendingRequests = PatientRequest::where('status', 'pending')->orderBy('created_at', 'asc')->get();
+        // Ambil direction dari query string, default 'asc'
+        $direction = $request->query('direction', 'asc');
+
+        $pendingRequests = PatientRequest::where('status', 'pending')
+            ->orderBy('created_at', $direction)
+            ->get();
         $drivers = Driver::where('status', 'available')->get();
 
-        return view('driver.dispatching.index', compact('ambulance', 'activeDispatch', 'pendingRequests', 'drivers'));
+        return view('driver.dispatching.index', compact('ambulance', 'activeDispatch', 'pendingRequests', 'drivers', 'direction'));
     }
 }
