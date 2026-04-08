@@ -106,16 +106,22 @@ class ActivityPhotoController extends Controller
     /**
      * Delete a photo
      */
-    public function delete(ActivityPhoto $photo)
+    public function delete(ActivityPhoto $activityPhoto)
     {
         try {
             // Delete from storage
-            if ($photo->photo_path && Storage::disk('public')->exists($photo->photo_path)) {
-                Storage::disk('public')->delete($photo->photo_path);
+            if ($activityPhoto->photo_path && Storage::disk('public')->exists($activityPhoto->photo_path)) {
+                Storage::disk('public')->delete($activityPhoto->photo_path);
             }
 
             // Delete database record
-            $photo->delete();
+            $deleted = $activityPhoto->delete();
+            
+            \Log::info('Photo deleted', [
+                'id' => $activityPhoto->id,
+                'deleted' => $deleted,
+                'path' => $activityPhoto->photo_path
+            ]);
 
             return response()->json([
                 'success' => true,
@@ -123,6 +129,11 @@ class ActivityPhotoController extends Controller
             ]);
 
         } catch (\Exception $e) {
+            \Log::error('Photo delete error', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
             return response()->json([
                 'success' => false,
                 'message' => 'Gagal menghapus foto: ' . $e->getMessage()
@@ -133,18 +144,18 @@ class ActivityPhotoController extends Controller
     /**
      * Update photo sequence
      */
-    public function updateSequence(Request $request, ActivityPhoto $photo)
+    public function updateSequence(Request $request, ActivityPhoto $activityPhoto)
     {
         $request->validate([
             'sequence' => 'required|integer|min:0|max:4',
         ]);
 
         try {
-            $photo->update(['sequence' => $request->input('sequence')]);
+            $activityPhoto->update(['sequence' => $request->input('sequence')]);
 
             return response()->json([
                 'success' => true,
-                'photo' => $photo,
+                'photo' => $activityPhoto,
                 'message' => 'Urutan foto berhasil diperbarui'
             ]);
 
