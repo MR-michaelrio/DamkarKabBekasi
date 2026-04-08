@@ -480,4 +480,20 @@ class DriverDashboardController extends Controller
             'total_requests_handled' => $requestHistory->count(),
         ]);
     }
+
+    /**
+     * Halaman utama dispatching driver
+     */
+    public function dispatching(Request $request)
+    {
+        $ambulance = auth('ambulance')->user();
+        $activeDispatch = Dispatch::where('ambulance_id', $ambulance->id)
+            ->whereIn('status', ['pending', 'on_the_way_scene', 'on_scene', 'on_the_way_kantor_pos'])
+            ->first();
+
+        $pendingRequests = PatientRequest::where('status', 'pending')->orderBy('created_at', 'asc')->get();
+        $drivers = Driver::where('status', 'available')->get();
+
+        return view('driver.dispatching.index', compact('ambulance', 'activeDispatch', 'pendingRequests', 'drivers'));
+    }
 }
