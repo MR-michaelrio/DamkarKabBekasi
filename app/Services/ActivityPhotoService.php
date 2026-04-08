@@ -88,8 +88,8 @@ class ActivityPhotoService
             $image = $manager->read($file->getRealPath());
 
             // Image resizing - Initial downscale to more manageable size
-            if ($image->width() > 1200 || $image->height() > 1200) {
-                $image->scale(1200, 1200);
+            if ($image->width() > 100 || $image->height() > 100) {
+                $image->scale(100, 100);
             }
 
             // Start compression loop
