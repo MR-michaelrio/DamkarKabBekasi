@@ -87,27 +87,38 @@ class ActivityPhotoService
             $manager = new ImageManager(new Driver());
             $image = $manager->read($file->getRealPath());
 
-            // Image resizing if it's too large (optional but helps compression)
-            if ($image->width() > 1600 || $image->height() > 1600) {
-                $image->scale(1600, 1600);
+            // Image resizing - Initial downscale to more manageable size
+            if ($image->width() > 1200 || $image->height() > 1200) {
+                $image->scale(1200, 1200);
             }
 
             // Start compression loop
-            $quality = 60;
+            $quality = 75;
             $encoded = $image->toJpeg($quality);
-            $size = strlen($encoded->toBinary());
             
-            // Loop to reduce quality/resolution until size is under TARGET_FILE_SIZE or limit reached
-            while ($size > self::TARGET_FILE_SIZE && $quality > 10) {
-                $quality -= 10;
-                $encoded = $image->toJpeg($quality);
-                $size = strlen($encoded->toBinary());
-
-                // If quality is already low and still too big, scale down further
-                if ($quality <= 30 && $size > self::TARGET_FILE_SIZE) {
-                    $image->scale(width: $image->width() * 0.8);
-                    $quality = 50; // reset quality slightly to try again at smaller size
+            // Re-calculate size after each operation
+            $currentSize = strlen((string) $encoded);
+            
+            // Loop to reduce quality/resolution until size is under TARGET_FILE_SIZE
+            // We'll be more aggressive here
+            while ($currentSize > self::TARGET_FILE_SIZE) {
+                // If quality is still high, drop quality
+                if ($quality > 20) {
+                    $quality -= 10;
+                } else {
+                    // If quality already bottomed out, must shrink dimensions
+                    $width = (int) ($image->width() * 0.7);
+                    // Check if image is becoming too small to be useful
+                    if ($width < 300) {
+                        // If we reach this point, we just have to stop
+                        break;
+                    }
+                    $image->scale(width: $width);
+                    $quality = 60; // reset quality slightly to avoid artifacts at tiny sizes
                 }
+                
+                $encoded = $image->toJpeg($quality);
+                $currentSize = strlen((string) $encoded);
             }
 
             // Ensure directory exists
@@ -116,7 +127,7 @@ class ActivityPhotoService
             }
 
             // Store encoded image
-            Storage::disk(self::STORAGE_DISK)->put($fullPath, $encoded->toBinary());
+            Storage::disk(self::STORAGE_DISK)->put($fullPath, (string) $encoded);
 
             // Get next sequence number
             $nextSequence = $activityLog->photos()->max('sequence') + 1;
@@ -126,7 +137,7 @@ class ActivityPhotoService
                 'photo_path' => $fullPath,
                 'photo_name' => $file->getClientOriginalName(),
                 'mime_type' => 'image/jpeg',
-                'file_size' => $size,
+                'file_size' => $currentSize,
                 'description' => $description,
                 'sequence' => $nextSequence,
             ]);
