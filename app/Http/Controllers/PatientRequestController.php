@@ -108,16 +108,20 @@ class PatientRequestController extends Controller
             if ($ambulanceTokens || $deviceTokensByProject->isNotEmpty()) {
 
                 $message = CloudMessage::new ()
+                ->withNotification(\Kreait\Firebase\Messaging\Notification::create('Permintaan Baru', "{$serviceType}\n{$address}\n{$time}"))
                 ->withData([
                     'title' => 'Permintaan Baru',
                     'body' => "{$serviceType}\n{$address}\n{$time}",
-                    'tts_url' => $ttsUrl ? url($ttsUrl) : '',
+                    'tts_url' => $ttsUrl ?: '',
+                    'type' => 'patient_request',
                 ])
                 ->withAndroidConfig(AndroidConfig::fromArray([
                     'priority' => 'high',
                     'notification' => [
                         'channel_id' => 'damkar-emergency',
+                        'sound' => 'emergency'
                     ],
+                    'ttl' => 3600,
                 ]));
 
                 $projects = ['damkar'];

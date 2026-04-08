@@ -26,23 +26,59 @@ public class FCMService extends FirebaseMessagingService {
     @Override
     public void onMessageReceived(RemoteMessage remoteMessage) {
         super.onMessageReceived(remoteMessage);
-        Log.d(TAG, "From: " + remoteMessage.getFrom());
+        Log.d(TAG, "FCM Message received! From: " + remoteMessage.getFrom());
+        Log.d(TAG, "Message data size: " + remoteMessage.getData().size());
+        Log.d(TAG, "Has notification: " + (remoteMessage.getNotification() != null));
 
         Map<String, String> data = remoteMessage.getData();
-        if (data.size() > 0) {
+        Log.d(TAG, "Message data: " + data);
+
+        // Check if this is a patient request message
+        if (data.size() > 0 && data.containsKey("title")) {
             String title = data.get("title");
             String body = data.get("body");
             String ttsUrl = data.get("tts_url");
+
+            Log.d(TAG, "Processing patient request - Title: " + title + ", TTS URL: " + ttsUrl);
+
+            // Play Emergency Sound Immediately
+            playEmergencySound();
 
             // Show Manual Notification
             if (title != null && body != null) {
                 showNotification(title, body);
             }
 
-            // Play TTS Audio (Moved to follow notification display)
+            // Play TTS Audio (after emergency sound and notification)
             if (ttsUrl != null && !ttsUrl.isEmpty()) {
                 playAudio(ttsUrl);
             }
+        } else {
+            Log.d(TAG, "Ignoring non-patient-request message");
+        }
+    }
+
+    private void playEmergencySound() {
+        Log.d(TAG, "playEmergencySound: Playing emergency.mp3 immediately");
+
+        try {
+            MediaPlayer emergencyPlayer = MediaPlayer.create(this, R.raw.emergency);
+            if (emergencyPlayer != null) {
+                emergencyPlayer.setAudioAttributes(
+                    new AudioAttributes.Builder()
+                        .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                        .setUsage(AudioAttributes.USAGE_NOTIFICATION_EVENT)
+                        .build()
+                );
+                emergencyPlayer.setVolume(1.0f, 1.0f);
+                emergencyPlayer.setOnCompletionListener(MediaPlayer::release);
+                emergencyPlayer.start();
+                Log.d(TAG, "playEmergencySound: Emergency sound started");
+            } else {
+                Log.e(TAG, "playEmergencySound: Failed to create MediaPlayer for emergency sound");
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "playEmergencySound: Error playing emergency sound", e);
         }
     }
 

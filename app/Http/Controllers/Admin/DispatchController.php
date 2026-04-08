@@ -107,7 +107,7 @@ class DispatchController extends Controller
                 // Robust URL generation
                 $ttsUrl = '';
                 if ($ttsGeneratedName) {
-                    $ttsUrl = url($ttsGeneratedName);
+                    $ttsUrl = asset($ttsGeneratedName);
                     if (str_contains($ttsUrl, 'localhost') && request()->getHost() !== 'localhost') {
                         $ttsUrl = request()->getSchemeAndHttpHost() . $ttsGeneratedName;
                     }
@@ -115,16 +115,20 @@ class DispatchController extends Controller
                 \Log::info("FCM Dispatch TTS URL: " . $ttsUrl);
 
                 $message = CloudMessage::new ()
+                ->withNotification(\Kreait\Firebase\Messaging\Notification::create('Dispatch Baru', "{$plateNumber}\n{$pletonName}\n{$address}\n{$serviceType}"))
                 ->withData([
                     'title' => 'Dispatch Baru',
                     'body' => "{$plateNumber}\n{$pletonName}\n{$address}\n{$serviceType}",
-                    'tts_url' => $ttsUrl ? url($ttsUrl) : '',
+                    'tts_url' => $ttsUrl ?: '',
+                    'type' => 'dispatch',
                 ])
                 ->withAndroidConfig(AndroidConfig::fromArray([
                     'priority' => 'high',
                     'notification' => [
                         'channel_id' => 'damkar-emergency',
+                        'sound' => 'emergency'
                     ],
+                    'ttl' => 3600,
                 ]));
 
                 $projects = ['damkar'];

@@ -124,6 +124,7 @@
                 }
                 if (permStatus.receive === 'granted') {
                     PushNotifications.addListener('registration', (token) => {
+                        console.log('FCM Token registered:', token.value);
                         fetch('/public-fcm-token', {
                             method: 'POST',
                             headers: {
@@ -132,7 +133,14 @@
                                 'Accept': 'application/json'
                             },
                             body: JSON.stringify({ token: token.value, project: "damkar" })
-                        }).catch(err => console.error(err));
+                        }).then(response => {
+                            console.log('FCM token saved to server:', response.status);
+                            return response.json();
+                        }).then(data => {
+                            console.log('Server response:', data);
+                        }).catch(err => {
+                            console.error('Failed to save FCM token:', err);
+                        });
                     });
 
                     PushNotifications.addListener('pushNotificationReceived', (notification) => {
