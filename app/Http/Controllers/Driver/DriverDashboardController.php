@@ -499,6 +499,9 @@ class DriverDashboardController extends Controller
             ->get();
         $drivers = Driver::where('status', 'available')->get();
 
-        return view('driver.dispatching.index', compact('ambulance', 'activeDispatch', 'pendingRequests', 'drivers', 'direction'));
+        // Untuk kompatibilitas dengan view lama yang pakai $requests
+        $requests = $pendingRequests;
+
+        return view('driver.dispatching.index', compact('ambulance', 'activeDispatch', 'pendingRequests', 'drivers', 'direction', 'requests'));
     }
 }
