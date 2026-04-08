@@ -4,6 +4,7 @@
     "require": {
         "php": "^8.2",
         "barryvdh/laravel-dompdf": "^3.1",
+        "intervention/image": "^4.0",
         "kreait/firebase-php": "^8.2",
         "kreait/laravel-firebase": "^7.1",
         "laravel/framework": "^12.0",
@@ -30,6 +31,15 @@
         "preferred-install": "dist",
         "sort-packages": true
     },
+    "autoload-dev": {
+        "psr-4": {
+            "Tests\\": "tests/"
+        }
+    },
     "minimum-stability": "stable",
-    "prefer-stable": true
+    "prefer-stable": true,
+    "require-dev": {
+        "mockery/mockery": "*",
+        "pestphp/pest": "^4.4"
+    }
 }

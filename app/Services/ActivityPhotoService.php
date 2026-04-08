@@ -6,10 +6,16 @@ use App\Models\ActivityLog;
 use App\Models\ActivityPhoto;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Http\UploadedFile;
+use Intervention\Image\ImageManager;
+use Intervention\Image\Drivers\Gd\Driver;
 use Exception;
 
 class ActivityPhotoService
 {
+    /**
+     * Target file size in bytes (100KB)
+     */
+    private const TARGET_FILE_SIZE = 100 * 1024;
     /**
      * Maximum number of photos allowed per activity
      */
@@ -72,29 +78,44 @@ class ActivityPhotoService
         }
 
         try {
-            // Generate unique filename
-            $filename = now()->timestamp . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+            // Generate unique filename with .jpg extension for standardized compression
+            $filename = now()->timestamp . '_' . uniqid() . '.jpg';
+            $relativeDir = self::STORAGE_PATH . '/' . $activityLog->id;
+            $fullPath = $relativeDir . '/' . $filename;
             
-            // Store file
-            $path = $file->storeAs(
-                self::STORAGE_PATH . '/' . $activityLog->id,
-                $filename,
-                self::STORAGE_DISK
-            );
+            // Create image manager
+            $manager = new ImageManager(new Driver());
+            $image = $manager->read($file->getRealPath());
 
-            if (!$path) {
-                throw new Exception('Gagal menyimpan file foto.');
+            // Start compression loop
+            $quality = 90;
+            $encoded = $image->toJpeg($quality);
+            
+            // Loop to reduce quality until size is under TARGET_FILE_SIZE or quality is too low
+            while ($encoded->toFilePointer()->getMetadata()['uri'] !== null && 
+                   strlen($encoded->toString()) > self::TARGET_FILE_SIZE && 
+                   $quality > 10) {
+                $quality -= 10;
+                $encoded = $image->toJpeg($quality);
             }
+
+            // Ensure directory exists
+            if (!Storage::disk(self::STORAGE_DISK)->exists($relativeDir)) {
+                Storage::disk(self::STORAGE_DISK)->makeDirectory($relativeDir);
+            }
+
+            // Store encoded image
+            Storage::disk(self::STORAGE_DISK)->put($fullPath, $encoded->toString());
 
             // Get next sequence number
             $nextSequence = $activityLog->photos()->max('sequence') + 1;
 
             // Create photo record
             $photo = $activityLog->photos()->create([
-                'photo_path' => $path,
+                'photo_path' => $fullPath,
                 'photo_name' => $file->getClientOriginalName(),
-                'mime_type' => $file->getMimeType(),
-                'file_size' => $file->getSize(),
+                'mime_type' => 'image/jpeg',
+                'file_size' => strlen($encoded->toString()),
                 'description' => $description,
                 'sequence' => $nextSequence,
             ]);
