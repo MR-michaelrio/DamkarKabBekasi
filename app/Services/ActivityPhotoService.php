@@ -93,7 +93,7 @@ class ActivityPhotoService
             }
 
             // Start compression loop
-            $quality = 80;
+            $quality = 60;
             $encoded = $image->toJpeg($quality);
             $size = strlen($encoded->toBinary());
             
