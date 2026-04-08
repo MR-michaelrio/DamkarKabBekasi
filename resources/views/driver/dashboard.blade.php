@@ -148,7 +148,7 @@
             'color' => 'bg-orange-600 hover:bg-orange-700',
             ],
             'on_the_way_kantor_pos' => [
-            'label' => '🏁 Selesai',
+            'label' => '✅ Laporan Selesai',
             'color' => 'bg-red-600 hover:bg-red-700',
             ],
             ];
