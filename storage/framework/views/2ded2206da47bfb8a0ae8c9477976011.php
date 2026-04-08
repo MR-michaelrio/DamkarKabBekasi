@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <meta name="csrf-token" content="<?php echo e(csrf_token()); ?>">
     <title>Dashboard Unit | Damkar Kabupaten Bekasi</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
@@ -19,12 +19,11 @@
                     <h2 class="font-semibold text-xl text-gray-800 leading-tight">
                         🚒 Dashboard Unit Damkar
                     </h2>
-                    <p class="text-sm text-gray-500">{{ auth('ambulance')->user()->plate_number }} ({{
-                        auth('ambulance')->user()->username }})</p>
+                    <p class="text-sm text-gray-500"><?php echo e(auth('ambulance')->user()->plate_number); ?> (<?php echo e(auth('ambulance')->user()->username); ?>)</p>
                 </div>
 
-                <form method="POST" action="{{ route('ambulance.logout') }}">
-                    @csrf
+                <form method="POST" action="<?php echo e(route('ambulance.logout')); ?>">
+                    <?php echo csrf_field(); ?>
                     <button type="submit" class="text-red-600 hover:text-red-800 font-semibold text-sm">
                         Keluar Unit
                     </button>
@@ -33,7 +32,7 @@
         </div>
 
         <!-- Active Dispatch -->
-        @if($activeDispatch)
+        <?php if($activeDispatch): ?>
         <div class="bg-white rounded-lg shadow p-4 mb-4">
             <h2 class="font-bold text-lg mb-3">📍 Dispatch Aktif</h2>
 
@@ -42,17 +41,18 @@
                     <div>
                         <span
                             class="text-[10px] font-black text-gray-400 uppercase tracking-widest block mb-1">Pelapor</span>
-                        <span class="font-bold text-gray-800">{{ $activeDispatch->patient_name }}</span>
+                        <span class="font-bold text-gray-800"><?php echo e($activeDispatch->patient_name); ?></span>
                     </div>
                     <div>
                         <span
                             class="text-[10px] font-black text-gray-400 uppercase tracking-widest block mb-1">Layanan</span>
                         <span class="font-bold text-gray-800">
-                            @if($activeDispatch->event_request_id)
+                            <?php if($activeDispatch->event_request_id): ?>
                             🎪 Event/Bencana
-                            @else
-                            {{ $activeDispatch->patient_condition === 'jenazah' ? '⚰️ Jenazah' : '🚒 Penanganan' }}
-                            @endif
+                            <?php else: ?>
+                            <?php echo e($activeDispatch->patient_condition === 'jenazah' ? '⚰️ Jenazah' : '🚒 Penanganan'); ?>
+
+                            <?php endif; ?>
                         </span>
                     </div>
                 </div>
@@ -62,15 +62,16 @@
                         <span class="text-[10px] font-black text-gray-400 uppercase tracking-widest block mb-1">Jam
                             Jemput</span>
                         <span class="font-bold text-blue-600">
-                            {{ $activeDispatch->pickup_time ?
-                            \Carbon\Carbon::parse($activeDispatch->pickup_time)->format('H:i') : '-' }} WIB
+                            <?php echo e($activeDispatch->pickup_time ?
+                            \Carbon\Carbon::parse($activeDispatch->pickup_time)->format('H:i') : '-'); ?> WIB
                         </span>
                     </div>
                     <div>
                         <span
                             class="text-[10px] font-black text-gray-400 uppercase tracking-widest block mb-1">Tipe</span>
                         <span class="font-bold text-gray-800">
-                            {{ $activeDispatch->trip_type === 'round_trip' ? '🔄 Balik' : '➡️ 1 Way' }}
+                            <?php echo e($activeDispatch->trip_type === 'round_trip' ? '🔄 Balik' : '➡️ 1 Way'); ?>
+
                         </span>
                     </div>
                 </div>
@@ -78,13 +79,13 @@
                 <div class="border-t border-gray-50 pt-3">
                     <span class="text-[10px] font-black text-gray-400 uppercase tracking-widest block mb-1">Alamat
                         Jemput</span>
-                    <p class="font-medium text-gray-800 leading-snug">{{ $activeDispatch->pickup_address }}</p>
+                    <p class="font-medium text-gray-800 leading-snug"><?php echo e($activeDispatch->pickup_address); ?></p>
                 </div>
 
                 <div class="border-t border-gray-50 pt-3">
                     <span
                         class="text-[10px] font-black text-gray-400 uppercase tracking-widest block mb-1">Tujuan</span>
-                    <p class="font-medium text-gray-800 leading-snug">{{ $activeDispatch->destination }}</p>
+                    <p class="font-medium text-gray-800 leading-snug"><?php echo e($activeDispatch->destination); ?></p>
                 </div>
 
                 <div>
@@ -92,7 +93,8 @@
                         class="text-[10px] font-black text-gray-400 uppercase tracking-widest block mb-1">Status</span>
                     <span
                         class="px-2 py-1 bg-blue-100 text-blue-700 rounded text-[10px] font-black uppercase tracking-wider">
-                        {{ str_replace('_', ' ', $activeDispatch->status) }}
+                        <?php echo e(str_replace('_', ' ', $activeDispatch->status)); ?>
+
                     </span>
                 </div>
             </div>
@@ -100,40 +102,41 @@
 
         <!-- GPS Tracking & Journey Control -->
         <div class="bg-white rounded-lg shadow p-4 mb-4 relative overflow-hidden">
-            @if($activeDispatch->is_paused)
+            <?php if($activeDispatch->is_paused): ?>
             <div class="absolute inset-0 bg-yellow-50/80 backdrop-blur-[1px] flex items-center justify-center z-10">
                 <div
                     class="bg-yellow-100 text-yellow-800 px-4 py-2 rounded-full font-bold shadow-sm border border-yellow-200 animate-pulse">
                     ⏸️ SEDANG ISTIRAHAT
                 </div>
             </div>
-            @endif
+            <?php endif; ?>
 
             <div class="flex justify-between items-center mb-3 relative z-20">
                 <h2 class="font-bold text-lg">📋 Journey Control</h2>
-                <button id="pause-btn" data-paused="{{ $activeDispatch->is_paused ? 'true' : 'false' }}"
-                    class="px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 {{ $activeDispatch->is_paused ? 'bg-green-100 text-green-700 hover:bg-green-200' : 'bg-yellow-100 text-yellow-700 hover:bg-yellow-200' }}">
-                    @if($activeDispatch->is_paused)
+                <button id="pause-btn" data-paused="<?php echo e($activeDispatch->is_paused ? 'true' : 'false'); ?>"
+                    class="px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 <?php echo e($activeDispatch->is_paused ? 'bg-green-100 text-green-700 hover:bg-green-200' : 'bg-yellow-100 text-yellow-700 hover:bg-yellow-200'); ?>">
+                    <?php if($activeDispatch->is_paused): ?>
                     ▶️ Lanjut
-                    @else
+                    <?php else: ?>
                     ⏸️ Istirahat
-                    @endif
+                    <?php endif; ?>
                 </button>
             </div>
 
             <div id="tracking-status" class="mb-4">
                 <div class="flex items-center gap-2">
                     <div id="status-indicator"
-                        class="w-3 h-3 {{ $activeDispatch->is_paused ? 'bg-yellow-400' : 'bg-gray-400' }} rounded-full">
+                        class="w-3 h-3 <?php echo e($activeDispatch->is_paused ? 'bg-yellow-400' : 'bg-gray-400'); ?> rounded-full">
                     </div>
                     <span id="status-text" class="text-sm text-gray-600 font-medium">
-                        {{ $activeDispatch->is_paused ? 'Tracking Dihentikan Sejenak' : 'Tracking belum dimulai' }}
+                        <?php echo e($activeDispatch->is_paused ? 'Tracking Dihentikan Sejenak' : 'Tracking belum dimulai'); ?>
+
                     </span>
                 </div>
                 <p id="last-update" class="text-xs text-gray-500 mt-1"></p>
             </div>
 
-            @php
+            <?php
             $statusConfig = [
             'pending' => [
             'label' => '🚀 OTW ke TKP',
@@ -153,20 +156,21 @@
             ],
             ];
             $currentConfig = $statusConfig[$activeDispatch->status] ?? null;
-            @endphp
+            ?>
 
-            @if($currentConfig)
-            <button id="journey-btn" data-status="{{ $activeDispatch->status }}" {{ $activeDispatch->is_paused ?
-                'disabled' : '' }}
-                class="w-full {{ $currentConfig['color'] }} text-white font-bold py-4 px-6 rounded-xl shadow-lg
-                transition duration-200 transform active:scale-95 flex items-center justify-center gap-2 {{
-                $activeDispatch->is_paused ? 'opacity-50 grayscale cursor-not-allowed' : '' }}">
-                {{ $currentConfig['label'] }}
+            <?php if($currentConfig): ?>
+            <button id="journey-btn" data-status="<?php echo e($activeDispatch->status); ?>" <?php echo e($activeDispatch->is_paused ?
+                'disabled' : ''); ?>
+
+                class="w-full <?php echo e($currentConfig['color']); ?> text-white font-bold py-4 px-6 rounded-xl shadow-lg
+                transition duration-200 transform active:scale-95 flex items-center justify-center gap-2 <?php echo e($activeDispatch->is_paused ? 'opacity-50 grayscale cursor-not-allowed' : ''); ?>">
+                <?php echo e($currentConfig['label']); ?>
+
             </button>
-            @endif
+            <?php endif; ?>
         </div>
 
-        @if($activeDispatch->trip_type === 'round_trip' && $activeDispatch->return_address)
+        <?php if($activeDispatch->trip_type === 'round_trip' && $activeDispatch->return_address): ?>
         <div class="px-6 pb-6 pt-2 border-t border-gray-50">
             <div class="flex gap-4">
                 <div class="flex flex-col items-center">
@@ -178,19 +182,21 @@
                     <div>
                         <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Tujuan Utama</p>
                         <p class="text-sm font-bold text-gray-700 leading-tight">
-                            {{ $activeDispatch->destination }}
+                            <?php echo e($activeDispatch->destination); ?>
+
                         </p>
                     </div>
                     <div>
                         <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Alamat Pulang</p>
                         <p class="text-sm font-bold text-gray-700 leading-tight">
-                            {{ $activeDispatch->return_address }}
+                            <?php echo e($activeDispatch->return_address); ?>
+
                         </p>
                     </div>
                 </div>
             </div>
         </div>
-        @endif
+        <?php endif; ?>
 
         <!-- Location Info -->
         <div class="bg-white rounded-lg shadow p-4 mb-4">
@@ -221,7 +227,7 @@
             </div>
         </div>
 
-        @else
+        <?php else: ?>
         <div class="bg-white rounded-lg shadow p-8 text-center">
             <div class="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4 text-4xl">
                 📭
@@ -230,16 +236,16 @@
             <p class="text-gray-500 text-sm mt-1 mb-6">Unit damkar Anda sedang tidak dalam tugas. Silakan cek laporan
                 masyarakat yang masuk.</p>
 
-            <a href="{{ route('driver.dispatching') }}"
+            <a href="<?php echo e(route('driver.dispatching')); ?>"
                 class="inline-flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-6 rounded-xl shadow-lg transition transform active:scale-95">
                 📋 Lihat Laporan Masyarakat
             </a>
         </div>
-        @endif
+        <?php endif; ?>
 
         <!-- Menu Section (Optional extra shortcut) -->
         <div class="mt-6 grid grid-cols-2 gap-4">
-            <a href="{{ route('driver.dispatching') }}"
+            <a href="<?php echo e(route('driver.dispatching')); ?>"
                 class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex flex-col items-center gap-2 text-center transition hover:bg-gray-50 active:scale-95">
                 <span class="text-2xl">📋</span>
                 <span class="text-xs font-bold text-gray-700">Laporan Masuk</span>
@@ -259,7 +265,7 @@
     <script>
         let trackingActive = false;
         let watchId = null;
-        const ambulanceId = {{ auth('ambulance')->id() }};
+        const ambulanceId = <?php echo e(auth('ambulance')->id()); ?>;
 
         const journeyBtn = document.getElementById('journey-btn');
         const statusIndicator = document.getElementById('status-indicator');
@@ -372,7 +378,7 @@
                     await stopTracking();
                 }
 
-                const response = await fetch(`{{ route('driver.dispatches.toggle-pause', $activeDispatch->id ?? 0) }}`, {
+                const response = await fetch(`<?php echo e(route('driver.dispatches.toggle-pause', $activeDispatch->id ?? 0)); ?>`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -420,7 +426,7 @@
                 }
 
                 // Update status via API
-                const response = await fetch(`{{ route('driver.dispatches.update-status', $activeDispatch->id ?? 0) }}`, {
+                const response = await fetch(`<?php echo e(route('driver.dispatches.update-status', $activeDispatch->id ?? 0)); ?>`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -533,8 +539,8 @@
 
         // Auto-start tracking if journey is already in progress
         const autoStartStatuses = ['on_the_way_scene', 'on_the_way_kantor_pos'];
-        const currentDispatchStatus = "{{ $activeDispatch->status ?? '' }}";
-        const isPaused = {{ ($activeDispatch && $activeDispatch->is_paused) ? 1 : 0 }};
+        const currentDispatchStatus = "<?php echo e($activeDispatch->status ?? ''); ?>";
+        const isPaused = <?php echo e(($activeDispatch && $activeDispatch->is_paused) ? 1 : 0); ?>;
 
         if (autoStartStatuses.includes(currentDispatchStatus) && !isPaused) {
             // Small delay to ensure everything is ready
@@ -598,7 +604,7 @@
 
     <!-- Photo Upload Handler -->
     <script>
-        const activityId = {{ $activityLog->id ?? 'null' }};
+        const activityId = <?php echo e($activityLog->id ?? 'null'); ?>;
         
         document.addEventListener('DOMContentLoaded', function() {
             const photoInput = document.getElementById('photo-input');
@@ -689,4 +695,4 @@
 
 </body>
 
-</html>
+</html><?php /**PATH /Applications/Dev/damkar-dispatch/resources/views/driver/dashboard.blade.php ENDPATH**/ ?>
