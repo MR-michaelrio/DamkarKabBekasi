@@ -45,88 +45,100 @@ class ActivityPhotoController extends Controller
             // Load original image
             $sourcePath = $file->getRealPath();
             $imageInfo = @getimagesize($sourcePath);
-            if (!$imageInfo) {
-                throw new \Exception("Gagal membaca informasi gambar dari file: " . $sourcePath);
-            }
-            list($width, $height, $type) = $imageInfo;
+            if (!$imageInfo || $imageInfo[0] <= 0 || $imageInfo[1] <= 0) {
+                Log::warning("Gagal membaca informasi gambar yang valid dari file: " . $sourcePath . ". Fallback ke upload file asli.");
+                $path = 'activity-photos/' . $shortName;
+                Storage::disk('public')->putFileAs('activity-photos', $file, $shortName);
+                $fileSize = $file->getSize();
+                $imageResource = null;
+            } else {
+                list($width, $height, $type) = $imageInfo;
 
-            // Resize if too large (Max 1200px)
-            $maxDim = 1200;
-            $newWidth = $width;
-            $newHeight = $height;
-            if ($width > $maxDim || $height > $maxDim) {
-                $ratio = $width / $height;
-                if ($ratio > 1) {
-                    $newWidth = $maxDim;
-                    $newHeight = $maxDim / $ratio;
-                } else {
-                    $newWidth = $maxDim * $ratio;
-                    $newHeight = $maxDim;
-                }
-            }
-
-            // Create canvas
-            $imageResource = null;
-            try {
-                switch ($type) {
-                    case IMAGETYPE_JPEG: $imageResource = @imagecreatefromjpeg($sourcePath); break;
-                    case IMAGETYPE_PNG: $imageResource = @imagecreatefrompng($sourcePath); break;
-                    case IMAGETYPE_GIF: $imageResource = @imagecreatefromgif($sourcePath); break;
-                    case IMAGETYPE_WEBP: $imageResource = @imagecreatefromwebp($sourcePath); break;
-                    default:
-                        Log::warning("Unsupported image type: " . $type . " for file " . $sourcePath);
-                }
-            } catch (\Throwable $e) {
-                Log::error("GD Error creating resource: " . $e->getMessage(), [
-                    'file' => $e->getFile(),
-                    'line' => $e->getLine()
-                ]);
-            }
-
-            $fileSize = 0;
-            if ($imageResource) {
-                try {
-                    $newImage = imagecreatetruecolor($newWidth, $newHeight);
-                    
-                    // Keep transparency for PNG
-                    if ($type == IMAGETYPE_PNG || $type == IMAGETYPE_WEBP) {
-                        imagealphablending($newImage, false);
-                        imagesavealpha($newImage, true);
-                    }
-
-                    imagecopyresampled($newImage, $imageResource, 0, 0, 0, 0, $newWidth, $newHeight, $width, $height);
-
-                    // Save to buffer with compression (Quality 60 for ~100kb target)
-                    ob_start();
-                    $success = @imagejpeg($newImage, null, 60);
-                    $compressedData = ob_get_clean();
-
-                    if ($success && !empty($compressedData)) {
-                        // Save to Storage
-                        Storage::disk('public')->put($path, $compressedData);
-                        $fileSize = strlen($compressedData);
+                // Resize if too large (Max 1200px)
+                $maxDim = 1200;
+                $newWidth = $width;
+                $newHeight = $height;
+                if ($width > $maxDim || $height > $maxDim) {
+                    $ratio = $width / $height;
+                    if ($ratio > 1) {
+                        $newWidth = $maxDim;
+                        $newHeight = (int)($maxDim / $ratio);
                     } else {
-                        Log::warning("imagejpeg failed, falling back to original file upload");
-                        Storage::disk('public')->putFileAs('activity-photos', $file, $shortName);
-                        $fileSize = $file->getSize();
+                        $newWidth = (int)($maxDim * $ratio);
+                        $newHeight = $maxDim;
                     }
+                }
+                
+                // Ensure dimensions are at least 1
+                $newWidth = max(1, $newWidth);
+                $newHeight = max(1, $newHeight);
 
-                    // Free memory
-                    imagedestroy($imageResource);
-                    imagedestroy($newImage);
+                // Create canvas
+                $imageResource = null;
+                try {
+                    switch ($type) {
+                        case IMAGETYPE_JPEG: $imageResource = @imagecreatefromjpeg($sourcePath); break;
+                        case IMAGETYPE_PNG: $imageResource = @imagecreatefrompng($sourcePath); break;
+                        case IMAGETYPE_GIF: $imageResource = @imagecreatefromgif($sourcePath); break;
+                        case IMAGETYPE_WEBP: $imageResource = @imagecreatefromwebp($sourcePath); break;
+                        default:
+                            Log::warning("Unsupported image type: " . $type . " for file " . $sourcePath);
+                    }
                 } catch (\Throwable $e) {
-                    Log::error("GD processing failed mid-way: " . $e->getMessage(), [
+                    Log::error("GD Error creating resource: " . $e->getMessage(), [
                         'file' => $e->getFile(),
                         'line' => $e->getLine()
                     ]);
+                }
+
+                $fileSize = 0;
+                if ($imageResource) {
+                    try {
+                        $newImage = imagecreatetruecolor($newWidth, $newHeight);
+                        
+                        // Keep transparency for PNG
+                        if ($type == IMAGETYPE_PNG || $type == IMAGETYPE_WEBP) {
+                            imagealphablending($newImage, false);
+                            imagesavealpha($newImage, true);
+                        }
+
+                        imagecopyresampled($newImage, $imageResource, 0, 0, 0, 0, $newWidth, $newHeight, $width, $height);
+
+                        // Save to buffer with compression (Quality 60 for ~100kb target)
+                        ob_start();
+                        $success = @imagejpeg($newImage, null, 60);
+                        $compressedData = ob_get_clean();
+
+                        if ($success && !empty($compressedData)) {
+                            // Save to Storage
+                            Storage::disk('public')->put($path, $compressedData);
+                            $fileSize = strlen($compressedData);
+                        } else {
+                            Log::warning("imagejpeg failed, falling back to original file upload");
+                            Storage::disk('public')->putFileAs('activity-photos', $file, $shortName);
+                            $fileSize = $file->getSize();
+                        }
+
+                        // Free memory
+                        imagedestroy($imageResource);
+                        imagedestroy($newImage);
+                    } catch (\Throwable $e) {
+                        Log::error("GD processing failed mid-way: " . $e->getMessage(), [
+                            'file' => $e->getFile(),
+                            'line' => $e->getLine()
+                        ]);
+                        if (isset($imageResource) && $imageResource instanceof \GdImage) {
+                            imagedestroy($imageResource);
+                        }
+                        Storage::disk('public')->putFileAs('activity-photos', $file, $shortName);
+                        $fileSize = $file->getSize();
+                    }
+                } else {
+                    // Fallback to original if GD fails
+                    Log::warning("GD failed to load image resource, using original file upload as fallback");
                     Storage::disk('public')->putFileAs('activity-photos', $file, $shortName);
                     $fileSize = $file->getSize();
                 }
-            } else {
-                // Fallback to original if GD fails
-                Log::warning("GD failed to load image resource, using original file upload as fallback");
-                Storage::disk('public')->putFileAs('activity-photos', $file, $shortName);
-                $fileSize = $file->getSize();
             }
             
             $photoUrl = Storage::disk('public')->url($path);
