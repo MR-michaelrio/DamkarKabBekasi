@@ -252,6 +252,12 @@ class DriverDashboardController extends Controller
                 // Update original patient request
                 \App\Models\PatientRequest::where('dispatch_id', $activeDispatch->id)
                     ->update(['status' => 'completed']);
+
+                // Ensure driver and ambulance of PREVIOUS dispatch are free before starting new one
+                $activeDispatch->ambulance->update(['status' => 'ready']);
+                if ($activeDispatch->driver) {
+                    $activeDispatch->driver->update(['status' => 'available']);
+                }
             } else {
                 return response()->json(['success' => false, 'message' => 'Anda masih memiliki tugas aktif'], 400);
             }
@@ -351,6 +357,12 @@ class DriverDashboardController extends Controller
 
                 // Sync status
                 PatientRequest::where('dispatch_id', $activeDispatch->id)->update(['status' => 'completed']);
+
+                // Ensure driver and ambulance of PREVIOUS dispatch are free
+                $activeDispatch->ambulance->update(['status' => 'ready']);
+                if ($activeDispatch->driver) {
+                    $activeDispatch->driver->update(['status' => 'available']);
+                }
             } else {
                 return redirect()->route('driver.dashboard')->with('error', 'Unit ini masih dalam penugasan aktif yang belum ditangani.');
             }
@@ -393,6 +405,12 @@ class DriverDashboardController extends Controller
 
                 // Sync status
                 PatientRequest::where('dispatch_id', $activeDispatch->id)->update(['status' => 'completed']);
+
+                // Ensure driver and ambulance of PREVIOUS dispatch are free
+                $activeDispatch->ambulance->update(['status' => 'ready']);
+                if ($activeDispatch->driver) {
+                    $activeDispatch->driver->update(['status' => 'available']);
+                }
             } else {
                 return redirect()->route('driver.dashboard')->with('error', 'Unit ini masih dalam penugasan aktif.');
             }
