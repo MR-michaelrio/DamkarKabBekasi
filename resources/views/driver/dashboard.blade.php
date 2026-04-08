@@ -200,7 +200,6 @@
         </div>
 
         <!-- Activity Photo Report Section -->
-        @if($activityLog)
         <div class="bg-white rounded-lg shadow p-4 mb-4">
             <div class="flex items-center gap-2 mb-4">
                 <span class="text-2xl">📸</span>
@@ -217,7 +216,6 @@
                 ></activity-photo-uploader-web>
             </div>
         </div>
-        @endif
         @else
         <div class="bg-white rounded-lg shadow p-8 text-center">
             <div class="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4 text-4xl">
