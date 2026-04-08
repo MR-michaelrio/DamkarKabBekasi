@@ -19,7 +19,7 @@ class DriverDashboardController extends Controller
 
         // Get active dispatch for this ambulance
         $activeDispatch = Dispatch::where('ambulance_id', $ambulance->id)
-            ->whereIn('status', ['pending', 'on_the_way_scene', 'on_scene', 'on_the_way_kantor_pos'])
+            ->whereIn('status', ['pending', 'on_the_way_scene', 'on_scene', 'handled', 'on_the_way_kantor_pos'])
             ->first();
 
         // Create or get activity log for current login session
@@ -326,7 +326,7 @@ class DriverDashboardController extends Controller
         // Check if ambulance is already on duty
         $ambulance = auth('ambulance')->user();
         $activeDispatch = Dispatch::where('ambulance_id', $ambulance->id)
-            ->whereIn('status', ['pending', 'on_the_way_scene', 'on_scene', 'on_the_way_kantor_pos'])
+            ->whereIn('status', ['pending', 'on_the_way_scene', 'on_scene', 'handled', 'on_the_way_kantor_pos'])
             ->first();
 
         // If exists an active dispatch that is NOT 'handled', block new dispatch
@@ -371,11 +371,31 @@ class DriverDashboardController extends Controller
 
         // Double check penugasan aktif
         $activeDispatch = Dispatch::where('ambulance_id', $ambulance->id)
-            ->whereIn('status', ['pending', 'on_the_way_scene', 'on_scene', 'on_the_way_kantor_pos'])
+            ->whereIn('status', ['pending', 'on_the_way_scene', 'on_scene', 'handled', 'on_the_way_kantor_pos'])
             ->first();
 
         if ($activeDispatch) {
-            return redirect()->route('driver.dashboard')->with('error', 'Unit ini masih dalam penugasan aktif.');
+            if ($activeDispatch->status === 'handled') {
+                // Auto complete the previous handled dispatch
+                $activeDispatch->update([
+                    'status' => 'completed',
+                    'completed_at' => now(),
+                ]);
+                
+                // Track history
+                \App\Models\DispatchRequestHistory::create([
+                    'ambulance_id' => $ambulance->id,
+                    'dispatch_id' => $activeDispatch->id,
+                    'sequence' => \App\Models\DispatchRequestHistory::where('ambulance_id', $ambulance->id)->count() + 1,
+                    'completed_at' => now(),
+                    'returned_to_base' => false,
+                ]);
+
+                // Sync status
+                PatientRequest::where('dispatch_id', $activeDispatch->id)->update(['status' => 'completed']);
+            } else {
+                return redirect()->route('driver.dashboard')->with('error', 'Unit ini masih dalam penugasan aktif.');
+            }
         }
 
         $dispatch = Dispatch::create([
@@ -591,7 +611,7 @@ class DriverDashboardController extends Controller
     {
         $ambulance = auth('ambulance')->user();
         $activeDispatch = Dispatch::where('ambulance_id', $ambulance->id)
-            ->whereIn('status', ['pending', 'on_the_way_scene', 'on_scene', 'on_the_way_kantor_pos'])
+            ->whereIn('status', ['pending', 'on_the_way_scene', 'on_scene', 'handled', 'on_the_way_kantor_pos'])
             ->first();
 
         // Ambil direction dari query string, default 'asc'
