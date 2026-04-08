@@ -144,11 +144,15 @@
             'color' => 'bg-blue-600 hover:bg-blue-700',
             ],
             'on_scene' => [
+            'label' => '✅ Laporan Telah Ditangani',
+            'color' => 'bg-emerald-600 hover:bg-emerald-700',
+            ],
+            'handled' => [
             'label' => '🚒 OTW MAKO / POS',
             'color' => 'bg-orange-600 hover:bg-orange-700',
             ],
             'on_the_way_kantor_pos' => [
-            'label' => '✅ Laporan Selesai',
+            'label' => '🏁 Selesai',
             'color' => 'bg-red-600 hover:bg-red-700',
             ],
             ];
@@ -156,6 +160,18 @@
             @endphp
 
             @if($currentConfig)
+            @if($activeDispatch->status === 'handled')
+            <div class="flex gap-3">
+                <button id="journey-btn" data-status="handled" {{ $activeDispatch->is_paused ? 'disabled' : '' }}
+                    class="flex-1 bg-orange-600 hover:bg-orange-700 text-white font-bold py-4 px-6 rounded-xl shadow-lg transition duration-200 transform active:scale-95 flex items-center justify-center gap-2">
+                    🏠 Kembali ke MAKO
+                </button>
+                <a href="{{ route('driver.dispatching') }}"
+                    class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-6 rounded-xl shadow-lg transition duration-200 transform active:scale-95 flex items-center justify-center gap-2">
+                    📋 Ambil Request Lain
+                </a>
+            </div>
+            @else
             <button id="journey-btn" data-status="{{ $activeDispatch->status }}" {{ $activeDispatch->is_paused ?
                 'disabled' : '' }}
                 class="w-full {{ $currentConfig['color'] }} text-white font-bold py-4 px-6 rounded-xl shadow-lg
@@ -163,6 +179,7 @@
                 $activeDispatch->is_paused ? 'opacity-50 grayscale cursor-not-allowed' : '' }}">
                 {{ $currentConfig['label'] }}
             </button>
+            @endif
             @endif
         </div>
 
@@ -419,10 +436,10 @@
                 // Special actions based on status
                 if (currentStatus === 'pending') {
                     await startTracking();
-                } else if (currentStatus === 'on_the_way_scene') {
-                    await stopTracking(); // Arrived at scene, stop tracking while working
                 } else if (currentStatus === 'on_scene') {
-                    await startTracking(); // Start journey back to station
+                    await stopTracking(); // Working on scene
+                } else if (currentStatus === 'handled') {
+                    await startTracking(); // Start journey after handled
                 } else if (currentStatus === 'on_the_way_kantor_pos') {
                     await stopTracking(); // Back at station
                 }
@@ -440,20 +457,7 @@
                 const data = await response.json();
 
                 if (data.success) {
-                    // Check if this was a completion action
-                    if (data.is_completed) {
-                        // Show completion dialog instead of reloading immediately
-                        showCompletionModal('{{ $activeDispatch->patient_name ?? '' }}');
-                        
-                        // Still reload after modal is interacted with
-                        // But first, preserve the completion state for 5 seconds
-                        setTimeout(() => {
-                            // Don't reload immediately, let user interact with modal
-                        }, data.redirect_delay || 2000);
-                    } else {
-                        // For non-completion status updates, reload immediately
-                        window.location.reload();
-                    }
+                    window.location.reload();
                 } else {
                     alert('Error: ' + data.message);
                     this.disabled = false;
@@ -929,42 +933,7 @@
     </script>
 
     <!-- Completion Dialog Modal -->
-    <div id="completion-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-        <div class="bg-white rounded-xl shadow-xl max-w-sm w-full max-h-[90vh] overflow-y-auto">
-            <!-- Success Header -->
-            <div class="bg-gradient-to-r from-green-500 to-green-600 p-6 text-white rounded-t-xl sticky top-0">
-                <div class="text-4xl text-center mb-2">✅</div>
-                <h2 class="text-xl font-bold text-center">Tugas Selesai!</h2>
-                <p class="text-sm text-green-100 text-center mt-1" id="completion-message">Penugasan telah diselesaikan</p>
-            </div>
-
-            <!-- Content -->
-            <div class="p-6 space-y-4">
-                <p class="text-gray-700 text-center font-medium text-sm">Apa yang ingin Anda lakukan selanjutnya?</p>
-                
-                <!-- Available Requests Section (shown when loading other requests) -->
-                <div id="requests-section" class="hidden">
-                    <p class="text-xs text-gray-600 font-bold mb-3">📋 REQUEST YANG TERSEDIA:</p>
-                    <div id="available-requests-list" class="space-y-2 max-h-64 overflow-y-auto mb-4">
-                        <!-- Will be populated by JavaScript -->
-                    </div>
-                </div>
-            </div>
-
-            <!-- Buttons -->
-            <div class="px-6 pb-6 space-y-3">
-                <!-- Accept Another Request Button -->
-                <button id="accept-next-btn" class="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-bold py-3 px-4 rounded-lg shadow-md transition transform active:scale-95 flex items-center justify-center gap-2">
-                    <span>📋 Ambil Request Lain</span>
-                </button>
-
-                <!-- Return to Base Button -->
-                <button id="return-base-btn" class="w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-bold py-3 px-4 rounded-lg shadow-md transition transform active:scale-95 flex items-center justify-center gap-2">
-                    <span>🏠 Kembali ke MAKO</span>
-                </button>
-            </div>
-        </div>
-    </div>
+    <div id="completion-modal" class="hidden"></div>
 
     <!-- Request History Modal (shown after return to base) -->
     <div id="request-history-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">

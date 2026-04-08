@@ -63,11 +63,12 @@ class DriverDashboardController extends Controller
             return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
         }
 
-        // Simplified flow with only 5 statuses as required
+        // Updated status flow for Damkar
         $flow = [
             'pending' => 'on_the_way_scene',
             'on_the_way_scene' => 'on_scene',
-            'on_scene' => 'on_the_way_kantor_pos',
+            'on_scene' => 'handled',
+            'handled' => 'on_the_way_kantor_pos',
             'on_the_way_kantor_pos' => 'completed',
         ];
 
@@ -86,6 +87,9 @@ class DriverDashboardController extends Controller
         }
         elseif ($newStatus === 'on_scene') {
             $updateData['pickup_at'] = now();
+        }
+        elseif ($newStatus === 'handled') {
+            $updateData['handled_at'] = now();
         }
         elseif ($newStatus === 'on_the_way_kantor_pos') {
             $updateData['hospital_at'] = now();
@@ -213,11 +217,51 @@ class DriverDashboardController extends Controller
             return response()->json(['success' => false, 'message' => 'Request sudah ditangani'], 400);
         }
 
+        // Check for active dispatch that needs auto-completion
+        $activeDispatch = Dispatch::where('ambulance_id', $ambulance->id)
+            ->whereIn('status', ['pending', 'on_the_way_scene', 'on_scene', 'handled', 'on_the_way_kantor_pos'])
+            ->first();
+
+        if ($activeDispatch) {
+            if ($activeDispatch->status === 'handled') {
+                // Auto complete the previous handled dispatch
+                $activeDispatch->update([
+                    'status' => 'completed',
+                    'completed_at' => now(),
+                ]);
+
+                // Track request history
+                $sequence = \App\Models\DispatchRequestHistory::where('ambulance_id', $ambulance->id)
+                    ->whereNull('returned_to_base')
+                    ->count() + 1;
+
+                \App\Models\DispatchRequestHistory::create([
+                    'ambulance_id' => $ambulance->id,
+                    'dispatch_id' => $activeDispatch->id,
+                    'sequence' => $sequence,
+                    'completed_at' => now(),
+                    'returned_to_base' => false,
+                ]);
+
+                \App\Models\DispatchLog::create([
+                    'dispatch_id' => $activeDispatch->id,
+                    'status' => 'completed',
+                    'note' => 'Auto-completed karena unit mengambil request baru langsung dari status Handled'
+                ]);
+
+                // Update original patient request
+                \App\Models\PatientRequest::where('dispatch_id', $activeDispatch->id)
+                    ->update(['status' => 'completed']);
+            } else {
+                return response()->json(['success' => false, 'message' => 'Anda masih memiliki tugas aktif'], 400);
+            }
+        }
+
         // Get or use provided driver
         $driverId = $request->driver_id;
-        if (!$driverId) {
+        if (!$driverId || !($driver = Driver::find($driverId))) {
             $driver = Driver::where('status', 'available')
-                ->orWhere('status', 'available')
+                ->orWhere('status', 'on_duty')
                 ->first();
             
             if (!$driver) {
@@ -285,8 +329,31 @@ class DriverDashboardController extends Controller
             ->whereIn('status', ['pending', 'on_the_way_scene', 'on_scene', 'on_the_way_kantor_pos'])
             ->first();
 
+        // If exists an active dispatch that is NOT 'handled', block new dispatch
+        // If it is 'handled', we can auto-complete the previous one
         if ($activeDispatch) {
-            return redirect()->route('driver.dashboard')->with('error', 'Unit ini masih dalam penugasan aktif.');
+            if ($activeDispatch->status === 'handled') {
+                // Auto complete the previous handled dispatch
+                $activeDispatch->update([
+                    'status' => 'completed',
+                    'completed_at' => now(),
+                    // returned_to_base will be null because they didn't return
+                ]);
+                
+                // Track history
+                \App\Models\DispatchRequestHistory::create([
+                    'ambulance_id' => $ambulance->id,
+                    'dispatch_id' => $activeDispatch->id,
+                    'sequence' => \App\Models\DispatchRequestHistory::where('ambulance_id', $ambulance->id)->count() + 1,
+                    'completed_at' => now(),
+                    'returned_to_base' => false,
+                ]);
+
+                // Sync status
+                PatientRequest::where('dispatch_id', $activeDispatch->id)->update(['status' => 'completed']);
+            } else {
+                return redirect()->route('driver.dashboard')->with('error', 'Unit ini masih dalam penugasan aktif yang belum ditangani.');
+            }
         }
 
         $drivers = Driver::where('status', 'available')->get();
