@@ -30,19 +30,68 @@ class ActivityPhotoController extends Controller
                 ], 422);
             }
 
-            // Store the uploaded file with short name (5 chars)
+            // Compress and Resize the image using pure PHP (GD)
             $file = $request->file('file');
-            $shortName = $this->generateShortFilename($file);
-            $path = Storage::disk('public')->put('activity-photos', $file, [
-                'name' => $shortName
-            ]);
-            
-            // If the above doesn't work, use manual puts with custom name
-            if (strpos($path, 'activity-photos/' . $shortName) === false) {
-                $extension = $file->getClientOriginalExtension();
-                $shortName = $this->generateShortFilename($file) . '.' . $extension;
-                $path = 'activity-photos/' . $shortName;
+            $extension = $file->getClientOriginalExtension();
+            $shortName = $this->generateShortFilename($file) . '.' . $extension;
+            $path = 'activity-photos/' . $shortName;
+
+            // Load original image
+            $sourcePath = $file->getRealPath();
+            list($width, $height, $type) = getimagesize($sourcePath);
+
+            // Resize if too large (Max 1200px)
+            $maxDim = 1200;
+            $newWidth = $width;
+            $newHeight = $height;
+            if ($width > $maxDim || $height > $maxDim) {
+                $ratio = $width / $height;
+                if ($ratio > 1) {
+                    $newWidth = $maxDim;
+                    $newHeight = $maxDim / $ratio;
+                } else {
+                    $newWidth = $maxDim * $ratio;
+                    $newHeight = $maxDim;
+                }
+            }
+
+            // Create canvas
+            $imageResource = null;
+            switch ($type) {
+                case IMAGETYPE_JPEG: $imageResource = imagecreatefromjpeg($sourcePath); break;
+                case IMAGETYPE_PNG: $imageResource = imagecreatefrompng($sourcePath); break;
+                case IMAGETYPE_GIF: $imageResource = imagecreatefromgif($sourcePath); break;
+                case IMAGETYPE_WEBP: $imageResource = imagecreatefromwebp($sourcePath); break;
+            }
+
+            if ($imageResource) {
+                $newImage = imagecreatetruecolor($newWidth, $newHeight);
+                
+                // Keep transparency for PNG
+                if ($type == IMAGETYPE_PNG || $type == IMAGETYPE_WEBP) {
+                    imagealphablending($newImage, false);
+                    imagesavealpha($newImage, true);
+                }
+
+                imagecopyresampled($newImage, $imageResource, 0, 0, 0, 0, $newWidth, $newHeight, $width, $height);
+
+                // Save to buffer with compression (Quality 60 for ~100kb target)
+                ob_start();
+                imagejpeg($newImage, null, 60);
+                $compressedData = ob_get_clean();
+
+                // Save to Storage
+                Storage::disk('public')->put($path, $compressedData);
+
+                // Free memory
+                imagedestroy($imageResource);
+                imagedestroy($newImage);
+
+                $fileSize = strlen($compressedData);
+            } else {
+                // Fallback to original if GD fails
                 Storage::disk('public')->putFileAs('activity-photos', $file, $shortName);
+                $fileSize = $file->getSize();
             }
             
             $photoUrl = Storage::disk('public')->url($path);
@@ -52,8 +101,8 @@ class ActivityPhotoController extends Controller
                 'activity_log_id' => $activityLog->id,
                 'photo_path' => $path,
                 'photo_name' => $shortName,
-                'mime_type' => $file->getMimeType(),
-                'file_size' => $file->getSize(),
+                'mime_type' => 'image/jpeg', // We converted to jpeg for best compression
+                'file_size' => $fileSize,
                 'description' => $request->input('description'),
                 'sequence' => $request->input('sequence', $photoCount),
             ]);

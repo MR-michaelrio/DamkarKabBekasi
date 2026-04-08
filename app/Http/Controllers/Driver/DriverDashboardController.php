@@ -79,6 +79,20 @@ class DriverDashboardController extends Controller
         $newStatus = $flow[$dispatch->status];
         $isCompleted = $newStatus === 'completed';
 
+        // Check for photos if attempting to move to 'handled' or 'completed'
+        if ($newStatus === 'handled' || $newStatus === 'completed') {
+            $hasPhotos = \App\Models\ActivityPhoto::whereHas('activityLog', function ($query) use ($dispatch) {
+                $query->where('model', 'Dispatch')->where('model_id', $dispatch->id);
+            })->exists();
+
+            if (!$hasPhotos) {
+                return response()->json([
+                    'success' => false, 
+                    'message' => 'Laporan belum bisa diselesaikan. Silakan upload foto kegiatan/dokumentasi terlebih dahulu.'
+                ], 400);
+            }
+        }
+
         $updateData = ['status' => $newStatus];
 
         // Dynamic timestamps
@@ -598,6 +612,16 @@ class DriverDashboardController extends Controller
         if ($dispatch->status !== 'on_the_way_kantor_pos') {
             return redirect()->back()->with('error', 'Status dispatch belum sampai tahap selesai.');
         }
+
+        // Check for photos
+        $hasPhotos = \App\Models\ActivityPhoto::whereHas('activityLog', function ($query) use ($dispatch) {
+            $query->where('model', 'Dispatch')->where('model_id', $dispatch->id);
+        })->exists();
+
+        if (!$hasPhotos) {
+            return redirect()->back()->with('error', 'Laporan belum bisa diselesaikan. Silakan upload foto dokumentasi terlebih dahulu.');
+        }
+
         $dispatch->update([
             'status' => 'completed',
             'completed_at' => now(),

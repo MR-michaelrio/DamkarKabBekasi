@@ -28,6 +28,12 @@ class ActivityPhoto extends Model
     ];
 
     /**
+     * Get the activity log that owns the photo.
+     */
+    public function activityLog(): BelongsTo
+    {
+        return $this->belongsTo(ActivityLog::class, 'activity_log_id');
+    }
      * Get the activity log that this photo belongs to
      */
     public function activityLog(): BelongsTo
