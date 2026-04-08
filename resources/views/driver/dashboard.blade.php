@@ -670,9 +670,20 @@
                 // Convert base64 to blob and upload
                 const response = await fetch(`data:${image.format};base64,${image.base64String}`);
                 const blob = await response.blob();
-                const file = new File([blob], `photo_${Date.now()}.jpg`, { type: 'image/jpeg' });
+                const shortName = generateShortName() + '.jpg';
+                const file = new File([blob], shortName, { type: 'image/jpeg' });
                 
                 await uploadPhoto(file);
+            }
+            
+            // Generate short 5-character filename
+            function generateShortName() {
+                const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+                let name = '';
+                for (let i = 0; i < 5; i++) {
+                    name += chars.charAt(Math.floor(Math.random() * chars.length));
+                }
+                return name;
             }
             
             // Handle files

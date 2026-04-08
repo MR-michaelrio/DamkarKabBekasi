@@ -30,16 +30,28 @@ class ActivityPhotoController extends Controller
                 ], 422);
             }
 
-            // Store the uploaded file
+            // Store the uploaded file with short name (5 chars)
             $file = $request->file('file');
-            $path = Storage::disk('public')->put('activity-photos', $file);
+            $shortName = $this->generateShortFilename($file);
+            $path = Storage::disk('public')->put('activity-photos', $file, [
+                'name' => $shortName
+            ]);
+            
+            // If the above doesn't work, use manual puts with custom name
+            if (strpos($path, 'activity-photos/' . $shortName) === false) {
+                $extension = $file->getClientOriginalExtension();
+                $shortName = $this->generateShortFilename($file) . '.' . $extension;
+                $path = 'activity-photos/' . $shortName;
+                Storage::disk('public')->putFileAs('activity-photos', $file, $shortName);
+            }
+            
             $photoUrl = Storage::disk('public')->url($path);
 
             // Create ActivityPhoto record
             $photo = ActivityPhoto::create([
                 'activity_log_id' => $activityLog->id,
                 'photo_path' => $path,
-                'photo_name' => $file->getClientOriginalName(),
+                'photo_name' => $shortName,
                 'mime_type' => $file->getMimeType(),
                 'file_size' => $file->getSize(),
                 'description' => $request->input('description'),
@@ -58,6 +70,20 @@ class ActivityPhotoController extends Controller
                 'message' => 'Gagal mengunggah foto: ' . $e->getMessage()
             ], 500);
         }
+    }
+
+    /**
+     * Generate a short 5-character filename
+     */
+    private function generateShortFilename($file)
+    {
+        // Generate random 5 character alphanumeric string
+        $characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+        $name = '';
+        for ($i = 0; $i < 5; $i++) {
+            $name .= $characters[rand(0, strlen($characters) - 1)];
+        }
+        return $name;
     }
 
     /**
