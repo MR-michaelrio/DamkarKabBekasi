@@ -659,37 +659,63 @@
         
         // Delete photo - GLOBAL FUNCTION
         async function deletePhoto(photoId) {
+            console.log('deletePhoto called with ID:', photoId);
             if (!confirm('Hapus foto ini?')) return;
             
             try {
+                console.log('Sending DELETE request to /api/activity-photos/' + photoId);
+                
+                const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
+                console.log('CSRF Token:', csrfToken ? 'Present' : 'Missing');
+                
                 const response = await fetch(`/api/activity-photos/${photoId}`, {
                     method: 'DELETE',
                     headers: {
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'X-CSRF-TOKEN': csrfToken,
                         'Accept': 'application/json'
                     }
+                });
+                
+                console.log('Response status:', response.status);
+                console.log('Response headers:', {
+                    contentType: response.headers.get('content-type')
                 });
                 
                 if (!response.ok) {
                     const contentType = response.headers.get('content-type');
                     let errorMsg = `Delete failed: ${response.status}`;
+                    let responseBody = '';
+                    
                     if (contentType && contentType.includes('application/json')) {
-                        const data = await response.json();
-                        errorMsg = data.message || errorMsg;
+                        try {
+                            const data = await response.json();
+                            console.log('Error response data:', data);
+                            errorMsg = data.message || errorMsg;
+                            responseBody = JSON.stringify(data);
+                        } catch (e) {
+                            console.error('Failed to parse error JSON:', e);
+                        }
+                    } else {
+                        responseBody = await response.text();
+                        console.log('Error response text:', responseBody.substring(0, 200));
                     }
-                    throw new Error(errorMsg);
+                    
+                    throw new Error(`${errorMsg} - Response: ${responseBody.substring(0, 100)}`);
                 }
                 
                 const data = await response.json();
+                console.log('Success response:', data);
+                
                 if (data.success) {
                     uploadedPhotos = uploadedPhotos.filter(p => p.id !== photoId);
-                    location.reload(); // Reload to refresh photo list
+                    alert('✅ Foto berhasil dihapus');
+                    location.reload();
                 } else {
                     alert('❌ ' + (data.message || 'Gagal menghapus foto'));
                 }
             } catch (err) {
                 console.error('Delete error:', err);
-                alert('❌ Gagal menghapus foto: ' + err.message);
+                alert('❌ Gagal menghapus foto:\n' + err.message);
             }
         }
         
