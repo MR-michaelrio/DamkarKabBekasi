@@ -41,18 +41,18 @@ public class FCMService extends FirebaseMessagingService {
 
             Log.d(TAG, "Processing patient request - Title: " + title + ", TTS URL: " + ttsUrl);
 
-            // Play Emergency Sound Immediately
-            playEmergencySound();
+            // Play Emergency Sound Immediately, then show notification and play TTS after it completes
+            playEmergencySoundWithCallback(() -> {
+                // Show Manual Notification
+                if (title != null && body != null) {
+                    showNotification(title, body);
+                }
 
-            // Show Manual Notification
-            if (title != null && body != null) {
-                showNotification(title, body);
-            }
-
-            // Play TTS Audio (after emergency sound and notification)
-            if (ttsUrl != null && !ttsUrl.isEmpty()) {
-                playAudio(ttsUrl);
-            }
+                // Play TTS Audio (after emergency sound completes)
+                if (ttsUrl != null && !ttsUrl.isEmpty()) {
+                    playAudio(ttsUrl);
+                }
+            });
         } else {
             Log.d(TAG, "Ignoring non-patient-request message");
         }
@@ -79,6 +79,42 @@ public class FCMService extends FirebaseMessagingService {
             }
         } catch (Exception e) {
             Log.e(TAG, "playEmergencySound: Error playing emergency sound", e);
+        }
+    }
+
+    private void playEmergencySoundWithCallback(Runnable callback) {
+        Log.d(TAG, "playEmergencySoundWithCallback: Playing emergency.mp3 with callback");
+
+        try {
+            MediaPlayer emergencyPlayer = MediaPlayer.create(this, R.raw.emergency);
+            if (emergencyPlayer != null) {
+                emergencyPlayer.setAudioAttributes(
+                    new AudioAttributes.Builder()
+                        .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                        .setUsage(AudioAttributes.USAGE_NOTIFICATION_EVENT)
+                        .build()
+                );
+                emergencyPlayer.setVolume(1.0f, 1.0f);
+                emergencyPlayer.setOnCompletionListener(mp -> {
+                    Log.d(TAG, "playEmergencySoundWithCallback: Emergency sound completed, executing callback");
+                    mp.release();
+                    if (callback != null) {
+                        callback.run();
+                    }
+                });
+                emergencyPlayer.start();
+                Log.d(TAG, "playEmergencySoundWithCallback: Emergency sound started");
+            } else {
+                Log.e(TAG, "playEmergencySoundWithCallback: Failed to create MediaPlayer for emergency sound");
+                if (callback != null) {
+                    callback.run(); // Execute callback even if failed
+                }
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "playEmergencySoundWithCallback: Error playing emergency sound", e);
+            if (callback != null) {
+                callback.run(); // Execute callback on error
+            }
         }
     }
 
