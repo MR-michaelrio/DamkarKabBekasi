@@ -440,8 +440,20 @@
                 const data = await response.json();
 
                 if (data.success) {
-                    // Refresh page to show next state
-                    window.location.reload();
+                    // Check if this was a completion action
+                    if (data.is_completed) {
+                        // Show completion dialog instead of reloading immediately
+                        showCompletionModal('{{ $activeDispatch->patient_name ?? '' }}');
+                        
+                        // Still reload after modal is interacted with
+                        // But first, preserve the completion state for 5 seconds
+                        setTimeout(() => {
+                            // Don't reload immediately, let user interact with modal
+                        }, data.redirect_delay || 2000);
+                    } else {
+                        // For non-completion status updates, reload immediately
+                        window.location.reload();
+                    }
                 } else {
                     alert('Error: ' + data.message);
                     this.disabled = false;
@@ -914,6 +926,174 @@
             // Load existing photos
             await loadPhotos();
         });
+    </script>
+
+    <!-- Completion Dialog Modal -->
+    <div id="completion-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-xl shadow-xl max-w-sm w-full">
+            <!-- Success Header -->
+            <div class="bg-gradient-to-r from-green-500 to-green-600 p-6 text-white rounded-t-xl">
+                <div class="text-4xl text-center mb-2">✅</div>
+                <h2 class="text-xl font-bold text-center">Tugas Selesai!</h2>
+                <p class="text-sm text-green-100 text-center mt-1" id="completion-message">Penugasan telah diselesaikan</p>
+            </div>
+
+            <!-- Content -->
+            <div class="p-6 space-y-4">
+                <p class="text-gray-700 text-center font-medium">Apa yang ingin Anda lakukan selanjutnya?</p>
+            </div>
+
+            <!-- Buttons -->
+            <div class="px-6 pb-6 space-y-3">
+                <!-- Accept Another Request Button -->
+                <button id="accept-next-btn" class="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-bold py-3 px-4 rounded-lg shadow-md transition transform active:scale-95 flex items-center justify-center gap-2">
+                    <span>📋 Ambil Request Lain</span>
+                </button>
+
+                <!-- Return to Base Button -->
+                <button id="return-base-btn" class="w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-bold py-3 px-4 rounded-lg shadow-md transition transform active:scale-95 flex items-center justify-center gap-2">
+                    <span>🏠 Kembali ke MAKO</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Request History Modal (shown after return to base) -->
+    <div id="request-history-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-xl shadow-xl max-w-sm w-full max-h-[80vh] overflow-y-auto">
+            <!-- Header -->
+            <div class="bg-gradient-to-r from-purple-500 to-purple-600 p-6 text-white sticky top-0">
+                <div class="text-3xl text-center mb-2">📊</div>
+                <h2 class="text-lg font-bold text-center">Riwayat Penugasan</h2>
+                <p class="text-sm text-purple-100 text-center mt-1" id="history-count">Semua tugas selesai</p>
+            </div>
+
+            <!-- Content -->
+            <div class="p-6">
+                <div id="history-list" class="space-y-2">
+                    <!-- Will be populated by JavaScript -->
+                </div>
+            </div>
+
+            <!-- Button -->
+            <div class="px-6 pb-6 border-t border-gray-200">
+                <button id="close-history-btn" class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg shadow-md transition">
+                    ✓ Selesai
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Completion Modal Handlers
+        const completionModal = document.getElementById('completion-modal');
+        const acceptNextBtn = document.getElementById('accept-next-btn');
+        const returnBaseBtn = document.getElementById('return-base-btn');
+        const historyModal = document.getElementById('request-history-modal');
+        const closeHistoryBtn = document.getElementById('close-history-btn');
+        const historyList = document.getElementById('history-list');
+        const historyCount = document.getElementById('history-count');
+
+        acceptNextBtn?.addEventListener('click', async function () {
+            acceptNextBtn.disabled = true;
+            returnBaseBtn.disabled = true;
+            acceptNextBtn.innerHTML = '⏳ Memproses...';
+
+            try {
+                // Redirect to available requests page
+                setTimeout(() => {
+                    window.location.href = '{{ route("driver.dispatching") }}';
+                }, 500);
+            } catch (e) {
+                console.error('Error:', e);
+                alert('Tidak dapat membuka daftar request');
+                acceptNextBtn.disabled = false;
+                returnBaseBtn.disabled = false;
+                acceptNextBtn.innerHTML = '<span>📋 Ambil Request Lain</span>';
+            }
+        });
+
+        returnBaseBtn?.addEventListener('click', async function () {
+            acceptNextBtn.disabled = true;
+            returnBaseBtn.disabled = true;
+            returnBaseBtn.innerHTML = '⏳ Memproses...';
+
+            try {
+                const response = await fetch('{{ route("driver.return-to-base") }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'Accept': 'application/json'
+                    }
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    completionModal.classList.add('hidden');
+                    
+                    // Show history modal
+                    if (data.request_history && data.request_history.length > 0) {
+                        historyCount.innerHTML = `Total ${data.total_requests_handled} tugas diselesaikan`;
+                        
+                        historyList.innerHTML = data.request_history.map((item, index) => `
+                            <div class="bg-purple-50 rounded-lg p-3 border-l-4 border-purple-500">
+                                <div class="flex items-start justify-between">
+                                    <div class="flex-1">
+                                        <p class="text-sm font-bold text-gray-800">Request #${item.sequence}</p>
+                                        <p class="text-xs text-gray-600">${item.dispatch?.patient_name || 'Unknown'}</p>
+                                    </div>
+                                    <span class="text-xs bg-green-100 text-green-700 px-2 py-1 rounded font-bold">✓</span>
+                                </div>
+                            </div>
+                        `).join('');
+                    }
+                    
+                    historyModal.classList.remove('hidden');
+                } else {
+                    alert('❌ ' + (data.message || 'Gagal kembali ke MAKO'));
+                    acceptNextBtn.disabled = false;
+                    returnBaseBtn.disabled = false;
+                    returnBaseBtn.innerHTML = '<span>🏠 Kembali ke MAKO</span>';
+                }
+            } catch (e) {
+                console.error('Return to base error:', e);
+                alert('❌ Terjadi kesalahan: ' + e.message);
+                acceptNextBtn.disabled = false;
+                returnBaseBtn.disabled = false;
+                returnBaseBtn.innerHTML = '<span>🏠 Kembali ke MAKO</span>';
+            }
+        });
+
+        closeHistoryBtn?.addEventListener('click', () => {
+            historyModal.classList.add('hidden');
+            setTimeout(() => {
+                window.location.href = '{{ route("driver.dashboard") }}';
+            }, 500);
+        });
+
+        // Show completion modal when journey button detects completion
+        function showCompletionModal(customerName = '') {
+            const msgEl = document.getElementById('completion-message');
+            if (customerName) {
+                msgEl.textContent = `Terima kasih telah melayani: ${customerName}`;
+            }
+            completionModal.classList.remove('hidden');
+        }
+
+        // Override journey button to show modal on completion
+        const originalJourneyClick = journeyBtn?.onclick;
+        if (journeyBtn) {
+            journeyBtn.addEventListener('click', async function (e) {
+                const currentStatus = this.getAttribute('data-status');
+                if (currentStatus === 'on_the_way_kantor_pos') {
+                    // This is the completion action
+                    // Let the normal flow continue but intercept the response
+                    e.preventDefault = () => {};
+                }
+            });
+        }
     </script>
 
 </body>

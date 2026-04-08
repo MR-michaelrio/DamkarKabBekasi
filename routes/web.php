@@ -305,4 +305,8 @@ Route::middleware(['auth:ambulance'])->prefix('driver')->name('driver.')->group(
 
     // Save FCM Token
     Route::post('/fcm-token', [DriverDashboardController::class, 'saveFcmToken'])->name('fcm-token.save');
+
+    // Post-completion routes
+    Route::post('/dispatches/{dispatch}/accept-next', [DriverDashboardController::class, 'acceptNextRequest'])->name('dispatches.accept-next');
+    Route::post('/return-to-base', [DriverDashboardController::class, 'returnToBase'])->name('return-to-base');
 });

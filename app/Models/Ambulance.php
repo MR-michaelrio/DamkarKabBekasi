@@ -41,6 +41,11 @@ class Ambulance extends Authenticatable
         return $this->hasMany(AmbulanceMaintenance::class);
     }
 
+    public function requestHistory()
+    {
+        return $this->hasMany(DispatchRequestHistory::class);
+    }
+
     // Override auth identifier
     public function getAuthIdentifierName()
     {

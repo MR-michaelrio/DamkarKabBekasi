@@ -83,4 +83,9 @@ class Dispatch extends Model
     {
         return $this->hasMany(DispatchLog::class);
     }
+
+    public function requestHistory()
+    {
+        return $this->hasMany(DispatchRequestHistory::class);
+    }
 }

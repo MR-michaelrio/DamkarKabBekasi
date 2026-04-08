@@ -76,6 +76,7 @@ class DriverDashboardController extends Controller
         }
 
         $newStatus = $flow[$dispatch->status];
+        $isCompleted = $newStatus === 'completed';
 
         $updateData = ['status' => $newStatus];
 
@@ -91,6 +92,19 @@ class DriverDashboardController extends Controller
         }
         elseif ($newStatus === 'completed') {
             $updateData['completed_at'] = now();
+
+            // Track request history for future routing analysis
+            $sequence = \App\Models\DispatchRequestHistory::where('ambulance_id', $dispatch->ambulance_id)
+                ->whereNull('returned_to_base')
+                ->count() + 1;
+
+            \App\Models\DispatchRequestHistory::create([
+                'ambulance_id' => $dispatch->ambulance_id,
+                'dispatch_id' => $dispatch->id,
+                'sequence' => $sequence,
+                'completed_at' => now(),
+                'returned_to_base' => false,
+            ]);
 
             // Free up ambulance and driver, and clear location
             $dispatch->ambulance->update([
@@ -115,11 +129,19 @@ class DriverDashboardController extends Controller
             'note' => 'Status diupdate oleh driver',
         ]);
 
-        return response()->json([
+        $response = [
             'success' => true,
             'new_status' => $newStatus,
             'message' => 'Status updated successfully',
-        ]);
+        ];
+
+        // If completed, send signal to show completion dialog
+        if ($isCompleted) {
+            $response['is_completed'] = true;
+            $response['redirect_delay'] = 2000; // 2 seconds before showing options
+        }
+
+        return response()->json($response);
     }
 
     public function togglePause(Request $request, Dispatch $dispatch)
@@ -248,5 +270,118 @@ class DriverDashboardController extends Controller
         }
 
         return response()->json(['success' => false], 401);
+    }
+
+    /**
+     * Accept next request after completing current one
+     */
+    public function acceptNextRequest(Request $request)
+    {
+        $request->validate([
+            'next_dispatch_id' => 'required|exists:dispatches,id',
+        ]);
+
+        $ambulance = auth('ambulance')->user();
+        $nextDispatch = Dispatch::find($request->next_dispatch_id);
+
+        // Security check
+        if ($nextDispatch->ambulance_id !== $ambulance->id) {
+            return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
+        }
+
+        // Verify status is pending
+        if ($nextDispatch->status !== 'pending') {
+            return response()->json(['success' => false, 'message' => 'Invalid dispatch status'], 400);
+        }
+
+        // Update status immediately to on_the_way
+        $nextDispatch->update([
+            'status' => 'on_the_way_scene',
+            'otw_scene_at' => now(),
+            'assigned_at' => now(),
+        ]);
+
+        // Log
+        \App\Models\DispatchLog::create([
+            'dispatch_id' => $nextDispatch->id,
+            'status' => 'on_the_way_scene',
+            'note' => 'Driver menerima request berikutnya - langsung menuju TKP'
+        ]);
+
+        // Update ambulance status
+        $ambulance->update(['status' => 'on_duty']);
+        if ($nextDispatch->driver) {
+            $nextDispatch->driver->update(['status' => 'on_duty']);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Request berikutnya diterima, langsung menuju TKP',
+            'dispatch_id' => $nextDispatch->id,
+        ]);
+    }
+
+    /**
+     * Return to base (Mako) after completing request(s)
+     */
+    public function returnToBase(Request $request)
+    {
+        $ambulance = auth('ambulance')->user();
+
+        // Get the last active/completed dispatch for this ambulance
+        $lastDispatch = Dispatch::where('ambulance_id', $ambulance->id)
+            ->whereIn('status', ['pending', 'on_the_way_scene', 'on_scene', 'on_the_way_kantor_pos', 'completed'])
+            ->latest('completed_at')
+            ->orLatest('updated_at')
+            ->first();
+
+        if (!$lastDispatch) {
+            return response()->json(['success' => false, 'message' => 'Tidak ada tugas untuk dikembalikan'], 400);
+        }
+
+        // Mark all pending request histories as returned_to_base
+        \App\Models\DispatchRequestHistory::where('ambulance_id', $ambulance->id)
+            ->whereNull('returned_to_base')
+            ->update([
+                'returned_to_base' => true,
+            ]);
+
+        // Update ambulance status
+        $ambulance->update([
+            'status' => 'ready',
+            'latitude' => null,
+            'longitude' => null,
+            'last_location_update' => null,
+        ]);
+
+        // Update driver status
+        if ($lastDispatch->driver) {
+            $lastDispatch->driver->update(['status' => 'available']);
+        }
+
+        // Log
+        if ($lastDispatch->status !== 'completed') {
+            $lastDispatch->update(['status' => 'completed', 'completed_at' => now()]);
+        }
+
+        \App\Models\DispatchLog::create([
+            'dispatch_id' => $lastDispatch->id,
+            'status' => 'completed',
+            'note' => 'Unit kembali ke MAKO - semua request selesai'
+        ]);
+
+        // Get request history for response
+        $requestHistory = \App\Models\DispatchRequestHistory::where('ambulance_id', $ambulance->id)
+            ->where('returned_to_base', true)
+            ->with('dispatch:id,patient_name')
+            ->orderBy('sequence')
+            ->get();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Unit berhasil kembali ke MAKO',
+            'request_history' => $requestHistory,
+            'total_requests_handled' => $requestHistory->count(),
+        ]);
     }
 }
