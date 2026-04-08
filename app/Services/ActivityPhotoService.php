@@ -87,16 +87,27 @@ class ActivityPhotoService
             $manager = new ImageManager(new Driver());
             $image = $manager->read($file->getRealPath());
 
+            // Image resizing if it's too large (optional but helps compression)
+            if ($image->width() > 1600 || $image->height() > 1600) {
+                $image->scale(1600, 1600);
+            }
+
             // Start compression loop
-            $quality = 90;
+            $quality = 80;
             $encoded = $image->toJpeg($quality);
+            $size = strlen($encoded->toBinary());
             
-            // Loop to reduce quality until size is under TARGET_FILE_SIZE or quality is too low
-            while ($encoded->toFilePointer()->getMetadata()['uri'] !== null && 
-                   strlen($encoded->toString()) > self::TARGET_FILE_SIZE && 
-                   $quality > 10) {
+            // Loop to reduce quality/resolution until size is under TARGET_FILE_SIZE or limit reached
+            while ($size > self::TARGET_FILE_SIZE && $quality > 10) {
                 $quality -= 10;
                 $encoded = $image->toJpeg($quality);
+                $size = strlen($encoded->toBinary());
+
+                // If quality is already low and still too big, scale down further
+                if ($quality <= 30 && $size > self::TARGET_FILE_SIZE) {
+                    $image->scale(width: $image->width() * 0.8);
+                    $quality = 50; // reset quality slightly to try again at smaller size
+                }
             }
 
             // Ensure directory exists
@@ -105,7 +116,7 @@ class ActivityPhotoService
             }
 
             // Store encoded image
-            Storage::disk(self::STORAGE_DISK)->put($fullPath, $encoded->toString());
+            Storage::disk(self::STORAGE_DISK)->put($fullPath, $encoded->toBinary());
 
             // Get next sequence number
             $nextSequence = $activityLog->photos()->max('sequence') + 1;
@@ -115,7 +126,7 @@ class ActivityPhotoService
                 'photo_path' => $fullPath,
                 'photo_name' => $file->getClientOriginalName(),
                 'mime_type' => 'image/jpeg',
-                'file_size' => strlen($encoded->toString()),
+                'file_size' => $size,
                 'description' => $description,
                 'sequence' => $nextSequence,
             ]);
