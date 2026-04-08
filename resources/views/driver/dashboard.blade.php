@@ -715,11 +715,24 @@
                         body: fd
                     });
                     
-                    const data = await response.json();
-                    
+                    // Check response status FIRST before trying to parse JSON
                     if (!response.ok) {
-                        throw new Error(data.message || `Server error: ${response.status}`);
+                        const contentType = response.headers.get('content-type');
+                        let errorMsg = `Server error: ${response.status}`;
+                        
+                        if (contentType && contentType.includes('application/json')) {
+                            const data = await response.json();
+                            errorMsg = data.message || errorMsg;
+                        } else {
+                            const text = await response.text();
+                            console.error('Non-JSON response:', text.substring(0, 200));
+                            errorMsg = `Server error (${response.status}): Check console`;
+                        }
+                        throw new Error(errorMsg);
                     }
+                    
+                    // Parse successful response
+                    const data = await response.json();
                     
                     if (data.success) {
                         uploadedPhotos.push(data.photo);
@@ -791,6 +804,16 @@
                     }
                 });
                 
+                if (!response.ok) {
+                    const contentType = response.headers.get('content-type');
+                    if (contentType && contentType.includes('application/json')) {
+                        const data = await response.json();
+                        throw new Error(data.message || `Load failed: ${response.status}`);
+                    } else {
+                        throw new Error(`Server error: ${response.status}`);
+                    }
+                }
+                
                 const data = await response.json();
                 if (data.success && data.photos) {
                     uploadedPhotos = data.photos;
@@ -832,16 +855,26 @@
                     }
                 });
                 
+                if (!response.ok) {
+                    const contentType = response.headers.get('content-type');
+                    let errorMsg = `Delete failed: ${response.status}`;
+                    if (contentType && contentType.includes('application/json')) {
+                        const data = await response.json();
+                        errorMsg = data.message || errorMsg;
+                    }
+                    throw new Error(errorMsg);
+                }
+                
                 const data = await response.json();
                 if (data.success) {
                     uploadedPhotos = uploadedPhotos.filter(p => p.id !== photoId);
                     location.reload(); // Reload to refresh photo list
                 } else {
-                    alert('❌ Gagal menghapus foto');
+                    alert('❌ ' + (data.message || 'Gagal menghapus foto'));
                 }
             } catch (err) {
                 console.error('Delete error:', err);
-                alert('❌ Gagal menghapus foto');
+                alert('❌ Gagal menghapus foto: ' + err.message);
             }
         }
     </script>
