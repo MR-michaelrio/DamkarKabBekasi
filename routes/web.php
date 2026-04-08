@@ -140,6 +140,21 @@ Route::match(['post', 'options'], '/public-fcm-token', function (\Illuminate\Htt
 Route::post('/api/driver/location', [DriverLocationController::class, 'updateLocation'])
     ->middleware('auth:ambulance'); // specific guard here if we want, or just 'auth' if we configure defaults properly
 
+// Activity Photo Routes (API)
+Route::prefix('api')->middleware(['auth:web,ambulance'])->group(function () {
+    // Photo Management Routes
+    Route::post('/activities/{activity_id}/photos', [\App\Http\Controllers\Api\ActivityPhotoController::class, 'store'])
+        ->name('activity-photos.store');
+    Route::get('/activities/{activity_id}/photos', [\App\Http\Controllers\Api\ActivityPhotoController::class, 'index'])
+        ->name('activity-photos.index');
+    Route::get('/activities/{activity_id}/photos/status', [\App\Http\Controllers\Api\ActivityPhotoController::class, 'getStatus'])
+        ->name('activity-photos.status');
+    Route::patch('/photos/{photo_id}', [\App\Http\Controllers\Api\ActivityPhotoController::class, 'update'])
+        ->name('activity-photos.update');
+    Route::delete('/photos/{photo_id}', [\App\Http\Controllers\Api\ActivityPhotoController::class, 'destroy'])
+        ->name('activity-photos.destroy');
+});
+
 // Ambulance Auth Routes (Moved to bottom for clarity)
 
 require __DIR__ . '/auth.php';
