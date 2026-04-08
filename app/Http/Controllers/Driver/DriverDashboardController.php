@@ -7,6 +7,7 @@ use App\Models\Dispatch;
 use App\Models\Driver;
 use App\Models\PatientRequest;
 use App\Models\DispatchLog;
+use App\Models\ActivityLog;
 use Illuminate\Http\Request;
 
 class DriverDashboardController extends Controller
@@ -21,7 +22,38 @@ class DriverDashboardController extends Controller
             ->whereIn('status', ['pending', 'on_the_way_scene', 'on_scene', 'on_the_way_kantor_pos'])
             ->first();
 
-        return view('driver.dashboard', compact('activeDispatch', 'ambulance'));
+        // Create or get activity log for current login session
+        $activityLog = null;
+        if ($activeDispatch) {
+            // Check if activity log already exists for this dispatch
+            $activityLog = ActivityLog::where('model', 'Dispatch')
+                ->where('model_id', $activeDispatch->id)
+                ->where('action', 'dispatch_in_progress')
+                ->latest()
+                ->first();
+
+            // If not exists, create new activity log
+            if (!$activityLog) {
+                $activityLog = ActivityLog::create([
+                    'user_id' => $ambulance->id,
+                    'action' => 'dispatch_in_progress',
+                    'model' => 'Dispatch',
+                    'model_id' => $activeDispatch->id,
+                    'description' => "Dispatch sedang berlangsung: {$activeDispatch->patient_name}",
+                ]);
+            }
+        } else {
+            // Create activity log for login/idle status
+            $activityLog = ActivityLog::create([
+                'user_id' => $ambulance->id,
+                'action' => 'driver_login',
+                'model' => 'Ambulance',
+                'model_id' => $ambulance->id,
+                'description' => "Driver login: {$ambulance->plate_number}",
+            ]);
+        }
+
+        return view('driver.dashboard', compact('activeDispatch', 'ambulance', 'activityLog'));
     }
 
     public function updateStatus(Request $request, Dispatch $dispatch)

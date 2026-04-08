@@ -194,10 +194,30 @@
         @endif
 
         <!-- Location Info -->
-        <div class="bg-white rounded-lg shadow p-4">
+        <div class="bg-white rounded-lg shadow p-4 mb-4">
             <h3 class="font-semibold mb-2">Lokasi Saat Ini</h3>
             <p id="current-location" class="text-sm text-gray-600">Menunggu GPS...</p>
         </div>
+
+        <!-- Activity Photo Report Section -->
+        @if($activityLog)
+        <div class="bg-white rounded-lg shadow p-4 mb-4">
+            <div class="flex items-center gap-2 mb-4">
+                <span class="text-2xl">📸</span>
+                <h2 class="font-bold text-lg">Laporan Foto Kegiatan</h2>
+            </div>
+            
+            <!-- Activity Photo Uploader Component -->
+            <div id="photo-uploader-container">
+                <activity-photo-uploader-web 
+                    :activity-id="{{ $activityLog->id }}"
+                    :max-photos="5"
+                    @updated="onPhotosUpdated"
+                    @error="onPhotoError"
+                ></activity-photo-uploader-web>
+            </div>
+        </div>
+        @endif
         @else
         <div class="bg-white rounded-lg shadow p-8 text-center">
             <div class="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4 text-4xl">
@@ -570,6 +590,45 @@
                     statusText.innerHTML = `<span class="text-red-500 font-bold">⚠️ Gagal Kirim GPS:</span> ${error.message}`;
                     statusIndicator.className = 'w-3 h-3 bg-red-500 rounded-full';
                 });
+        }
+    </script>
+
+    <!-- Vue App for Activity Photo Uploader -->
+    <script type="module">
+        import { createApp, defineAsyncComponent } from 'vue'
+        import axios from 'axios'
+
+        // Create Vue app instance
+        const app = createApp({
+            setup() {
+                const onPhotosUpdated = (photos) => {
+                    console.log('Photos updated:', photos)
+                    // Optional: Show notification or update UI
+                }
+
+                const onPhotoError = (error) => {
+                    console.error('Photo upload error:', error)
+                    alert('Error upload foto: ' + error)
+                }
+
+                return {
+                    onPhotosUpdated,
+                    onPhotoError
+                }
+            }
+        })
+
+        // Register ActivityPhotoUploaderWeb component
+        const ActivityPhotoUploaderWeb = defineAsyncComponent(
+            () => import('/resources/js/components/ActivityPhotoUploaderWeb.vue')
+        )
+
+        app.component('ActivityPhotoUploaderWeb', ActivityPhotoUploaderWeb)
+
+        // Mount app
+        const container = document.getElementById('photo-uploader-container')
+        if (container) {
+            app.mount(container)
         }
     </script>
 
