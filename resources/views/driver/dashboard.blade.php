@@ -207,17 +207,25 @@
             
             <!-- Activity Photo Uploader -->
             <div id="photo-uploader-container">
-                <form id="photo-upload-form" enctype="multipart/form-data">
-                    <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-blue-400 transition cursor-pointer">
-                        <input type="file" id="photo-input" accept="image/*" multiple hidden>
-                        <div class="text-gray-500">
-                            <p class="text-3xl mb-2">📸</p>
-                            <p class="font-medium">Klik atau drag foto ke sini</p>
-                            <p class="text-sm text-gray-400 mt-1">Maksimum 5 foto per aktivitas</p>
-                        </div>
-                    </div>
-                </form>
-                <div id="photo-list" class="mt-4"></div>
+                <!-- Action Buttons -->
+                <div class="flex gap-2 mb-4">
+                    <button id="camera-btn" type="button" class="flex-1 bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg transition flex items-center justify-center gap-2">
+                        📷 Ambil Foto
+                    </button>
+                    <button id="gallery-btn" type="button" class="flex-1 bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg transition flex items-center justify-center gap-2">
+                        🖼️ Pilih dari Galeri
+                    </button>
+                </div>
+                
+                <!-- File Input (Hidden) -->
+                <input type="file" id="photo-input" accept="image/*" multiple hidden>
+                <input type="file" id="camera-input" accept="image/*" capture="environment" hidden>
+                
+                <!-- Photo Preview Area -->
+                <div id="photo-list" class="space-y-2"></div>
+                
+                <!-- Upload Status -->
+                <div id="upload-status" class="mt-3 text-sm text-gray-600"></div>
             </div>
         </div>
 
@@ -596,95 +604,246 @@
         }
     </script>
 
-    <!-- Photo Upload Handler -->
+    <!-- Photo Upload Handler with Camera Support -->
     <script>
         const activityId = {{ $activityLog->id ?? 'null' }};
+        let uploadedPhotos = [];
         
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', async function() {
+            if (!activityId) {
+                console.error('Activity ID not found');
+                return;
+            }
+            
+            const cameraBtn = document.getElementById('camera-btn');
+            const galleryBtn = document.getElementById('gallery-btn');
             const photoInput = document.getElementById('photo-input');
-            const photoForm = document.getElementById('photo-upload-form');
-            const photoUploadContainer = document.querySelector('[id="photo-uploader-container"] > form');
+            const cameraInput = document.getElementById('camera-input');
+            const photoList = document.getElementById('photo-list');
+            const uploadStatus = document.getElementById('upload-status');
             
-            if (!photoInput || !activityId) return;
+            const isCapacitorApp = window.hasOwnProperty('Capacitor') && window.Capacitor.hasOwnProperty('Plugins');
             
-            // Click to upload
-            photoUploadContainer?.addEventListener('click', () => {
+            // Camera button
+            cameraBtn?.addEventListener('click', async () => {
+                if (isCapacitorApp) {
+                    try {
+                        await captureWithCapacitor();
+                    } catch (err) {
+                        console.error('Capacitor error:', err);
+                        // Fallback to native input
+                        cameraInput.click();
+                    }
+                } else {
+                    // Web fallback
+                    cameraInput.click();
+                }
+            });
+            
+            // Gallery button
+            galleryBtn?.addEventListener('click', () => {
                 photoInput.click();
             });
             
-            // Drag and drop
-            photoUploadContainer?.addEventListener('dragover', (e) => {
-                e.preventDefault();
-                photoUploadContainer.classList.add('border-blue-400', 'bg-blue-50');
-            });
-            
-            photoUploadContainer?.addEventListener('dragleave', () => {
-                photoUploadContainer.classList.remove('border-blue-400', 'bg-blue-50');
-            });
-            
-            photoUploadContainer?.addEventListener('drop', (e) => {
-                e.preventDefault();
-                photoUploadContainer.classList.remove('border-blue-400', 'bg-blue-50');
-                const files = e.dataTransfer.files;
-                handlePhotoUpload(files);
-            });
-            
-            // File input change
+            // Handle photo input
             photoInput?.addEventListener('change', (e) => {
-                handlePhotoUpload(e.target.files);
+                handleFiles(e.target.files);
+                e.target.value = ''; // Reset
             });
             
-            function handlePhotoUpload(files) {
-                if (!files.length) return;
+            // Handle camera input
+            cameraInput?.addEventListener('change', (e) => {
+                handleFiles(e.target.files);
+                e.target.value = ''; // Reset
+            });
+            
+            // Capacitor camera capture
+            async function captureWithCapacitor() {
+                const { Camera } = window.Capacitor.Plugins;
+                const image = await Camera.getPhoto({
+                    quality: 90,
+                    allowEditing: false,
+                    resultType: 'base64',
+                    source: 'CAMERA'
+                });
                 
-                const formData = new FormData();
-                let fileCount = 0;
+                // Convert base64 to blob and upload
+                const response = await fetch(`data:${image.format};base64,${image.base64String}`);
+                const blob = await response.blob();
+                const file = new File([blob], `photo_${Date.now()}.jpg`, { type: 'image/jpeg' });
                 
-                for (let file of files) {
-                    if (file.type.startsWith('image/') && fileCount < 5) {
-                        formData.append('file', file);
-                        fileCount++;
-                    }
-                }
+                await uploadPhoto(file);
+            }
+            
+            // Handle files
+            async function handleFiles(files) {
+                if (!files || !files.length) return;
                 
-                if (fileCount === 0) {
-                    alert('Pilih file gambar yang valid');
+                const maxPhotos = 5;
+                const currentCount = uploadedPhotos.length;
+                
+                if (currentCount >= maxPhotos) {
+                    updateStatus('❌ Sudah mencapai maksimum 5 foto', 'error');
                     return;
                 }
                 
-                // Upload setiap file
-                Array.from(files).forEach((file, index) => {
-                    if (index >= 5) return; // Max 5 files
-                    
+                let allowedCount = Math.min(files.length, maxPhotos - currentCount);
+                updateStatus(`⏳ Mengunggah ${allowedCount} foto...`, 'loading');
+                
+                for (let i = 0; i < allowedCount; i++) {
+                    const file = files[i];
+                    if (file.type.startsWith('image/')) {
+                        await uploadPhoto(file);
+                    }
+                }
+            }
+            
+            // Upload photo
+            async function uploadPhoto(file) {
+                try {
                     const fd = new FormData();
                     fd.append('file', file);
-                    fd.append('sequence', index);
+                    fd.append('sequence', uploadedPhotos.length);
+                    fd.append('description', `Foto aktivitas - ${new Date().toLocaleTimeString()}`);
                     
-                    fetch(`/api/activity-photos/${activityId}/upload`, {
+                    const response = await fetch(`/api/activity-photos/${activityId}/upload`, {
                         method: 'POST',
                         headers: {
                             'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
                             'Accept': 'application/json'
                         },
                         body: fd
-                    })
-                    .then(r => r.json())
-                    .then(data => {
-                        if (data.success) {
-                            console.log('Foto berhasil diunggah:', data.photo);
-                            alert('✅ Foto berhasil diunggah');
-                        } else {
-                            console.error('Error:', data.message);
-                            alert('❌ ' + data.message);
-                        }
-                    })
-                    .catch(err => {
-                        console.error('Upload error:', err);
-                        alert('❌ Gagal mengunggah foto');
                     });
-                });
+                    
+                    const data = await response.json();
+                    
+                    if (!response.ok) {
+                        throw new Error(data.message || `Server error: ${response.status}`);
+                    }
+                    
+                    if (data.success) {
+                        uploadedPhotos.push(data.photo);
+                        displayPhoto(data.photo);
+                        updateStatus(`✅ Foto berhasil diunggah (${uploadedPhotos.length}/5)`, 'success');
+                        
+                        // Auto-clear success message after 3 seconds
+                        setTimeout(() => {
+                            if (uploadStatus.textContent.includes('✅')) {
+                                updateStatus('', 'normal');
+                            }
+                        }, 3000);
+                    } else {
+                        throw new Error(data.message || 'Upload gagal');
+                    }
+                    
+                } catch (error) {
+                    console.error('Upload error:', error);
+                    updateStatus(`❌ Gagal: ${error.message}`, 'error');
+                }
             }
+            
+            // Display photo
+            function displayPhoto(photo) {
+                const photoId = photo.id;
+                const photoUrl = photo.photo_url || `/storage/${photo.storage_path}`;
+                
+                const div = document.createElement('div');
+                div.className = 'flex items-center gap-2 p-2 bg-gray-50 rounded-lg';
+                div.innerHTML = `
+                    <img src="${photoUrl}" alt="Photo" class="w-12 h-12 rounded object-cover">
+                    <div class="flex-1">
+                        <p class="text-sm font-medium text-gray-700">${photo.photo_name || 'Foto aktivitas'}</p>
+                        <p class="text-xs text-gray-500">${new Date().toLocaleTimeString()}</p>
+                    </div>
+                    <button type="button" class="text-red-600 hover:text-red-800 font-bold px-2 py-1 text-sm" onclick="deletePhoto(${photoId})">
+                        🗑️ Hapus
+                    </button>
+                `;
+                photoList.appendChild(div);
+            }
+            
+            // Update status message
+            function updateStatus(message, type = 'normal') {
+                uploadStatus.textContent = message;
+                uploadStatus.className = 'mt-3 text-sm ';
+                if (type === 'error') {
+                    uploadStatus.className += 'text-red-600 font-semibold';
+                } else if (type === 'success') {
+                    uploadStatus.className += 'text-green-600 font-semibold';
+                } else if (type === 'loading') {
+                    uploadStatus.className += 'text-blue-600 font-semibold';
+                } else {
+                    uploadStatus.className += 'text-gray-600';
+                }
+            }
+            
+            // Load existing photos
+            await loadPhotos();
         });
+        
+        // Load photos from server
+        async function loadPhotos() {
+            try {
+                const response = await fetch(`/api/activity-photos/${activityId}`, {
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'Accept': 'application/json'
+                    }
+                });
+                
+                const data = await response.json();
+                if (data.success && data.photos) {
+                    uploadedPhotos = data.photos;
+                    const photoList = document.getElementById('photo-list');
+                    photoList.innerHTML = '';
+                    
+                    data.photos.forEach(photo => {
+                        const photoUrl = photo.photo_url || `/storage/${photo.storage_path || photo.photo_path}`;
+                        const div = document.createElement('div');
+                        div.className = 'flex items-center gap-2 p-2 bg-gray-50 rounded-lg';
+                        div.innerHTML = `
+                            <img src="${photoUrl}" alt="Photo" class="w-12 h-12 rounded object-cover">
+                            <div class="flex-1">
+                                <p class="text-sm font-medium text-gray-700">${photo.photo_name || 'Foto aktivitas'}</p>
+                                <p class="text-xs text-gray-500">${new Date(photo.created_at).toLocaleTimeString()}</p>
+                            </div>
+                            <button type="button" class="text-red-600 hover:text-red-800 font-bold px-2 py-1 text-sm" onclick="deletePhoto(${photo.id})">
+                                🗑️ Hapus
+                            </button>
+                        `;
+                        photoList.appendChild(div);
+                    });
+                }
+            } catch (err) {
+                console.error('Failed to load photos:', err);
+            }
+        }
+        
+        // Delete photo
+        async function deletePhoto(photoId) {
+            if (!confirm('Hapus foto ini?')) return;
+            
+            try {
+                const response = await fetch(`/api/activity-photos/${photoId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'Accept': 'application/json'
+                    }
+                });
+                
+                const data = await response.json();
+                if (data.success) {
+                    uploadedPhotos = uploadedPhotos.filter(p => p.id !== photoId);
+                    location.reload(); // Reload to refresh photo list
+                } else {
+                    alert('❌ Gagal menghapus foto');
+                }
+            } catch (err) {
+                console.error('Delete error:', err);
+                alert('❌ Gagal menghapus foto');
+            }
+        }
     </script>
 
 </body>
