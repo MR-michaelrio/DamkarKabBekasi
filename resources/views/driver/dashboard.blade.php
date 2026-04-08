@@ -609,6 +609,90 @@
         const activityId = {{ $activityLog->id ?? 'null' }};
         let uploadedPhotos = [];
         
+        // Load photos from server
+        async function loadPhotos() {
+            try {
+                const response = await fetch(`/api/activity-photos/${activityId}`, {
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'Accept': 'application/json'
+                    }
+                });
+                
+                if (!response.ok) {
+                    const contentType = response.headers.get('content-type');
+                    if (contentType && contentType.includes('application/json')) {
+                        const data = await response.json();
+                        throw new Error(data.message || `Load failed: ${response.status}`);
+                    } else {
+                        throw new Error(`Server error: ${response.status}`);
+                    }
+                }
+                
+                const data = await response.json();
+                if (data.success && data.photos) {
+                    uploadedPhotos = data.photos;
+                    const photoList = document.getElementById('photo-list');
+                    photoList.innerHTML = '';
+                    
+                    data.photos.forEach(photo => {
+                        const photoUrl = photo.photo_url || `/storage/${photo.storage_path || photo.photo_path}`;
+                        const div = document.createElement('div');
+                        div.className = 'flex items-center gap-2 p-2 bg-gray-50 rounded-lg';
+                        div.innerHTML = `
+                            <img src="${photoUrl}" alt="Photo" class="w-12 h-12 rounded object-cover">
+                            <div class="flex-1">
+                                <p class="text-sm font-medium text-gray-700">${photo.photo_name || 'Foto aktivitas'}</p>
+                                <p class="text-xs text-gray-500">${new Date(photo.created_at).toLocaleTimeString()}</p>
+                            </div>
+                            <button type="button" class="text-red-600 hover:text-red-800 font-bold px-2 py-1 text-sm" onclick="deletePhoto(${photo.id})">
+                                🗑️ Hapus
+                            </button>
+                        `;
+                        photoList.appendChild(div);
+                    });
+                }
+            } catch (err) {
+                console.error('Failed to load photos:', err);
+            }
+        }
+        
+        // Delete photo - GLOBAL FUNCTION
+        async function deletePhoto(photoId) {
+            if (!confirm('Hapus foto ini?')) return;
+            
+            try {
+                const response = await fetch(`/api/activity-photos/${photoId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'Accept': 'application/json'
+                    }
+                });
+                
+                if (!response.ok) {
+                    const contentType = response.headers.get('content-type');
+                    let errorMsg = `Delete failed: ${response.status}`;
+                    if (contentType && contentType.includes('application/json')) {
+                        const data = await response.json();
+                        errorMsg = data.message || errorMsg;
+                    }
+                    throw new Error(errorMsg);
+                }
+                
+                const data = await response.json();
+                if (data.success) {
+                    uploadedPhotos = uploadedPhotos.filter(p => p.id !== photoId);
+                    location.reload(); // Reload to refresh photo list
+                } else {
+                    alert('❌ ' + (data.message || 'Gagal menghapus foto'));
+                }
+            } catch (err) {
+                console.error('Delete error:', err);
+                alert('❌ Gagal menghapus foto: ' + err.message);
+            }
+        }
+        
         document.addEventListener('DOMContentLoaded', async function() {
             if (!activityId) {
                 console.error('Activity ID not found');
@@ -804,90 +888,6 @@
             // Load existing photos
             await loadPhotos();
         });
-        
-        // Load photos from server
-        async function loadPhotos() {
-            try {
-                const response = await fetch(`/api/activity-photos/${activityId}`, {
-                    headers: {
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                        'Accept': 'application/json'
-                    }
-                });
-                
-                if (!response.ok) {
-                    const contentType = response.headers.get('content-type');
-                    if (contentType && contentType.includes('application/json')) {
-                        const data = await response.json();
-                        throw new Error(data.message || `Load failed: ${response.status}`);
-                    } else {
-                        throw new Error(`Server error: ${response.status}`);
-                    }
-                }
-                
-                const data = await response.json();
-                if (data.success && data.photos) {
-                    uploadedPhotos = data.photos;
-                    const photoList = document.getElementById('photo-list');
-                    photoList.innerHTML = '';
-                    
-                    data.photos.forEach(photo => {
-                        const photoUrl = photo.photo_url || `/storage/${photo.storage_path || photo.photo_path}`;
-                        const div = document.createElement('div');
-                        div.className = 'flex items-center gap-2 p-2 bg-gray-50 rounded-lg';
-                        div.innerHTML = `
-                            <img src="${photoUrl}" alt="Photo" class="w-12 h-12 rounded object-cover">
-                            <div class="flex-1">
-                                <p class="text-sm font-medium text-gray-700">${photo.photo_name || 'Foto aktivitas'}</p>
-                                <p class="text-xs text-gray-500">${new Date(photo.created_at).toLocaleTimeString()}</p>
-                            </div>
-                            <button type="button" class="text-red-600 hover:text-red-800 font-bold px-2 py-1 text-sm" onclick="deletePhoto(${photo.id})">
-                                🗑️ Hapus
-                            </button>
-                        `;
-                        photoList.appendChild(div);
-                    });
-                }
-            } catch (err) {
-                console.error('Failed to load photos:', err);
-            }
-        }
-        
-        // Delete photo
-        async function deletePhoto(photoId) {
-            if (!confirm('Hapus foto ini?')) return;
-            
-            try {
-                const response = await fetch(`/api/activity-photos/${photoId}`, {
-                    method: 'DELETE',
-                    headers: {
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                        'Accept': 'application/json'
-                    }
-                });
-                
-                if (!response.ok) {
-                    const contentType = response.headers.get('content-type');
-                    let errorMsg = `Delete failed: ${response.status}`;
-                    if (contentType && contentType.includes('application/json')) {
-                        const data = await response.json();
-                        errorMsg = data.message || errorMsg;
-                    }
-                    throw new Error(errorMsg);
-                }
-                
-                const data = await response.json();
-                if (data.success) {
-                    uploadedPhotos = uploadedPhotos.filter(p => p.id !== photoId);
-                    location.reload(); // Reload to refresh photo list
-                } else {
-                    alert('❌ ' + (data.message || 'Gagal menghapus foto'));
-                }
-            } catch (err) {
-                console.error('Delete error:', err);
-                alert('❌ Gagal menghapus foto: ' + err.message);
-            }
-        }
     </script>
 
 </body>
