@@ -6,6 +6,7 @@ use App\Models\ActivityLog;
 use App\Models\ActivityPhoto;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Log;
 
 class ActivityPhotoController extends Controller
 {
@@ -21,7 +22,12 @@ class ActivityPhotoController extends Controller
         ]);
 
         try {
-            // Check if we've reached the max photo limit (5 photos)
+            // Ensure directory exists
+            if (!Storage::disk('public')->exists('activity-photos')) {
+                Storage::disk('public')->makeDirectory('activity-photos');
+            }
+
+            // Check if we\'ve reached the max photo limit (5 photos)
             $photoCount = $activityLog->photos()->count();
             if ($photoCount >= 5) {
                 return response()->json([
@@ -38,7 +44,11 @@ class ActivityPhotoController extends Controller
 
             // Load original image
             $sourcePath = $file->getRealPath();
-            list($width, $height, $type) = getimagesize($sourcePath);
+            $imageInfo = @getimagesize($sourcePath);
+            if (!$imageInfo) {
+                throw new \Exception("Gagal membaca informasi gambar dari file: " . $sourcePath);
+            }
+            list($width, $height, $type) = $imageInfo;
 
             // Resize if too large (Max 1200px)
             $maxDim = 1200;
@@ -57,39 +67,64 @@ class ActivityPhotoController extends Controller
 
             // Create canvas
             $imageResource = null;
-            switch ($type) {
-                case IMAGETYPE_JPEG: $imageResource = imagecreatefromjpeg($sourcePath); break;
-                case IMAGETYPE_PNG: $imageResource = imagecreatefrompng($sourcePath); break;
-                case IMAGETYPE_GIF: $imageResource = imagecreatefromgif($sourcePath); break;
-                case IMAGETYPE_WEBP: $imageResource = imagecreatefromwebp($sourcePath); break;
+            try {
+                switch ($type) {
+                    case IMAGETYPE_JPEG: $imageResource = @imagecreatefromjpeg($sourcePath); break;
+                    case IMAGETYPE_PNG: $imageResource = @imagecreatefrompng($sourcePath); break;
+                    case IMAGETYPE_GIF: $imageResource = @imagecreatefromgif($sourcePath); break;
+                    case IMAGETYPE_WEBP: $imageResource = @imagecreatefromwebp($sourcePath); break;
+                    default:
+                        Log::warning("Unsupported image type: " . $type . " for file " . $sourcePath);
+                }
+            } catch (\Throwable $e) {
+                Log::error("GD Error creating resource: " . $e->getMessage(), [
+                    'file' => $e->getFile(),
+                    'line' => $e->getLine()
+                ]);
             }
 
+            $fileSize = 0;
             if ($imageResource) {
-                $newImage = imagecreatetruecolor($newWidth, $newHeight);
-                
-                // Keep transparency for PNG
-                if ($type == IMAGETYPE_PNG || $type == IMAGETYPE_WEBP) {
-                    imagealphablending($newImage, false);
-                    imagesavealpha($newImage, true);
+                try {
+                    $newImage = imagecreatetruecolor($newWidth, $newHeight);
+                    
+                    // Keep transparency for PNG
+                    if ($type == IMAGETYPE_PNG || $type == IMAGETYPE_WEBP) {
+                        imagealphablending($newImage, false);
+                        imagesavealpha($newImage, true);
+                    }
+
+                    imagecopyresampled($newImage, $imageResource, 0, 0, 0, 0, $newWidth, $newHeight, $width, $height);
+
+                    // Save to buffer with compression (Quality 60 for ~100kb target)
+                    ob_start();
+                    $success = @imagejpeg($newImage, null, 60);
+                    $compressedData = ob_get_clean();
+
+                    if ($success && !empty($compressedData)) {
+                        // Save to Storage
+                        Storage::disk('public')->put($path, $compressedData);
+                        $fileSize = strlen($compressedData);
+                    } else {
+                        Log::warning("imagejpeg failed, falling back to original file upload");
+                        Storage::disk('public')->putFileAs('activity-photos', $file, $shortName);
+                        $fileSize = $file->getSize();
+                    }
+
+                    // Free memory
+                    imagedestroy($imageResource);
+                    imagedestroy($newImage);
+                } catch (\Throwable $e) {
+                    Log::error("GD processing failed mid-way: " . $e->getMessage(), [
+                        'file' => $e->getFile(),
+                        'line' => $e->getLine()
+                    ]);
+                    Storage::disk('public')->putFileAs('activity-photos', $file, $shortName);
+                    $fileSize = $file->getSize();
                 }
-
-                imagecopyresampled($newImage, $imageResource, 0, 0, 0, 0, $newWidth, $newHeight, $width, $height);
-
-                // Save to buffer with compression (Quality 60 for ~100kb target)
-                ob_start();
-                imagejpeg($newImage, null, 60);
-                $compressedData = ob_get_clean();
-
-                // Save to Storage
-                Storage::disk('public')->put($path, $compressedData);
-
-                // Free memory
-                imagedestroy($imageResource);
-                imagedestroy($newImage);
-
-                $fileSize = strlen($compressedData);
             } else {
                 // Fallback to original if GD fails
+                Log::warning("GD failed to load image resource, using original file upload as fallback");
                 Storage::disk('public')->putFileAs('activity-photos', $file, $shortName);
                 $fileSize = $file->getSize();
             }
@@ -114,9 +149,19 @@ class ActivityPhotoController extends Controller
             ], 201);
 
         } catch (\Exception $e) {
+            Log::error('Upload failed: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
             return response()->json([
                 'success' => false,
-                'message' => 'Gagal mengunggah foto: ' . $e->getMessage()
+                'message' => 'Gagal mengunggah foto: ' . $e->getMessage(),
+                'debug' => [
+                    'file' => basename($e->getFile()),
+                    'line' => $e->getLine()
+                ]
             ], 500);
         }
     }
@@ -158,18 +203,20 @@ class ActivityPhotoController extends Controller
     public function delete(ActivityPhoto $activityPhoto)
     {
         try {
+            $path = $activityPhoto->photo_path;
+            
             // Delete from storage
-            if ($activityPhoto->photo_path && Storage::disk('public')->exists($activityPhoto->photo_path)) {
-                Storage::disk('public')->delete($activityPhoto->photo_path);
+            if ($path && Storage::disk('public')->exists($path)) {
+                Storage::disk('public')->delete($path);
             }
 
             // Delete database record
             $deleted = $activityPhoto->delete();
             
-            \Log::info('Photo deleted', [
+            Log::info('Photo deleted', [
                 'id' => $activityPhoto->id,
                 'deleted' => $deleted,
-                'path' => $activityPhoto->photo_path
+                'path' => $path
             ]);
 
             return response()->json([
@@ -178,14 +225,20 @@ class ActivityPhotoController extends Controller
             ]);
 
         } catch (\Exception $e) {
-            \Log::error('Photo delete error', [
-                'error' => $e->getMessage(),
+            Log::error('Photo delete error: ' . $e->getMessage(), [
+                'id' => $activityPhoto->id,
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
                 'trace' => $e->getTraceAsString()
             ]);
             
             return response()->json([
                 'success' => false,
-                'message' => 'Gagal menghapus foto: ' . $e->getMessage()
+                'message' => 'Gagal menghapus foto: ' . $e->getMessage(),
+                'debug' => [
+                    'file' => basename($e->getFile()),
+                    'line' => $e->getLine()
+                ]
             ], 500);
         }
     }
@@ -209,9 +262,19 @@ class ActivityPhotoController extends Controller
             ]);
 
         } catch (\Exception $e) {
+            Log::error('Update sequence error: ' . $e->getMessage(), [
+                'id' => $activityPhoto->id,
+                'file' => $e->getFile(),
+                'line' => $e->getLine()
+            ]);
+            
             return response()->json([
                 'success' => false,
-                'message' => 'Gagal memperbarui urutan: ' . $e->getMessage()
+                'message' => 'Gagal memperbarui urutan: ' . $e->getMessage(),
+                'debug' => [
+                    'file' => basename($e->getFile()),
+                    'line' => $e->getLine()
+                ]
             ], 500);
         }
     }
