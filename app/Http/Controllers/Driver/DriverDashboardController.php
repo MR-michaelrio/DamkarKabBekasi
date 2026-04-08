@@ -482,6 +482,42 @@ class DriverDashboardController extends Controller
     }
 
     /**
+     * Selesaikan laporan secara manual oleh driver
+     */
+    public function completeReport(Request $request, Dispatch $dispatch)
+    {
+        // Security check
+        if ($dispatch->ambulance_id !== auth('ambulance')->id()) {
+            return redirect()->back()->with('error', 'Unauthorized');
+        }
+        if ($dispatch->status !== 'on_the_way_kantor_pos') {
+            return redirect()->back()->with('error', 'Status dispatch belum sampai tahap selesai.');
+        }
+        $dispatch->update([
+            'status' => 'completed',
+            'completed_at' => now(),
+        ]);
+        // Log
+        DispatchLog::create([
+            'dispatch_id' => $dispatch->id,
+            'status' => 'completed',
+            'note' => 'Laporan selesai oleh driver',
+        ]);
+        // Sync PatientRequest status if exists
+        PatientRequest::where('dispatch_id', $dispatch->id)
+            ->update(['status' => 'completed']);
+        // Free up ambulance and driver
+        $dispatch->ambulance->update([
+            'status' => 'ready',
+            'latitude' => null,
+            'longitude' => null,
+            'last_location_update' => null,
+        ]);
+        $dispatch->driver->update(['status' => 'available']);
+        return redirect()->route('driver.dashboard')->with('success', 'Laporan berhasil diselesaikan!');
+    }
+
+    /**
      * Halaman utama dispatching driver
      */
     public function dispatching(Request $request)
