@@ -168,17 +168,113 @@ class DriverDashboardController extends Controller
         ]);
     }
 
-    public function dispatching(Request $request)
+    /**
+     * Get available pending patient requests (API)
+     */
+    public function getAvailableRequests(Request $request)
     {
-        $direction = $request->get('direction', 'asc');
-        $direction = in_array($direction, ['asc', 'desc']) ? $direction : 'asc';
-
+        $limit = $request->get('limit', 5);
+        
         $requests = PatientRequest::where('status', 'pending')
-            ->orderBy('request_date', $direction)
-            ->orderBy('pickup_time', $direction)
-            ->get();
+            ->orderBy('created_at', 'asc')
+            ->limit($limit)
+            ->get()
+            ->map(fn($r) => [
+                'id' => $r->id,
+                'patient_name' => $r->patient_name,
+                'patient_condition' => $r->patient_condition,
+                'pickup_address' => $r->pickup_address,
+                'destination' => $r->destination,
+                'pickup_time' => $r->pickup_time,
+                'service_type' => $r->service_type,
+                'created_at' => $r->created_at->diffForHumans(),
+            ]);
 
-        return view('driver.dispatching.index', compact('requests', 'direction'));
+        return response()->json([
+            'success' => true,
+            'requests' => $requests,
+            'count' => $requests->count(),
+        ]);
+    }
+
+    /**
+     * Quick accept a patient request and create dispatch
+     */
+    public function quickAcceptRequest(Request $request, PatientRequest $patientRequest)
+    {
+        $request->validate([
+            'driver_id' => 'nullable|exists:drivers,id',
+        ]);
+
+        $ambulance = auth('ambulance')->user();
+
+        // Verify request is still pending
+        if ($patientRequest->status !== 'pending') {
+            return response()->json(['success' => false, 'message' => 'Request sudah ditangani'], 400);
+        }
+
+        // Get or use provided driver
+        $driverId = $request->driver_id;
+        if (!$driverId) {
+            $driver = Driver::where('status', 'available')
+                ->orWhere('status', 'available')
+                ->first();
+            
+            if (!$driver) {
+                return response()->json(['success' => false, 'message' => 'Tidak ada driver tersedia'], 400);
+            }
+            $driverId = $driver->id;
+        }
+
+        // Create dispatch
+        $dispatch = Dispatch::create([
+            'patient_name' => $patientRequest->patient_name,
+            'patient_phone' => $patientRequest->phone,
+            'patient_condition' => $patientRequest->patient_condition ?? ($patientRequest->service_type === 'jenazah' ? 'jenazah' : 'emergency'),
+            'pickup_address' => $patientRequest->pickup_address,
+            'destination' => $patientRequest->destination,
+            'driver_id' => $driverId,
+            'ambulance_id' => $ambulance->id,
+            'status' => 'on_the_way_scene',
+            'assigned_at' => now(),
+            'otw_scene_at' => now(),
+            'trip_type' => $patientRequest->trip_type ?? 'one_way',
+            'return_address' => $patientRequest->return_address,
+            'request_date' => $patientRequest->request_date,
+            'pickup_time' => $patientRequest->pickup_time,
+            'blok' => $patientRequest->blok,
+            'rt' => $patientRequest->rt,
+            'rw' => $patientRequest->rw,
+            'kelurahan' => $patientRequest->kelurahan,
+            'kecamatan' => $patientRequest->kecamatan,
+            'nomor' => $patientRequest->nomor,
+            'patient_request_id' => $patientRequest->id,
+        ]);
+
+        // Log
+        DispatchLog::create([
+            'dispatch_id' => $dispatch->id,
+            'status' => 'on_the_way_scene',
+            'note' => 'Quick accept oleh unit dari completion modal'
+        ]);
+
+        // Update statuses to on_duty
+        Driver::where('id', $driverId)->update(['status' => 'on_duty']);
+        $ambulance->update(['status' => 'on_duty']);
+
+        // Update patient request status
+        $patientRequest->update(['status' => 'dispatched']);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Request diterima! Langsung menuju TKP',
+            'dispatch' => [
+                'id' => $dispatch->id,
+                'patient_name' => $dispatch->patient_name,
+                'pickup_address' => $dispatch->pickup_address,
+                'status' => $dispatch->status,
+            ],
+        ]);
     }
 
     public function createSelfDispatch(PatientRequest $patientRequest)

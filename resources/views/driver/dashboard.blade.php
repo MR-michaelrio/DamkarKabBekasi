@@ -930,9 +930,9 @@
 
     <!-- Completion Dialog Modal -->
     <div id="completion-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-        <div class="bg-white rounded-xl shadow-xl max-w-sm w-full">
+        <div class="bg-white rounded-xl shadow-xl max-w-sm w-full max-h-[90vh] overflow-y-auto">
             <!-- Success Header -->
-            <div class="bg-gradient-to-r from-green-500 to-green-600 p-6 text-white rounded-t-xl">
+            <div class="bg-gradient-to-r from-green-500 to-green-600 p-6 text-white rounded-t-xl sticky top-0">
                 <div class="text-4xl text-center mb-2">✅</div>
                 <h2 class="text-xl font-bold text-center">Tugas Selesai!</h2>
                 <p class="text-sm text-green-100 text-center mt-1" id="completion-message">Penugasan telah diselesaikan</p>
@@ -940,7 +940,15 @@
 
             <!-- Content -->
             <div class="p-6 space-y-4">
-                <p class="text-gray-700 text-center font-medium">Apa yang ingin Anda lakukan selanjutnya?</p>
+                <p class="text-gray-700 text-center font-medium text-sm">Apa yang ingin Anda lakukan selanjutnya?</p>
+                
+                <!-- Available Requests Section (shown when loading other requests) -->
+                <div id="requests-section" class="hidden">
+                    <p class="text-xs text-gray-600 font-bold mb-3">📋 REQUEST YANG TERSEDIA:</p>
+                    <div id="available-requests-list" class="space-y-2 max-h-64 overflow-y-auto mb-4">
+                        <!-- Will be populated by JavaScript -->
+                    </div>
+                </div>
             </div>
 
             <!-- Buttons -->
@@ -1000,18 +1008,109 @@
             acceptNextBtn.innerHTML = '⏳ Memproses...';
 
             try {
-                // Redirect to available requests page
-                setTimeout(() => {
-                    window.location.href = '{{ route("driver.dispatching") }}';
-                }, 500);
+                // Fetch available requests
+                const response = await fetch('{{ route("driver.available-requests") }}?limit=5', {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                    }
+                });
+
+                const data = await response.json();
+
+                if (data.success && data.requests.length > 0) {
+                    // Show requests section
+                    document.getElementById('requests-section').classList.remove('hidden');
+                    
+                    // Populate request list
+                    const requestsList = document.getElementById('available-requests-list');
+                    requestsList.innerHTML = data.requests.map(req => `
+                        <button class="quick-accept-btn w-full text-left bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-lg p-3 transition" data-id="${req.id}">
+                            <div class="flex items-start justify-between">
+                                <div class="flex-1">
+                                    <p class="text-xs font-bold text-gray-600 uppercase">📋 ${req.patient_condition || 'Penanganan'}</p>
+                                    <p class="text-sm font-bold text-gray-800">${req.patient_name}</p>
+                                    <p class="text-xs text-gray-600 mt-1">📍 ${req.pickup_address}</p>
+                                    <p class="text-xs text-blue-600 font-bold mt-1">${req.created_at}</p>
+                                </div>
+                                <span class="text-lg ml-2">→</span>
+                            </div>
+                        </button>
+                    `).join('');
+
+                    // Change button text
+                    acceptNextBtn.innerHTML = '<span>✓ Pilih request di atas</span>';
+
+                    // Attach click handlers to request buttons
+                    document.querySelectorAll('.quick-accept-btn').forEach(btn => {
+                        btn.addEventListener('click', async (e) => {
+                            e.preventDefault();
+                            const patientRequestId = btn.getAttribute('data-id');
+                            await acceptRequest(patientRequestId);
+                        });
+                    });
+                } else {
+                    alert('⚠️ Tidak ada request yang tersedia saat ini');
+                    acceptNextBtn.disabled = false;
+                    returnBaseBtn.disabled = false;
+                    acceptNextBtn.innerHTML = '<span>📋 Ambil Request Lain</span>';
+                }
             } catch (e) {
                 console.error('Error:', e);
-                alert('Tidak dapat membuka daftar request');
+                alert('❌ Gagal memuat request: ' + e.message);
                 acceptNextBtn.disabled = false;
                 returnBaseBtn.disabled = false;
                 acceptNextBtn.innerHTML = '<span>📋 Ambil Request Lain</span>';
             }
         });
+
+        // Function to accept a specific request
+        async function acceptRequest(patientRequestId) {
+            const acceptNextBtn = document.getElementById('accept-next-btn');
+            const returnBaseBtn = document.getElementById('return-base-btn');
+            
+            acceptNextBtn.disabled = true;
+            returnBaseBtn.disabled = true;
+            acceptNextBtn.innerHTML = '<svg class="animate-spin h-5 w-5 text-white mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>';
+
+            try {
+                const response = await fetch(`{{ route("driver.quick-accept-request", "") }}/${patientRequestId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'Accept': 'application/json'
+                    }
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    // Hide modal and reload dashboard with new request
+                    document.getElementById('completion-modal').classList.add('hidden');
+                    
+                    // Show success message
+                    alert(`✅ ${data.message}\n\n${data.dispatch.patient_name}\n${data.dispatch.pickup_address}`);
+                    
+                    // Reload page to show new active dispatch
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 800);
+                } else {
+                    alert('❌  ' + (data.message || 'Gagal accept request'));
+                    acceptNextBtn.disabled = false;
+                    returnBaseBtn.disabled = false;
+                    acceptNextBtn.innerHTML = '<span>📋 Ambil Request Lain</span>';
+                }
+            } catch (e) {
+                console.error('Accept error:', e);
+                alert('❌ Error: ' + e.message);
+                acceptNextBtn.disabled = false;
+                returnBaseBtn.disabled = false;
+                acceptNextBtn.innerHTML = '<span>📋 Ambil Request Lain</span>';
+            }
+        }
 
         returnBaseBtn?.addEventListener('click', async function () {
             acceptNextBtn.disabled = true;

@@ -309,4 +309,8 @@ Route::middleware(['auth:ambulance'])->prefix('driver')->name('driver.')->group(
     // Post-completion routes
     Route::post('/dispatches/{dispatch}/accept-next', [DriverDashboardController::class, 'acceptNextRequest'])->name('dispatches.accept-next');
     Route::post('/return-to-base', [DriverDashboardController::class, 'returnToBase'])->name('return-to-base');
+    
+    // Available requests (for quick accept)
+    Route::get('/available-requests', [DriverDashboardController::class, 'getAvailableRequests'])->name('available-requests');
+    Route::post('/quick-accept-request/{patientRequest}', [DriverDashboardController::class, 'quickAcceptRequest'])->name('quick-accept-request');
 });
