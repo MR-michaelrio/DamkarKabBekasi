@@ -83,12 +83,14 @@ class ActivityPhotoService
             $relativeDir = self::STORAGE_PATH . '/' . $activityLog->id;
             $fullPath = $relativeDir . '/' . $filename;
             
+            // Create image manager
             $manager = new ImageManager(new Driver());
             $image = $manager->read($file->getRealPath());
 
-            // Image resizing - Initial downscale
-            if ($image->width() > 1000 || $image->height() > 1000) {
-                $image->scale(1000, 1000);
+            // Image resizing - Initial downscale to a more aggressive size
+            // At 800px, it's easier to hit the 100KB target while staying clear
+            if ($image->width() > 800 || $image->height() > 800) {
+                $image->scale(800, 800);
             }
 
             // Start compression loop with an even more aggressive approach
@@ -101,20 +103,31 @@ class ActivityPhotoService
             // Loop until size is under TARGET_FILE_SIZE
             // We'll be extremely aggressive to ensure 100kb
             $attempts = 0;
-            while ($currentSize > self::TARGET_FILE_SIZE && $attempts < 15) {
+            while ($currentSize > self::TARGET_FILE_SIZE && $attempts < 25) {
                 $attempts++;
                 
-                if ($quality > 15) {
-                    $quality -= 15;
+                if ($quality > 10) {
+                    $quality -= 10;
                 } else {
                     // Shrink dimensions even more if quality is already low
-                    $newWidth = (int) ($image->width() * 0.75);
-                    if ($newWidth < 200) break; // Don't make it a thumbnail
+                    $currentWidth = $image->width();
+                    $newWidth = (int) ($currentWidth * 0.7);
+                    
+                    if ($newWidth < 50) break; // Absolute limit
+                    
                     $image->scale(width: $newWidth);
                     $quality = 50; // reset local quality for new size
                 }
                 
                 $encoded = $image->toJpeg($quality);
+                $currentSize = strlen($encoded->toBinary());
+            }
+
+            // Fallback: If still too large (rare but possible with very complex noise), 
+            // force extremely low quality and small size
+            if ($currentSize > self::TARGET_FILE_SIZE) {
+                $image->scale(400, 400);
+                $encoded = $image->toJpeg(10);
                 $currentSize = strlen($encoded->toBinary());
             }
 
@@ -124,7 +137,12 @@ class ActivityPhotoService
             }
 
             // Store encoded image using toBinary() to be absolutely sure
-            Storage::disk(self::STORAGE_DISK)->put($fullPath, $encoded->toBinary());
+            // Use path directly to avoid any misunderstanding with Storage
+            $saved = Storage::disk(self::STORAGE_DISK)->put($fullPath, $encoded->toBinary());
+
+            if (!$saved) {
+                throw new Exception("Gagal menyimpan file ke storage.");
+            }
 
             // Get next sequence number
             $nextSequence = $activityLog->photos()->max('sequence') + 1;
