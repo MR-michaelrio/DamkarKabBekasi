@@ -7,6 +7,8 @@ use App\Models\ActivityPhoto;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
+use Intervention\Image\ImageManager;
+use Intervention\Image\Drivers\Gd\Driver;
 
 class ActivityPhotoController extends Controller
 {
@@ -16,7 +18,7 @@ class ActivityPhotoController extends Controller
     public function upload(Request $request, ActivityLog $activityLog)
     {
         $request->validate([
-            'file' => 'required|image|max:10240', // 10MB
+            'file' => 'required|image|max:10240', // 10MB max upload size (will be compressed to ~100KB)
             'sequence' => 'integer|min:0|max:4',
             'description' => 'string|nullable|max:500',
         ]);
@@ -36,15 +38,55 @@ class ActivityPhotoController extends Controller
                 ], 422);
             }
 
-            // Simple File Upload (No Compression)
+            // Compress image to ~100KB using Intervention Image
             $file = $request->file('file');
-            $extension = $file->getClientOriginalExtension();
-            $shortName = $this->generateShortFilename($file) . '.' . $extension;
+            $shortName = $this->generateShortFilename($file) . '.jpg';
             $path = 'activity-photos/' . $shortName;
-            
-            // Store file directly
-            Storage::disk('public')->putFileAs('activity-photos', $file, $shortName);
-            $fileSize = $file->getSize();
+
+            $targetSize = 100 * 1024; // 100KB in bytes
+
+            $manager = new ImageManager(new Driver());
+            $image = $manager->read($file->getRealPath());
+
+            // Downscale if larger than 800px on any dimension
+            if ($image->width() > 800 || $image->height() > 800) {
+                $image->scale(800, 800);
+            }
+
+            // Compression loop: reduce quality until under 100KB
+            $quality = 60;
+            $encoded = $image->toJpeg($quality);
+            $currentSize = strlen($encoded->toBinary());
+
+            $attempts = 0;
+            while ($currentSize > $targetSize && $attempts < 25) {
+                $attempts++;
+
+                if ($quality > 10) {
+                    $quality -= 10;
+                } else {
+                    // Shrink dimensions if quality is already at minimum
+                    $currentWidth = $image->width();
+                    $newWidth = (int) ($currentWidth * 0.7);
+                    if ($newWidth < 50) break;
+                    $image->scale(width: $newWidth);
+                    $quality = 50;
+                }
+
+                $encoded = $image->toJpeg($quality);
+                $currentSize = strlen($encoded->toBinary());
+            }
+
+            // Absolute fallback: force very small size
+            if ($currentSize > $targetSize) {
+                $image->scale(400, 400);
+                $encoded = $image->toJpeg(10);
+                $currentSize = strlen($encoded->toBinary());
+            }
+
+            // Save compressed image
+            Storage::disk('public')->put($path, $encoded->toBinary());
+            $fileSize = $currentSize;
             $photoUrl = Storage::disk('public')->url($path);
 
             // Create ActivityPhoto record
@@ -52,7 +94,7 @@ class ActivityPhotoController extends Controller
                 'activity_log_id' => $activityLog->id,
                 'photo_path' => $path,
                 'photo_name' => $shortName,
-                'mime_type' => $file->getMimeType(),
+                'mime_type' => 'image/jpeg',
                 'file_size' => $fileSize,
                 'description' => $request->input('description'),
                 'sequence' => $request->input('sequence', $photoCount),
