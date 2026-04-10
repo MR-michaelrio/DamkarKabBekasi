@@ -130,13 +130,17 @@ class ActivityPhotoService
         $srcHeight = $imageInfo[1];
         $mimeType  = $imageInfo['mime'];
 
-        $source = match ($mimeType) {
-            'image/jpeg', 'image/jpg' => imagecreatefromjpeg($filePath),
-            'image/png'               => imagecreatefrompng($filePath),
-            'image/webp'              => imagecreatefromwebp($filePath),
-            'image/gif'               => imagecreatefromgif($filePath),
-            default                   => imagecreatefromjpeg($filePath),
-        };
+        if ($mimeType === 'image/jpeg' || $mimeType === 'image/jpg') {
+            $source = imagecreatefromjpeg($filePath);
+        } elseif ($mimeType === 'image/png') {
+            $source = imagecreatefrompng($filePath);
+        } elseif ($mimeType === 'image/webp') {
+            $source = imagecreatefromwebp($filePath);
+        } elseif ($mimeType === 'image/gif') {
+            $source = imagecreatefromgif($filePath);
+        } else {
+            $source = imagecreatefromjpeg($filePath);
+        }
 
         if (!$source) {
             throw new Exception('Gagal memuat gambar.');
