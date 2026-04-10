@@ -6,8 +6,6 @@ use App\Models\ActivityLog;
 use App\Models\ActivityPhoto;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Http\UploadedFile;
-use Intervention\Image\ImageManager;
-use Intervention\Image\Drivers\Gd\Driver;
 use Exception;
 
 class ActivityPhotoService
@@ -78,70 +76,24 @@ class ActivityPhotoService
         }
 
         try {
-            // Generate unique filename with .jpg extension for standardized compression
-            $filename = now()->timestamp . '_' . uniqid() . '.jpg';
+            // Generate unique filename with .jpg extension
+            $filename    = now()->timestamp . '_' . uniqid() . '.jpg';
             $relativeDir = self::STORAGE_PATH . '/' . $activityLog->id;
-            $fullPath = $relativeDir . '/' . $filename;
-            
-            // Create image manager
-            $manager = new ImageManager(new Driver());
-            $image = $manager->read($file->getRealPath());
+            $fullPath    = $relativeDir . '/' . $filename;
 
-            // Image resizing - Initial downscale to a more aggressive size
-            // At 800px, it's easier to hit the 100KB target while staying clear
-            if ($image->width() > 800 || $image->height() > 800) {
-                $image->scale(800, 800);
-            }
-
-            // Start compression loop with an even more aggressive approach
-            $quality = 60;
-            $encoded = $image->toJpeg($quality);
-            
-            // Re-calculate size after each operation
-            $currentSize = strlen($encoded->toBinary());
-            
-            // Loop until size is under TARGET_FILE_SIZE
-            // We'll be extremely aggressive to ensure 100kb
-            $attempts = 0;
-            while ($currentSize > self::TARGET_FILE_SIZE && $attempts < 25) {
-                $attempts++;
-                
-                if ($quality > 10) {
-                    $quality -= 10;
-                } else {
-                    // Shrink dimensions even more if quality is already low
-                    $currentWidth = $image->width();
-                    $newWidth = (int) ($currentWidth * 0.7);
-                    
-                    if ($newWidth < 50) break; // Absolute limit
-                    
-                    $image->scale(width: $newWidth);
-                    $quality = 50; // reset local quality for new size
-                }
-                
-                $encoded = $image->toJpeg($quality);
-                $currentSize = strlen($encoded->toBinary());
-            }
-
-            // Fallback: If still too large (rare but possible with very complex noise), 
-            // force extremely low quality and small size
-            if ($currentSize > self::TARGET_FILE_SIZE) {
-                $image->scale(400, 400);
-                $encoded = $image->toJpeg(10);
-                $currentSize = strlen($encoded->toBinary());
-            }
+            // Compress to ~100KB using native PHP GD (no Intervention dependency)
+            $compressed  = $this->compressImageToTarget($file->getRealPath(), self::TARGET_FILE_SIZE);
+            $currentSize = strlen($compressed);
 
             // Ensure directory exists
             if (!Storage::disk(self::STORAGE_DISK)->exists($relativeDir)) {
                 Storage::disk(self::STORAGE_DISK)->makeDirectory($relativeDir);
             }
 
-            // Store encoded image using toBinary() to be absolutely sure
-            // Use path directly to avoid any misunderstanding with Storage
-            $saved = Storage::disk(self::STORAGE_DISK)->put($fullPath, $encoded->toBinary());
+            $saved = Storage::disk(self::STORAGE_DISK)->put($fullPath, $compressed);
 
             if (!$saved) {
-                throw new Exception("Gagal menyimpan file ke storage.");
+                throw new Exception('Gagal menyimpan file ke storage.');
             }
 
             // Get next sequence number
@@ -161,6 +113,91 @@ class ActivityPhotoService
         } catch (Exception $e) {
             throw $e;
         }
+    }
+
+    /**
+     * Compress image to target byte size using native PHP GD.
+     * Works with any PHP version that has GD enabled — no Intervention dependency.
+     */
+    private function compressImageToTarget(string $filePath, int $targetBytes = 102400): string
+    {
+        $imageInfo = getimagesize($filePath);
+        if (!$imageInfo) {
+            throw new Exception('Gagal membaca informasi gambar.');
+        }
+
+        $srcWidth  = $imageInfo[0];
+        $srcHeight = $imageInfo[1];
+        $mimeType  = $imageInfo['mime'];
+
+        $source = match ($mimeType) {
+            'image/jpeg', 'image/jpg' => imagecreatefromjpeg($filePath),
+            'image/png'               => imagecreatefrompng($filePath),
+            'image/webp'              => imagecreatefromwebp($filePath),
+            'image/gif'               => imagecreatefromgif($filePath),
+            default                   => imagecreatefromjpeg($filePath),
+        };
+
+        if (!$source) {
+            throw new Exception('Gagal memuat gambar.');
+        }
+
+        // Downscale jika lebih besar dari 800px
+        if ($srcWidth > 800 || $srcHeight > 800) {
+            $ratio     = min(800 / $srcWidth, 800 / $srcHeight);
+            $newWidth  = (int) ($srcWidth * $ratio);
+            $newHeight = (int) ($srcHeight * $ratio);
+            $resized   = imagecreatetruecolor($newWidth, $newHeight);
+            imagecopyresampled($resized, $source, 0, 0, 0, 0, $newWidth, $newHeight, $srcWidth, $srcHeight);
+            imagedestroy($source);
+            $source    = $resized;
+            $srcWidth  = $newWidth;
+            $srcHeight = $newHeight;
+        }
+
+        // Loop kompresi: kurangi quality sampai di bawah targetBytes
+        $quality = 60;
+        ob_start();
+        imagejpeg($source, null, $quality);
+        $compressed  = ob_get_clean();
+        $currentSize = strlen($compressed);
+
+        $attempts = 0;
+        while ($currentSize > $targetBytes && $attempts < 25) {
+            $attempts++;
+            if ($quality > 10) {
+                $quality -= 10;
+            } else {
+                $newWidth  = (int) ($srcWidth * 0.7);
+                $newHeight = (int) ($srcHeight * 0.7);
+                if ($newWidth < 50) break;
+                $resized = imagecreatetruecolor($newWidth, $newHeight);
+                imagecopyresampled($resized, $source, 0, 0, 0, 0, $newWidth, $newHeight, $srcWidth, $srcHeight);
+                imagedestroy($source);
+                $source    = $resized;
+                $srcWidth  = $newWidth;
+                $srcHeight = $newHeight;
+                $quality   = 50;
+            }
+            ob_start();
+            imagejpeg($source, null, $quality);
+            $compressed  = ob_get_clean();
+            $currentSize = strlen($compressed);
+        }
+
+        // Fallback absolut: paksa 400x400 @q10
+        if ($currentSize > $targetBytes) {
+            $fallback = imagecreatetruecolor(400, 400);
+            imagecopyresampled($fallback, $source, 0, 0, 0, 0, 400, 400, $srcWidth, $srcHeight);
+            imagedestroy($source);
+            $source = $fallback;
+            ob_start();
+            imagejpeg($source, null, 10);
+            $compressed = ob_get_clean();
+        }
+
+        imagedestroy($source);
+        return $compressed;
     }
 
     /**

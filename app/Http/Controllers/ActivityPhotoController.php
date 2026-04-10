@@ -7,8 +7,7 @@ use App\Models\ActivityPhoto;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
-use Intervention\Image\ImageManager;
-use Intervention\Image\Drivers\Gd\Driver;
+
 
 class ActivityPhotoController extends Controller
 {
@@ -38,56 +37,15 @@ class ActivityPhotoController extends Controller
                 ], 422);
             }
 
-            // Compress image to ~100KB using Intervention Image
+            // Compress image to ~100KB using native PHP GD
             $file = $request->file('file');
             $shortName = $this->generateShortFilename($file) . '.jpg';
             $path = 'activity-photos/' . $shortName;
 
-            $targetSize = 100 * 1024; // 100KB in bytes
-
-            $manager = new ImageManager(new Driver());
-            $image = $manager->read($file->getRealPath());
-
-            // Downscale if larger than 800px on any dimension
-            if ($image->width() > 800 || $image->height() > 800) {
-                $image->scale(800, 800);
-            }
-
-            // Compression loop: reduce quality until under 100KB
-            $quality = 60;
-            $encoded = $image->toJpeg($quality);
-            $currentSize = strlen($encoded->toBinary());
-
-            $attempts = 0;
-            while ($currentSize > $targetSize && $attempts < 25) {
-                $attempts++;
-
-                if ($quality > 10) {
-                    $quality -= 10;
-                } else {
-                    // Shrink dimensions if quality is already at minimum
-                    $currentWidth = $image->width();
-                    $newWidth = (int) ($currentWidth * 0.7);
-                    if ($newWidth < 50) break;
-                    $image->scale(width: $newWidth);
-                    $quality = 50;
-                }
-
-                $encoded = $image->toJpeg($quality);
-                $currentSize = strlen($encoded->toBinary());
-            }
-
-            // Absolute fallback: force very small size
-            if ($currentSize > $targetSize) {
-                $image->scale(400, 400);
-                $encoded = $image->toJpeg(10);
-                $currentSize = strlen($encoded->toBinary());
-            }
-
-            // Save compressed image
-            Storage::disk('public')->put($path, $encoded->toBinary());
-            $fileSize = $currentSize;
-            $photoUrl = Storage::disk('public')->url($path);
+            $compressed = $this->compressImageToTarget($file->getRealPath());
+            $fileSize   = strlen($compressed);
+            Storage::disk('public')->put($path, $compressed);
+            $photoUrl   = Storage::disk('public')->url($path);
 
             // Create ActivityPhoto record
             $photo = ActivityPhoto::create([
@@ -127,15 +85,99 @@ class ActivityPhotoController extends Controller
     /**
      * Generate a short 5-character filename
      */
-    private function generateShortFilename($file)
+    private function generateShortFilename($file): string
     {
-        // Generate random 5 character alphanumeric string
         $characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
         $name = '';
         for ($i = 0; $i < 5; $i++) {
             $name .= $characters[rand(0, strlen($characters) - 1)];
         }
         return $name;
+    }
+
+    /**
+     * Compress image to ~100KB using native PHP GD.
+     * Does not depend on any Intervention Image version.
+     */
+    private function compressImageToTarget(string $filePath, int $targetBytes = 102400): string
+    {
+        $imageInfo = getimagesize($filePath);
+        if (!$imageInfo) {
+            throw new \Exception('Gagal membaca informasi gambar.');
+        }
+
+        $srcWidth  = $imageInfo[0];
+        $srcHeight = $imageInfo[1];
+        $mimeType  = $imageInfo['mime'];
+
+        $source = match ($mimeType) {
+            'image/jpeg', 'image/jpg' => imagecreatefromjpeg($filePath),
+            'image/png'               => imagecreatefrompng($filePath),
+            'image/webp'              => imagecreatefromwebp($filePath),
+            'image/gif'               => imagecreatefromgif($filePath),
+            default                   => imagecreatefromjpeg($filePath),
+        };
+
+        if (!$source) {
+            throw new \Exception('Gagal memuat gambar.');
+        }
+
+        // Downscale if larger than 800px on any dimension
+        if ($srcWidth > 800 || $srcHeight > 800) {
+            $ratio     = min(800 / $srcWidth, 800 / $srcHeight);
+            $newWidth  = (int) ($srcWidth * $ratio);
+            $newHeight = (int) ($srcHeight * $ratio);
+            $resized   = imagecreatetruecolor($newWidth, $newHeight);
+            imagecopyresampled($resized, $source, 0, 0, 0, 0, $newWidth, $newHeight, $srcWidth, $srcHeight);
+            imagedestroy($source);
+            $source    = $resized;
+            $srcWidth  = $newWidth;
+            $srcHeight = $newHeight;
+        }
+
+        // Compression loop: reduce quality until under targetBytes
+        $quality = 60;
+        ob_start();
+        imagejpeg($source, null, $quality);
+        $compressed  = ob_get_clean();
+        $currentSize = strlen($compressed);
+
+        $attempts = 0;
+        while ($currentSize > $targetBytes && $attempts < 25) {
+            $attempts++;
+            if ($quality > 10) {
+                $quality -= 10;
+            } else {
+                $newWidth  = (int) ($srcWidth * 0.7);
+                $newHeight = (int) ($srcHeight * 0.7);
+                if ($newWidth < 50) break;
+                $resized = imagecreatetruecolor($newWidth, $newHeight);
+                imagecopyresampled($resized, $source, 0, 0, 0, 0, $newWidth, $newHeight, $srcWidth, $srcHeight);
+                imagedestroy($source);
+                $source    = $resized;
+                $srcWidth  = $newWidth;
+                $srcHeight = $newHeight;
+                $quality   = 50;
+            }
+            ob_start();
+            imagejpeg($source, null, $quality);
+            $compressed  = ob_get_clean();
+            $currentSize = strlen($compressed);
+        }
+
+        // Absolute fallback: force 400x400 @q10
+        if ($currentSize > $targetBytes) {
+            $fallback = imagecreatetruecolor(400, 400);
+            imagecopyresampled($fallback, $source, 0, 0, 0, 0, 400, 400, $srcWidth, $srcHeight);
+            imagedestroy($source);
+            $source = $fallback;
+            ob_start();
+            imagejpeg($source, null, 10);
+            $compressed = ob_get_clean();
+        }
+
+        imagedestroy($source);
+        return $compressed;
     }
 
     /**
