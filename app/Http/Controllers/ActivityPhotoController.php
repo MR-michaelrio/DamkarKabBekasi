@@ -46,9 +46,9 @@ class ActivityPhotoController extends Controller
             }
 
             // Compress image to ~100KB using native PHP GD
-            $file = $request->file('file');
+            $file      = $request->file('file');
             $shortName = $this->generateShortFilename($file) . '.jpg';
-            $path = 'activity-photos/' . $shortName;
+            $path      = 'activity-photos/' . $shortName;
 
             $compressed = $this->compressImageToTarget($file->getRealPath());
             $fileSize   = strlen($compressed);
@@ -58,40 +58,39 @@ class ActivityPhotoController extends Controller
             // Create ActivityPhoto record
             $photo = ActivityPhoto::create([
                 'activity_log_id' => $activityLog->id,
-                'photo_path' => $path,
-                'photo_name' => $shortName,
-                'mime_type' => 'image/jpeg',
-                'file_size' => $fileSize,
-                'description' => $request->input('description'),
-                'sequence' => $request->input('sequence', $photoCount),
+                'photo_path'      => $path,
+                'photo_name'      => $shortName,
+                'mime_type'       => 'image/jpeg',
+                'file_size'       => $fileSize,
+                'description'     => $request->input('description'),
+                'sequence'        => $request->input('sequence', $photoCount),
             ]);
 
             return response()->json([
                 'success' => true,
-                'photo' => array_merge($photo->toArray(), ['photo_url' => $photoUrl]),
+                'photo'   => array_merge($photo->toArray(), ['photo_url' => $photoUrl]),
                 'message' => 'Foto berhasil diunggah'
             ], 201);
 
         } catch (\Throwable $e) {
             Log::error('Upload failed: ' . $e->getMessage(), [
                 'exception_class' => get_class($e),
-                'file' => $e->getFile(),
-                'line' => $e->getLine(),
-                'trace' => substr($e->getTraceAsString(), 0, 1000),
-                'php_version' => PHP_VERSION,
-                'gd_loaded' => extension_loaded('gd'),
-                'gd_info' => function_exists('gd_info') ? gd_info() : 'N/A',
+                'file'            => $e->getFile(),
+                'line'            => $e->getLine(),
+                'trace'           => substr($e->getTraceAsString(), 0, 1000),
+                'php_version'     => PHP_VERSION,
+                'gd_loaded'       => extension_loaded('gd'),
             ]);
 
             return response()->json([
                 'success' => false,
                 'message' => 'Gagal mengunggah foto: ' . $e->getMessage(),
-                'debug' => [
+                'debug'   => [
                     'class' => get_class($e),
-                    'file' => basename($e->getFile()),
-                    'line' => $e->getLine(),
-                    'php' => PHP_VERSION,
-                    'gd' => extension_loaded('gd'),
+                    'file'  => basename($e->getFile()),
+                    'line'  => $e->getLine(),
+                    'php'   => PHP_VERSION,
+                    'gd'    => extension_loaded('gd'),
                 ]
             ], 500);
         }
@@ -112,13 +111,13 @@ class ActivityPhotoController extends Controller
 
     /**
      * Compress image to ~100KB using native PHP GD.
-     * Does not depend on any Intervention Image version.
+     * Uses temp files (NOT ob_start) to avoid conflicting with Laravel's output buffer.
      */
     private function compressImageToTarget(string $filePath, int $targetBytes = 102400): string
     {
         $imageInfo = getimagesize($filePath);
         if (!$imageInfo) {
-            throw new \Exception('Gagal membaca informasi gambar.');
+            throw new \Exception('Gagal membaca informasi gambar: ' . $filePath);
         }
 
         $srcWidth  = $imageInfo[0];
@@ -130,15 +129,17 @@ class ActivityPhotoController extends Controller
         } elseif ($mimeType === 'image/png') {
             $source = imagecreatefrompng($filePath);
         } elseif ($mimeType === 'image/webp') {
-            $source = imagecreatefromwebp($filePath);
+            $source = function_exists('imagecreatefromwebp')
+                ? imagecreatefromwebp($filePath)
+                : imagecreatefromjpeg($filePath);
         } elseif ($mimeType === 'image/gif') {
             $source = imagecreatefromgif($filePath);
         } else {
-            $source = imagecreatefromjpeg($filePath);
+            $source = @imagecreatefromjpeg($filePath);
         }
 
         if (!$source) {
-            throw new \Exception('Gagal memuat gambar.');
+            throw new \Exception('Gagal memuat gambar (mime: ' . $mimeType . ')');
         }
 
         // Downscale if larger than 800px on any dimension
@@ -154,11 +155,12 @@ class ActivityPhotoController extends Controller
             $srcHeight = $newHeight;
         }
 
-        // Compression loop: reduce quality until under targetBytes
+        // Write to temp file — avoids ob_start conflict with Laravel output buffer
+        $tmpFile = tempnam(sys_get_temp_dir(), 'gd_');
+
         $quality = 60;
-        ob_start();
-        imagejpeg($source, null, $quality);
-        $compressed  = ob_get_clean();
+        imagejpeg($source, $tmpFile, $quality);
+        $compressed  = file_get_contents($tmpFile);
         $currentSize = strlen($compressed);
 
         $attempts = 0;
@@ -169,7 +171,9 @@ class ActivityPhotoController extends Controller
             } else {
                 $newWidth  = (int) ($srcWidth * 0.7);
                 $newHeight = (int) ($srcHeight * 0.7);
-                if ($newWidth < 50) break;
+                if ($newWidth < 50) {
+                    break;
+                }
                 $resized = imagecreatetruecolor($newWidth, $newHeight);
                 imagecopyresampled($resized, $source, 0, 0, 0, 0, $newWidth, $newHeight, $srcWidth, $srcHeight);
                 imagedestroy($source);
@@ -178,9 +182,8 @@ class ActivityPhotoController extends Controller
                 $srcHeight = $newHeight;
                 $quality   = 50;
             }
-            ob_start();
-            imagejpeg($source, null, $quality);
-            $compressed  = ob_get_clean();
+            imagejpeg($source, $tmpFile, $quality);
+            $compressed  = file_get_contents($tmpFile);
             $currentSize = strlen($compressed);
         }
 
@@ -190,12 +193,13 @@ class ActivityPhotoController extends Controller
             imagecopyresampled($fallback, $source, 0, 0, 0, 0, 400, 400, $srcWidth, $srcHeight);
             imagedestroy($source);
             $source = $fallback;
-            ob_start();
-            imagejpeg($source, null, 10);
-            $compressed = ob_get_clean();
+            imagejpeg($source, $tmpFile, 10);
+            $compressed = file_get_contents($tmpFile);
         }
 
         imagedestroy($source);
+        @unlink($tmpFile);
+
         return $compressed;
     }
 
@@ -210,9 +214,9 @@ class ActivityPhotoController extends Controller
 
         return response()->json([
             'success' => true,
-            'photos' => $photos,
-            'count' => $photos->count(),
-            'max' => 5
+            'photos'  => $photos,
+            'count'   => $photos->count(),
+            'max'     => 5
         ]);
     }
 
@@ -223,41 +227,23 @@ class ActivityPhotoController extends Controller
     {
         try {
             $path = $activityPhoto->photo_path;
-            
-            // Delete from storage
+
             if ($path && Storage::disk('public')->exists($path)) {
                 Storage::disk('public')->delete($path);
             }
 
-            // Delete database record
-            $deleted = $activityPhoto->delete();
-            
-            Log::info('Photo deleted', [
-                'id' => $activityPhoto->id,
-                'deleted' => $deleted,
-                'path' => $path
-            ]);
+            $activityPhoto->delete();
 
             return response()->json([
                 'success' => true,
                 'message' => 'Foto berhasil dihapus'
             ]);
 
-        } catch (\Exception $e) {
-            Log::error('Photo delete error: ' . $e->getMessage(), [
-                'id' => $activityPhoto->id,
-                'file' => $e->getFile(),
-                'line' => $e->getLine(),
-                'trace' => $e->getTraceAsString()
-            ]);
-            
+        } catch (\Throwable $e) {
+            Log::error('Photo delete error: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
                 'message' => 'Gagal menghapus foto: ' . $e->getMessage(),
-                'debug' => [
-                    'file' => basename($e->getFile()),
-                    'line' => $e->getLine()
-                ]
             ], 500);
         }
     }
@@ -267,33 +253,23 @@ class ActivityPhotoController extends Controller
      */
     public function updateSequence(Request $request, ActivityPhoto $activityPhoto)
     {
-        $request->validate([
-            'sequence' => 'required|integer|min:0|max:4',
-        ]);
-
         try {
+            $request->validate([
+                'sequence' => 'required|integer|min:0|max:4',
+            ]);
+
             $activityPhoto->update(['sequence' => $request->input('sequence')]);
 
             return response()->json([
                 'success' => true,
-                'photo' => $activityPhoto,
+                'photo'   => $activityPhoto,
                 'message' => 'Urutan foto berhasil diperbarui'
             ]);
 
-        } catch (\Exception $e) {
-            Log::error('Update sequence error: ' . $e->getMessage(), [
-                'id' => $activityPhoto->id,
-                'file' => $e->getFile(),
-                'line' => $e->getLine()
-            ]);
-            
+        } catch (\Throwable $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Gagal memperbarui urutan: ' . $e->getMessage(),
-                'debug' => [
-                    'file' => basename($e->getFile()),
-                    'line' => $e->getLine()
-                ]
             ], 500);
         }
     }

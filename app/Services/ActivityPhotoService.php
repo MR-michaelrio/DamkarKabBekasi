@@ -159,11 +159,12 @@ class ActivityPhotoService
             $srcHeight = $newHeight;
         }
 
-        // Loop kompresi: kurangi quality sampai di bawah targetBytes
+        // Write to temp file — avoids ob_start conflict with Laravel output buffer
+        $tmpFile = tempnam(sys_get_temp_dir(), 'gd_');
+
         $quality = 60;
-        ob_start();
-        imagejpeg($source, null, $quality);
-        $compressed  = ob_get_clean();
+        imagejpeg($source, $tmpFile, $quality);
+        $compressed  = file_get_contents($tmpFile);
         $currentSize = strlen($compressed);
 
         $attempts = 0;
@@ -174,7 +175,9 @@ class ActivityPhotoService
             } else {
                 $newWidth  = (int) ($srcWidth * 0.7);
                 $newHeight = (int) ($srcHeight * 0.7);
-                if ($newWidth < 50) break;
+                if ($newWidth < 50) {
+                    break;
+                }
                 $resized = imagecreatetruecolor($newWidth, $newHeight);
                 imagecopyresampled($resized, $source, 0, 0, 0, 0, $newWidth, $newHeight, $srcWidth, $srcHeight);
                 imagedestroy($source);
@@ -183,9 +186,8 @@ class ActivityPhotoService
                 $srcHeight = $newHeight;
                 $quality   = 50;
             }
-            ob_start();
-            imagejpeg($source, null, $quality);
-            $compressed  = ob_get_clean();
+            imagejpeg($source, $tmpFile, $quality);
+            $compressed  = file_get_contents($tmpFile);
             $currentSize = strlen($compressed);
         }
 
@@ -195,12 +197,13 @@ class ActivityPhotoService
             imagecopyresampled($fallback, $source, 0, 0, 0, 0, 400, 400, $srcWidth, $srcHeight);
             imagedestroy($source);
             $source = $fallback;
-            ob_start();
-            imagejpeg($source, null, 10);
-            $compressed = ob_get_clean();
+            imagejpeg($source, $tmpFile, 10);
+            $compressed = file_get_contents($tmpFile);
         }
 
         imagedestroy($source);
+        @unlink($tmpFile);
+
         return $compressed;
     }
 
