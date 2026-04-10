@@ -16,6 +16,19 @@ class ActivityPhotoController extends Controller
      */
     public function upload(Request $request, ActivityLog $activityLog)
     {
+        // ===== DIAGNOSTIC SEMENTARA - HAPUS SETELAH TEST =====
+        return response()->json([
+            'DIAGNOSTIC' => true,
+            'php_version' => PHP_VERSION,
+            'gd_available' => function_exists('imagejpeg'),
+            'imagejpeg' => function_exists('imagejpeg'),
+            'imagecreatefromjpeg' => function_exists('imagecreatefromjpeg'),
+            'imagecreatefrompng' => function_exists('imagecreatefrompng'),
+            'gd_info' => function_exists('gd_info') ? gd_info() : 'GD not loaded',
+            'extensions' => get_loaded_extensions(),
+        ]);
+        // ===== END DIAGNOSTIC =====
+
         // Pastikan GD extension tersedia
         if (!function_exists('imagejpeg')) {
             return response()->json([
