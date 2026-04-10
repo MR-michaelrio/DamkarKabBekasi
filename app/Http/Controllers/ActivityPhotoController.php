@@ -72,14 +72,15 @@ class ActivityPhotoController extends Controller
                 'message' => 'Foto berhasil diunggah'
             ], 201);
 
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             Log::error('Upload failed: ' . $e->getMessage(), [
                 'exception_class' => get_class($e),
                 'file' => $e->getFile(),
                 'line' => $e->getLine(),
-                'trace' => substr($e->getTraceAsString(), 0, 500),
+                'trace' => substr($e->getTraceAsString(), 0, 1000),
                 'php_version' => PHP_VERSION,
-                'gd_info' => function_exists('gd_info') ? array_keys(gd_info()) : 'N/A',
+                'gd_loaded' => extension_loaded('gd'),
+                'gd_info' => function_exists('gd_info') ? gd_info() : 'N/A',
             ]);
 
             return response()->json([
@@ -90,6 +91,7 @@ class ActivityPhotoController extends Controller
                     'file' => basename($e->getFile()),
                     'line' => $e->getLine(),
                     'php' => PHP_VERSION,
+                    'gd' => extension_loaded('gd'),
                 ]
             ], 500);
         }
