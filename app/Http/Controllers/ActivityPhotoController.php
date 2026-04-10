@@ -16,14 +16,6 @@ class ActivityPhotoController extends Controller
      */
     public function upload(Request $request, ActivityLog $activityLog)
     {
-        // Pastikan GD extension tersedia
-        if (!function_exists('imagejpeg')) {
-            return response()->json([
-                'success' => false,
-                'message' => 'PHP GD extension tidak tersedia di server ini.'
-            ], 500);
-        }
-
         try {
             $request->validate([
                 'file' => 'required|image|max:10240',
@@ -45,22 +37,21 @@ class ActivityPhotoController extends Controller
                 ], 422);
             }
 
-            // Compress image to ~100KB using native PHP GD
             $file      = $request->file('file');
-            $shortName = $this->generateShortFilename($file) . '.jpg';
+            $extension = $file->getClientOriginalExtension() ?: 'jpg';
+            $shortName = $this->generateShortFilename($file) . '.' . $extension;
             $path      = 'activity-photos/' . $shortName;
 
-            $compressed = $this->compressImageToTarget($file->getRealPath());
-            $fileSize   = strlen($compressed);
-            Storage::disk('public')->put($path, $compressed);
-            $photoUrl   = Storage::disk('public')->url($path);
+            Storage::disk('public')->put($path, file_get_contents($file->getRealPath()));
+            $fileSize = $file->getSize();
+            $photoUrl = Storage::disk('public')->url($path);
 
             // Create ActivityPhoto record
             $photo = ActivityPhoto::create([
                 'activity_log_id' => $activityLog->id,
                 'photo_path'      => $path,
                 'photo_name'      => $shortName,
-                'mime_type'       => 'image/jpeg',
+                'mime_type'       => $file->getMimeType(),
                 'file_size'       => $fileSize,
                 'description'     => $request->input('description'),
                 'sequence'        => $request->input('sequence', $photoCount),
@@ -77,21 +68,11 @@ class ActivityPhotoController extends Controller
                 'exception_class' => get_class($e),
                 'file'            => $e->getFile(),
                 'line'            => $e->getLine(),
-                'trace'           => substr($e->getTraceAsString(), 0, 1000),
-                'php_version'     => PHP_VERSION,
-                'gd_loaded'       => extension_loaded('gd'),
             ]);
 
             return response()->json([
                 'success' => false,
                 'message' => 'Gagal mengunggah foto: ' . $e->getMessage(),
-                'debug'   => [
-                    'class' => get_class($e),
-                    'file'  => basename($e->getFile()),
-                    'line'  => $e->getLine(),
-                    'php'   => PHP_VERSION,
-                    'gd'    => extension_loaded('gd'),
-                ]
             ], 500);
         }
     }
@@ -107,100 +88,6 @@ class ActivityPhotoController extends Controller
             $name .= $characters[rand(0, strlen($characters) - 1)];
         }
         return $name;
-    }
-
-    /**
-     * Compress image to ~100KB using native PHP GD.
-     * Uses temp files (NOT ob_start) to avoid conflicting with Laravel's output buffer.
-     */
-    private function compressImageToTarget(string $filePath, int $targetBytes = 102400): string
-    {
-        $imageInfo = getimagesize($filePath);
-        if (!$imageInfo) {
-            throw new \Exception('Gagal membaca informasi gambar: ' . $filePath);
-        }
-
-        $srcWidth  = $imageInfo[0];
-        $srcHeight = $imageInfo[1];
-        $mimeType  = $imageInfo['mime'];
-
-        if ($mimeType === 'image/jpeg' || $mimeType === 'image/jpg') {
-            $source = imagecreatefromjpeg($filePath);
-        } elseif ($mimeType === 'image/png') {
-            $source = imagecreatefrompng($filePath);
-        } elseif ($mimeType === 'image/webp') {
-            $source = function_exists('imagecreatefromwebp')
-                ? imagecreatefromwebp($filePath)
-                : imagecreatefromjpeg($filePath);
-        } elseif ($mimeType === 'image/gif') {
-            $source = imagecreatefromgif($filePath);
-        } else {
-            $source = @imagecreatefromjpeg($filePath);
-        }
-
-        if (!$source) {
-            throw new \Exception('Gagal memuat gambar (mime: ' . $mimeType . ')');
-        }
-
-        // Downscale if larger than 800px on any dimension
-        if ($srcWidth > 800 || $srcHeight > 800) {
-            $ratio     = min(800 / $srcWidth, 800 / $srcHeight);
-            $newWidth  = (int) ($srcWidth * $ratio);
-            $newHeight = (int) ($srcHeight * $ratio);
-            $resized   = imagecreatetruecolor($newWidth, $newHeight);
-            imagecopyresampled($resized, $source, 0, 0, 0, 0, $newWidth, $newHeight, $srcWidth, $srcHeight);
-            imagedestroy($source);
-            $source    = $resized;
-            $srcWidth  = $newWidth;
-            $srcHeight = $newHeight;
-        }
-
-        // Write to temp file — avoids ob_start conflict with Laravel output buffer
-        $tmpFile = tempnam(sys_get_temp_dir(), 'gd_');
-
-        $quality = 60;
-        imagejpeg($source, $tmpFile, $quality);
-        $compressed  = file_get_contents($tmpFile);
-        $currentSize = strlen($compressed);
-
-        $attempts = 0;
-        while ($currentSize > $targetBytes && $attempts < 25) {
-            $attempts++;
-            if ($quality > 10) {
-                $quality -= 10;
-            } else {
-                $newWidth  = (int) ($srcWidth * 0.7);
-                $newHeight = (int) ($srcHeight * 0.7);
-                if ($newWidth < 50) {
-                    break;
-                }
-                $resized = imagecreatetruecolor($newWidth, $newHeight);
-                imagecopyresampled($resized, $source, 0, 0, 0, 0, $newWidth, $newHeight, $srcWidth, $srcHeight);
-                imagedestroy($source);
-                $source    = $resized;
-                $srcWidth  = $newWidth;
-                $srcHeight = $newHeight;
-                $quality   = 50;
-            }
-            imagejpeg($source, $tmpFile, $quality);
-            $compressed  = file_get_contents($tmpFile);
-            $currentSize = strlen($compressed);
-        }
-
-        // Absolute fallback: force 400x400 @q10
-        if ($currentSize > $targetBytes) {
-            $fallback = imagecreatetruecolor(400, 400);
-            imagecopyresampled($fallback, $source, 0, 0, 0, 0, 400, 400, $srcWidth, $srcHeight);
-            imagedestroy($source);
-            $source = $fallback;
-            imagejpeg($source, $tmpFile, 10);
-            $compressed = file_get_contents($tmpFile);
-        }
-
-        imagedestroy($source);
-        @unlink($tmpFile);
-
-        return $compressed;
     }
 
     /**

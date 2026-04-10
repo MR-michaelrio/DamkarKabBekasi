@@ -11,10 +11,6 @@ use Exception;
 class ActivityPhotoService
 {
     /**
-     * Target file size in bytes (100KB)
-     */
-    private const TARGET_FILE_SIZE = 100 * 1024;
-    /**
      * Maximum number of photos allowed per activity
      */
     private const MAX_PHOTOS = 5;
@@ -81,16 +77,14 @@ class ActivityPhotoService
             $relativeDir = self::STORAGE_PATH . '/' . $activityLog->id;
             $fullPath    = $relativeDir . '/' . $filename;
 
-            // Compress to ~100KB using native PHP GD (no Intervention dependency)
-            $compressed  = $this->compressImageToTarget($file->getRealPath(), self::TARGET_FILE_SIZE);
-            $currentSize = strlen($compressed);
+            $currentSize = $file->getSize();
 
             // Ensure directory exists
             if (!Storage::disk(self::STORAGE_DISK)->exists($relativeDir)) {
                 Storage::disk(self::STORAGE_DISK)->makeDirectory($relativeDir);
             }
 
-            $saved = Storage::disk(self::STORAGE_DISK)->put($fullPath, $compressed);
+            $saved = Storage::disk(self::STORAGE_DISK)->put($fullPath, file_get_contents($file->getRealPath()));
 
             if (!$saved) {
                 throw new Exception('Gagal menyimpan file ke storage.');
@@ -103,7 +97,7 @@ class ActivityPhotoService
             $photo = $activityLog->photos()->create([
                 'photo_path' => $fullPath,
                 'photo_name' => $file->getClientOriginalName(),
-                'mime_type' => 'image/jpeg',
+                'mime_type' => $file->getMimeType(),
                 'file_size' => $currentSize,
                 'description' => $description,
                 'sequence' => $nextSequence,
@@ -113,98 +107,6 @@ class ActivityPhotoService
         } catch (Exception $e) {
             throw $e;
         }
-    }
-
-    /**
-     * Compress image to target byte size using native PHP GD.
-     * Works with any PHP version that has GD enabled — no Intervention dependency.
-     */
-    private function compressImageToTarget(string $filePath, int $targetBytes = 102400): string
-    {
-        $imageInfo = getimagesize($filePath);
-        if (!$imageInfo) {
-            throw new Exception('Gagal membaca informasi gambar.');
-        }
-
-        $srcWidth  = $imageInfo[0];
-        $srcHeight = $imageInfo[1];
-        $mimeType  = $imageInfo['mime'];
-
-        if ($mimeType === 'image/jpeg' || $mimeType === 'image/jpg') {
-            $source = imagecreatefromjpeg($filePath);
-        } elseif ($mimeType === 'image/png') {
-            $source = imagecreatefrompng($filePath);
-        } elseif ($mimeType === 'image/webp') {
-            $source = imagecreatefromwebp($filePath);
-        } elseif ($mimeType === 'image/gif') {
-            $source = imagecreatefromgif($filePath);
-        } else {
-            $source = imagecreatefromjpeg($filePath);
-        }
-
-        if (!$source) {
-            throw new Exception('Gagal memuat gambar.');
-        }
-
-        // Downscale jika lebih besar dari 800px
-        if ($srcWidth > 800 || $srcHeight > 800) {
-            $ratio     = min(800 / $srcWidth, 800 / $srcHeight);
-            $newWidth  = (int) ($srcWidth * $ratio);
-            $newHeight = (int) ($srcHeight * $ratio);
-            $resized   = imagecreatetruecolor($newWidth, $newHeight);
-            imagecopyresampled($resized, $source, 0, 0, 0, 0, $newWidth, $newHeight, $srcWidth, $srcHeight);
-            imagedestroy($source);
-            $source    = $resized;
-            $srcWidth  = $newWidth;
-            $srcHeight = $newHeight;
-        }
-
-        // Write to temp file — avoids ob_start conflict with Laravel output buffer
-        $tmpFile = tempnam(sys_get_temp_dir(), 'gd_');
-
-        $quality = 60;
-        imagejpeg($source, $tmpFile, $quality);
-        $compressed  = file_get_contents($tmpFile);
-        $currentSize = strlen($compressed);
-
-        $attempts = 0;
-        while ($currentSize > $targetBytes && $attempts < 25) {
-            $attempts++;
-            if ($quality > 10) {
-                $quality -= 10;
-            } else {
-                $newWidth  = (int) ($srcWidth * 0.7);
-                $newHeight = (int) ($srcHeight * 0.7);
-                if ($newWidth < 50) {
-                    break;
-                }
-                $resized = imagecreatetruecolor($newWidth, $newHeight);
-                imagecopyresampled($resized, $source, 0, 0, 0, 0, $newWidth, $newHeight, $srcWidth, $srcHeight);
-                imagedestroy($source);
-                $source    = $resized;
-                $srcWidth  = $newWidth;
-                $srcHeight = $newHeight;
-                $quality   = 50;
-            }
-            imagejpeg($source, $tmpFile, $quality);
-            $compressed  = file_get_contents($tmpFile);
-            $currentSize = strlen($compressed);
-        }
-
-        // Fallback absolut: paksa 400x400 @q10
-        if ($currentSize > $targetBytes) {
-            $fallback = imagecreatetruecolor(400, 400);
-            imagecopyresampled($fallback, $source, 0, 0, 0, 0, 400, 400, $srcWidth, $srcHeight);
-            imagedestroy($source);
-            $source = $fallback;
-            imagejpeg($source, $tmpFile, 10);
-            $compressed = file_get_contents($tmpFile);
-        }
-
-        imagedestroy($source);
-        @unlink($tmpFile);
-
-        return $compressed;
     }
 
     /**
