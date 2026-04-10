@@ -39,7 +39,6 @@
     "minimum-stability": "stable",
     "prefer-stable": true,
     "require-dev": {
-        "mockery/mockery": "*",
         "pestphp/pest": "^4.4"
     }
 }
