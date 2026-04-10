@@ -16,13 +16,21 @@ class ActivityPhotoController extends Controller
      */
     public function upload(Request $request, ActivityLog $activityLog)
     {
-        $request->validate([
-            'file' => 'required|image|max:10240', // 10MB max upload size (will be compressed to ~100KB)
-            'sequence' => 'integer|min:0|max:4',
-            'description' => 'string|nullable|max:500',
-        ]);
+        // Pastikan GD extension tersedia
+        if (!function_exists('imagejpeg')) {
+            return response()->json([
+                'success' => false,
+                'message' => 'PHP GD extension tidak tersedia di server ini.'
+            ], 500);
+        }
 
         try {
+            $request->validate([
+                'file' => 'required|image|max:10240',
+                'sequence' => 'integer|min:0|max:4',
+                'description' => 'string|nullable|max:500',
+            ]);
+
             // Ensure directory exists
             if (!Storage::disk('public')->exists('activity-photos')) {
                 Storage::disk('public')->makeDirectory('activity-photos');
@@ -66,17 +74,22 @@ class ActivityPhotoController extends Controller
 
         } catch (\Exception $e) {
             Log::error('Upload failed: ' . $e->getMessage(), [
+                'exception_class' => get_class($e),
                 'file' => $e->getFile(),
                 'line' => $e->getLine(),
-                'trace' => $e->getTraceAsString()
+                'trace' => substr($e->getTraceAsString(), 0, 500),
+                'php_version' => PHP_VERSION,
+                'gd_info' => function_exists('gd_info') ? array_keys(gd_info()) : 'N/A',
             ]);
 
             return response()->json([
                 'success' => false,
                 'message' => 'Gagal mengunggah foto: ' . $e->getMessage(),
                 'debug' => [
+                    'class' => get_class($e),
                     'file' => basename($e->getFile()),
-                    'line' => $e->getLine()
+                    'line' => $e->getLine(),
+                    'php' => PHP_VERSION,
                 ]
             ], 500);
         }
