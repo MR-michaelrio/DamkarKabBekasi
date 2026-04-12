@@ -604,7 +604,7 @@ if ($kecamatan && $kecamatan !== '-') {
      HALAMAN 3 — DOKUMENTASI FOTO LAPANGAN
 ══════════════════════════════════════════════════════════ --}}
 
-@include('pdf.partials.kop', ['logoPath' => $logoPath])
+@include('admin.reports.kop', ['logoPath' => $logoPath])
 
 <p class="foto-title">DOKUMENTASI FOTO LAPANGAN</p>
 
@@ -617,7 +617,7 @@ if ($kecamatan && $kecamatan !== '-') {
     @foreach($chunks as $chunkIdx => $chunk)
         @if($chunkIdx > 0)
             <div class="pagebreak"></div>
-            @include('pdf.partials.kop', ['logoPath' => $logoPath])
+            @include('admin.reports.kop', ['logoPath' => $logoPath])
             <p class="foto-title">DOKUMENTASI FOTO LAPANGAN <span style="font-size:10pt;">(Lanjutan)</span></p>
         @endif
 
@@ -659,7 +659,7 @@ if ($kecamatan && $kecamatan !== '-') {
      HALAMAN 4 — UNIT ARMADA YANG DITUGASKAN
 ══════════════════════════════════════════════════════════ --}}
 
-@include('pdf.partials.kop', ['logoPath' => $logoPath])
+@include('admin.reports.kop', ['logoPath' => $logoPath])
 
 <p class="armada-title">UNIT ARMADA YANG DITUGASKAN</p>
 
