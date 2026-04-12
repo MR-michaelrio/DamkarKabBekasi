@@ -30,24 +30,24 @@
             padding: 0;
         }
         .kop-logo {
-            width: 72px;
+            width: 90px;
             text-align: center;
         }
         .kop-logo img {
-            width: 68px;
-            height: 68px;
+            width: 85px;
+            height: 85px;
         }
         .kop-text {
             text-align: center;
             padding: 0 6px;
         }
-        .kop-text .t1 { font-size: 10pt; font-weight: normal; }
-        .kop-text .t2 { font-size: 18pt; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px; }
-        .kop-text .t3 { font-size: 8.5pt; margin-top: 2px; }
-        .kop-text .t4 { font-size: 9pt; font-weight: bold; letter-spacing: 5px; margin-top: 3px; }
-        .kop-spacer { width: 72px; }
+        .kop-text .t1 { font-size: 11pt; font-weight: bold; }
+        .kop-text .t2 { font-size: 22pt; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px; }
+        .kop-text .t3 { font-size: 8.5pt; margin-top: 1px; }
+        .kop-text .t4 { font-size: 10pt; font-weight: bold; letter-spacing: 6px; margin-top: 3px; }
+        .kop-spacer { width: 90px; }
 
-        .line-thick { border-top: 3px solid #000; margin-top: 6px; }
+        .line-thick { border-top: 4px solid #000; margin-top: 6px; }
         .line-thin  { border-top: 1px solid #000; margin-top: 2px; }
 
         /* ════════════════════════════════
