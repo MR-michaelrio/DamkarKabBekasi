@@ -89,7 +89,7 @@
 use Carbon\Carbon;
 Carbon::setLocale('id');
 
-$logoPath = 'file://' . public_path('logo-damkar.png');
+$logoPath = 'file://' . public_path('dinas-logo.jpg');
 
 // ── Parse dates & times ──────────────────────────────────────────
 $reqDate = $incident['request_date']
