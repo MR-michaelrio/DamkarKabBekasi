@@ -221,27 +221,70 @@
                 <span class="text-2xl">📸</span>
                 <h2 class="font-bold text-lg">Laporan Foto Kegiatan</h2>
             </div>
-            
-            <!-- Activity Photo Uploader -->
+
             <div id="photo-uploader-container">
                 <!-- Action Buttons -->
                 <div class="flex gap-2 mb-4">
-                    <button id="camera-btn" type="button" class="flex-1 bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg transition flex items-center justify-center gap-2">
+                    <button id="camera-btn" type="button"
+                        class="flex-1 bg-blue-500 hover:bg-blue-600 active:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg transition flex items-center justify-center gap-2">
                         📷 Ambil Foto
                     </button>
-                    <button id="gallery-btn" type="button" class="flex-1 bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg transition flex items-center justify-center gap-2">
-                        🖼️ Pilih dari Galeri
+                    <button id="gallery-btn" type="button"
+                        class="flex-1 bg-green-500 hover:bg-green-600 active:bg-green-700 text-white font-bold py-3 px-4 rounded-lg transition flex items-center justify-center gap-2">
+                        🖼️ Dari Galeri
                     </button>
                 </div>
-                
-                <!-- File Input (Hidden) -->
-                <input type="file" id="photo-input" accept="image/*" multiple hidden>
+
+                <!-- Hidden File Inputs -->
+                <!-- camera: pakai kamera belakang langsung -->
                 <input type="file" id="camera-input" accept="image/*" capture="environment" hidden>
-                
-                <!-- Photo Preview Area -->
+                <!-- gallery: pilih dari galeri, tanpa capture -->
+                <input type="file" id="gallery-input" accept="image/*" hidden>
+
+                <!-- Pending Photo Preview (muncul setelah pilih foto, sebelum upload) -->
+                <div id="pending-photo-section" class="hidden bg-gray-50 rounded-xl p-3 mb-4 border border-gray-200">
+                    <div class="flex gap-3 items-start">
+                        <!-- Thumbnail Preview -->
+                        <div class="flex-shrink-0">
+                            <img id="preview-thumbnail" src="" alt="Preview"
+                                class="w-20 h-20 rounded-lg object-cover border-2 border-gray-300 shadow-sm">
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <!-- Ukuran file -->
+                            <div class="text-xs text-gray-500 mb-0.5">
+                                <span class="font-semibold text-gray-700">Ukuran asli:</span>
+                                <span id="original-size" class="ml-1">-</span>
+                            </div>
+                            <div class="text-xs text-gray-500 mb-2">
+                                <span class="font-semibold text-gray-700">Setelah kompresi:</span>
+                                <span id="compressed-size" class="ml-1">-</span>
+                            </div>
+                            <!-- Status Badge -->
+                            <span id="status-badge" class="hidden items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold"></span>
+                        </div>
+                    </div>
+
+                    <!-- Progress Bar Kompresi -->
+                    <div id="progress-container" class="hidden mt-3">
+                        <div class="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
+                            <div id="progress-bar"
+                                class="bg-yellow-400 h-2 rounded-full transition-all duration-200"
+                                style="width: 0%"></div>
+                        </div>
+                        <p class="text-xs text-yellow-700 mt-1 font-medium">Mengompres foto...</p>
+                    </div>
+
+                    <!-- Tombol Upload (aktif hanya setelah kompresi selesai) -->
+                    <button id="upload-btn" type="button" disabled
+                        class="mt-3 w-full bg-gray-300 text-gray-400 font-bold py-2.5 px-4 rounded-lg transition cursor-not-allowed flex items-center justify-center gap-2 text-sm">
+                        ⬆️ Upload Foto
+                    </button>
+                </div>
+
+                <!-- Daftar Foto yang Sudah Diunggah -->
                 <div id="photo-list" class="space-y-2"></div>
-                
-                <!-- Upload Status -->
+
+                <!-- Status Notifikasi Upload -->
                 <div id="upload-status" class="mt-3 text-sm text-gray-600"></div>
             </div>
         </div>
@@ -620,314 +663,400 @@
         }
     </script>
 
-    <!-- Photo Upload Handler with Camera Support -->
+    <!-- Photo Upload Handler with Camera Support + Client-Side Compression -->
     <script>
         const activityId = {{ $activityLog->id ?? 'null' }};
         let uploadedPhotos = [];
-        
-        // Load photos from server
+
+        // ── Helpers ────────────────────────────────────────────────────────────
+
+        function formatBytes(bytes) {
+            if (bytes < 1024) return bytes + ' B';
+            if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+            return (bytes / (1024 * 1024)).toFixed(2) + ' MB';
+        }
+
+        function csrfToken() {
+            return document.querySelector('meta[name="csrf-token"]').content;
+        }
+
+        function updateStatus(message, type = 'normal') {
+            const el = document.getElementById('upload-status');
+            el.textContent = message;
+            el.className = 'mt-3 text-sm font-semibold';
+            const map = { error: 'text-red-600', success: 'text-green-600', loading: 'text-blue-600', normal: 'text-gray-600' };
+            el.classList.add(map[type] ?? 'text-gray-600');
+        }
+
+        function setStatusBadge(state) {
+            const badge = document.getElementById('status-badge');
+            badge.className = 'inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold';
+            if (state === 'compressing') {
+                badge.classList.add('bg-yellow-100', 'text-yellow-700');
+                badge.textContent = '⏳ Mengompres...';
+            } else if (state === 'ready') {
+                badge.classList.add('bg-green-100', 'text-green-700');
+                badge.textContent = '✅ Siap upload';
+            } else if (state === 'failed') {
+                badge.classList.add('bg-red-100', 'text-red-700');
+                badge.textContent = '❌ Gagal';
+            }
+            badge.classList.remove('hidden');
+        }
+
+        function setProgress(percent) {
+            const container = document.getElementById('progress-container');
+            const bar = document.getElementById('progress-bar');
+            container.classList.toggle('hidden', percent === null);
+            if (percent !== null) bar.style.width = percent + '%';
+        }
+
+        // ── Client-Side Compression (Canvas API) ───────────────────────────────
+
+        /**
+         * Kompres gambar ke ≤ 100 KB menggunakan Canvas.
+         * - Resize ke max 1280×1280 (jaga aspect ratio)
+         * - Mulai kualitas 0.9, turun 0.05 tiap iterasi
+         * @param {File} file
+         * @returns {Promise<{blob: Blob, dataUrl: string, originalSize: number, compressedSize: number}>}
+         */
+        async function compressImage(file) {
+            const MAX_SIDE  = 1280;
+            const MAX_BYTES = 100 * 1024; // 100 KB
+            const MIN_QUALITY = 0.1;
+
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onerror = () => reject(new Error('Gagal membaca file'));
+                reader.onload = (e) => {
+                    const img = new Image();
+                    img.onerror = () => reject(new Error('Gagal memuat gambar'));
+                    img.onload = () => {
+                        // Hitung dimensi baru
+                        let { width, height } = img;
+                        if (width > MAX_SIDE || height > MAX_SIDE) {
+                            const ratio = Math.min(MAX_SIDE / width, MAX_SIDE / height);
+                            width  = Math.round(width  * ratio);
+                            height = Math.round(height * ratio);
+                        }
+
+                        const canvas  = document.createElement('canvas');
+                        canvas.width  = width;
+                        canvas.height = height;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, width, height);
+
+                        const originalSize = file.size;
+                        let quality = 0.9;
+                        let blob, dataUrl;
+
+                        // Progress step: 20% → 90% selama loop kompresi
+                        let step = 0;
+                        const maxSteps = Math.ceil((quality - MIN_QUALITY) / 0.05) + 1;
+
+                        const tryCompress = () => {
+                            dataUrl = canvas.toDataURL('image/jpeg', quality);
+
+                            // Estimasi ukuran dari data URL (base64 → bytes)
+                            const base64 = dataUrl.split(',')[1];
+                            const byteLen = Math.ceil((base64.length * 3) / 4);
+
+                            // Update progress bar
+                            const pct = 20 + Math.round((step / maxSteps) * 70);
+                            setProgress(Math.min(pct, 90));
+                            step++;
+
+                            if (byteLen <= MAX_BYTES || quality <= MIN_QUALITY) {
+                                // Konversi ke Blob
+                                canvas.toBlob((b) => {
+                                    if (!b) { reject(new Error('Gagal konversi canvas ke Blob')); return; }
+                                    resolve({ blob: b, dataUrl, originalSize, compressedSize: b.size });
+                                }, 'image/jpeg', quality);
+                            } else {
+                                quality = Math.max(MIN_QUALITY, quality - 0.05);
+                                // Jalankan iterasi berikutnya di microtask agar UI bisa update
+                                setTimeout(tryCompress, 0);
+                            }
+                        };
+
+                        setProgress(20);
+                        setTimeout(tryCompress, 0);
+                    };
+                    img.src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
+        // ── State yang menyimpan blob hasil kompresi (pending upload) ───────────
+        let pendingBlob = null;
+
+        async function handleSelectedFile(file) {
+            if (!file || !file.type.startsWith('image/')) return;
+
+            if (uploadedPhotos.length >= 5) {
+                updateStatus('❌ Sudah mencapai maksimum 5 foto', 'error');
+                return;
+            }
+
+            // Tampilkan section pending
+            const section = document.getElementById('pending-photo-section');
+            section.classList.remove('hidden');
+
+            // Reset state
+            pendingBlob = null;
+            document.getElementById('upload-btn').disabled = true;
+            document.getElementById('upload-btn').className =
+                'mt-3 w-full bg-gray-300 text-gray-400 font-bold py-2.5 px-4 rounded-lg transition cursor-not-allowed flex items-center justify-center gap-2 text-sm';
+            document.getElementById('original-size').textContent = formatBytes(file.size);
+            document.getElementById('compressed-size').textContent = '-';
+            document.getElementById('preview-thumbnail').src = '';
+            setProgress(5);
+            setStatusBadge('compressing');
+            updateStatus('', 'normal');
+
+            try {
+                const result = await compressImage(file);
+                pendingBlob = result.blob;
+
+                // Preview thumbnail
+                document.getElementById('preview-thumbnail').src = result.dataUrl;
+                document.getElementById('compressed-size').textContent = formatBytes(result.compressedSize);
+                setProgress(100);
+
+                // Setelah sebentar, sembunyikan progress bar & tampilkan badge siap
+                setTimeout(() => {
+                    setProgress(null);
+                    setStatusBadge('ready');
+                    // Aktifkan tombol upload
+                    const btn = document.getElementById('upload-btn');
+                    btn.disabled = false;
+                    btn.className =
+                        'mt-3 w-full bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-bold py-2.5 px-4 rounded-lg transition flex items-center justify-center gap-2 text-sm';
+                }, 400);
+
+            } catch (err) {
+                console.error('Compression error:', err);
+                setProgress(null);
+                setStatusBadge('failed');
+                updateStatus('❌ Gagal mengompres: ' + err.message, 'error');
+            }
+        }
+
+        // ── Upload blob hasil kompresi ke server ───────────────────────────────
+
+        async function uploadCompressedPhoto() {
+            if (!pendingBlob) return;
+
+            const btn = document.getElementById('upload-btn');
+            btn.disabled = true;
+            btn.className =
+                'mt-3 w-full bg-gray-400 text-white font-bold py-2.5 px-4 rounded-lg transition cursor-not-allowed flex items-center justify-center gap-2 text-sm';
+            btn.textContent = '⏳ Mengunggah...';
+            updateStatus('⏳ Mengunggah...', 'loading');
+
+            try {
+                const shortName = (Math.random().toString(36).substring(2, 7)).toUpperCase() + '.jpg';
+                const file = new File([pendingBlob], shortName, { type: 'image/jpeg' });
+
+                const fd = new FormData();
+                fd.append('file', file);
+                fd.append('sequence', uploadedPhotos.length);
+                fd.append('description', `Foto aktivitas - ${new Date().toLocaleTimeString()}`);
+
+                const response = await fetch(`/api/activity-photos/${activityId}/upload`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': csrfToken(),
+                        'Accept': 'application/json'
+                    },
+                    body: fd
+                });
+
+                if (!response.ok) {
+                    const ct = response.headers.get('content-type') || '';
+                    let msg = `Server error: ${response.status}`;
+                    if (ct.includes('application/json')) {
+                        const d = await response.json();
+                        msg = d.message || msg;
+                    } else {
+                        const txt = await response.text();
+                        console.error('Non-JSON response:', txt.substring(0, 300));
+                        msg = `Server error (${response.status}): lihat console`;
+                    }
+                    throw new Error(msg);
+                }
+
+                const data = await response.json();
+                if (!data.success) throw new Error(data.message || 'Upload gagal');
+
+                // Sukses
+                uploadedPhotos.push(data.photo);
+                displayUploadedPhoto(data.photo);
+                pendingBlob = null;
+
+                document.getElementById('pending-photo-section').classList.add('hidden');
+                updateStatus(`✅ Foto berhasil diunggah (${uploadedPhotos.length}/5)`, 'success');
+                setTimeout(() => {
+                    const el = document.getElementById('upload-status');
+                    if (el.textContent.includes('✅')) updateStatus('', 'normal');
+                }, 3000);
+
+            } catch (err) {
+                console.error('Upload error:', err);
+                setStatusBadge('failed');
+                btn.textContent = '⬆️ Upload Foto';
+                btn.disabled = false;
+                btn.className =
+                    'mt-3 w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 px-4 rounded-lg transition flex items-center justify-center gap-2 text-sm';
+                updateStatus('❌ Gagal upload: ' + err.message, 'error');
+            }
+        }
+
+        // ── Render foto yang sudah diunggah ─────────────────────────────────────
+
+        function displayUploadedPhoto(photo) {
+            const photoId  = photo.id;
+            const photoUrl = photo.photo_url || `/storage/${photo.storage_path}`;
+            const list     = document.getElementById('photo-list');
+            const div      = document.createElement('div');
+            div.id         = `photo-item-${photoId}`;
+            div.className  = 'flex items-center gap-3 p-2 bg-gray-50 rounded-xl border border-gray-100';
+            div.innerHTML  = `
+                <img src="${photoUrl}" alt="Foto" class="w-14 h-14 rounded-lg object-cover flex-shrink-0 border border-gray-200">
+                <div class="flex-1 min-w-0">
+                    <p class="text-sm font-semibold text-gray-700 truncate">${photo.photo_name || 'Foto aktivitas'}</p>
+                    <p class="text-xs text-gray-400">${new Date(photo.created_at || Date.now()).toLocaleTimeString('id-ID')}</p>
+                </div>
+                <button type="button"
+                    class="flex-shrink-0 text-red-500 hover:text-red-700 font-bold p-1 rounded"
+                    onclick="deletePhoto(${photoId})">
+                    🗑️
+                </button>
+            `;
+            list.appendChild(div);
+        }
+
+        // ── Load foto dari server ───────────────────────────────────────────────
+
         async function loadPhotos() {
+            if (!activityId) return;
             try {
                 const response = await fetch(`/api/activity-photos/${activityId}`, {
-                    headers: {
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                        'Accept': 'application/json'
-                    }
+                    headers: { 'X-CSRF-TOKEN': csrfToken(), 'Accept': 'application/json' }
                 });
-                
-                if (!response.ok) {
-                    const contentType = response.headers.get('content-type');
-                    if (contentType && contentType.includes('application/json')) {
-                        const data = await response.json();
-                        throw new Error(data.message || `Load failed: ${response.status}`);
-                    } else {
-                        throw new Error(`Server error: ${response.status}`);
-                    }
-                }
-                
+                if (!response.ok) throw new Error(`Load failed: ${response.status}`);
                 const data = await response.json();
                 if (data.success && data.photos) {
                     uploadedPhotos = data.photos;
-                    const photoList = document.getElementById('photo-list');
-                    photoList.innerHTML = '';
-                    
-                    data.photos.forEach(photo => {
-                        const photoUrl = photo.photo_url || `/storage/${photo.storage_path || photo.photo_path}`;
-                        const div = document.createElement('div');
-                        div.className = 'flex items-center gap-2 p-2 bg-gray-50 rounded-lg';
-                        div.innerHTML = `
-                            <img src="${photoUrl}" alt="Photo" class="w-12 h-12 rounded object-cover">
-                            <div class="flex-1">
-                                <p class="text-sm font-medium text-gray-700">${photo.photo_name || 'Foto aktivitas'}</p>
-                                <p class="text-xs text-gray-500">${new Date(photo.created_at).toLocaleTimeString()}</p>
-                            </div>
-                            <button type="button" class="text-red-600 hover:text-red-800 font-bold px-2 py-1 text-sm" onclick="deletePhoto(${photo.id})">
-                                🗑️ Hapus
-                            </button>
-                        `;
-                        photoList.appendChild(div);
-                    });
+                    const list = document.getElementById('photo-list');
+                    list.innerHTML = '';
+                    data.photos.forEach(displayUploadedPhoto);
                 }
             } catch (err) {
                 console.error('Failed to load photos:', err);
             }
         }
-        
-        // Delete photo - GLOBAL FUNCTION
+
+        // ── Hapus foto ──────────────────────────────────────────────────────────
+
         async function deletePhoto(photoId) {
-            console.log('deletePhoto called with ID:', photoId);
             if (!confirm('Hapus foto ini?')) return;
-            
             try {
-                console.log('Sending DELETE request to /api/activity-photos/' + photoId);
-                
-                const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
-                console.log('CSRF Token:', csrfToken ? 'Present' : 'Missing');
-                
                 const response = await fetch(`/api/activity-photos/${photoId}`, {
                     method: 'DELETE',
-                    headers: {
-                        'X-CSRF-TOKEN': csrfToken,
-                        'Accept': 'application/json'
-                    }
+                    headers: { 'X-CSRF-TOKEN': csrfToken(), 'Accept': 'application/json' }
                 });
-                
-                console.log('Response status:', response.status);
-                console.log('Response headers:', {
-                    contentType: response.headers.get('content-type')
-                });
-                
+
                 if (!response.ok) {
-                    const contentType = response.headers.get('content-type');
-                    let errorMsg = `Delete failed: ${response.status}`;
-                    let responseBody = '';
-                    
-                    if (contentType && contentType.includes('application/json')) {
-                        try {
-                            const data = await response.json();
-                            console.log('Error response data:', data);
-                            errorMsg = data.message || errorMsg;
-                            responseBody = JSON.stringify(data);
-                        } catch (e) {
-                            console.error('Failed to parse error JSON:', e);
-                        }
-                    } else {
-                        responseBody = await response.text();
-                        console.log('Error response text:', responseBody.substring(0, 200));
+                    const ct = response.headers.get('content-type') || '';
+                    let msg = `Delete failed: ${response.status}`;
+                    if (ct.includes('application/json')) {
+                        const d = await response.json();
+                        msg = d.message || msg;
                     }
-                    
-                    throw new Error(`${errorMsg} - Response: ${responseBody.substring(0, 100)}`);
+                    throw new Error(msg);
                 }
-                
+
                 const data = await response.json();
-                console.log('Success response:', data);
-                
                 if (data.success) {
                     uploadedPhotos = uploadedPhotos.filter(p => p.id !== photoId);
-                    alert('✅ Foto berhasil dihapus');
-                    location.reload();
+                    const item = document.getElementById(`photo-item-${photoId}`);
+                    if (item) item.remove();
+                    updateStatus(`✅ Foto dihapus (${uploadedPhotos.length}/5)`, 'success');
+                    setTimeout(() => {
+                        const el = document.getElementById('upload-status');
+                        if (el.textContent.includes('✅')) updateStatus('', 'normal');
+                    }, 3000);
                 } else {
-                    alert('❌ ' + (data.message || 'Gagal menghapus foto'));
+                    throw new Error(data.message || 'Gagal menghapus foto');
                 }
             } catch (err) {
                 console.error('Delete error:', err);
                 alert('❌ Gagal menghapus foto:\n' + err.message);
             }
         }
-        
-        document.addEventListener('DOMContentLoaded', async function() {
+
+        // ── DOMContentLoaded: pasang event listener ─────────────────────────────
+
+        document.addEventListener('DOMContentLoaded', async function () {
             if (!activityId) {
                 console.error('Activity ID not found');
                 return;
             }
-            
-            const cameraBtn = document.getElementById('camera-btn');
-            const galleryBtn = document.getElementById('gallery-btn');
-            const photoInput = document.getElementById('photo-input');
-            const cameraInput = document.getElementById('camera-input');
-            const photoList = document.getElementById('photo-list');
-            const uploadStatus = document.getElementById('upload-status');
-            
-            const isCapacitorApp = window.hasOwnProperty('Capacitor') && window.Capacitor.hasOwnProperty('Plugins');
-            
-            // Camera button
+
+            const cameraInput  = document.getElementById('camera-input');
+            const galleryInput = document.getElementById('gallery-input');
+            const cameraBtn    = document.getElementById('camera-btn');
+            const galleryBtn   = document.getElementById('gallery-btn');
+            const uploadBtn    = document.getElementById('upload-btn');
+
+            const isCapacitorApp = window.hasOwnProperty('Capacitor') &&
+                                   window.Capacitor.hasOwnProperty('Plugins');
+
+            // Tombol kamera
             cameraBtn?.addEventListener('click', async () => {
-                if (isCapacitorApp) {
+                if (isCapacitorApp && window.Capacitor.Plugins.Camera) {
                     try {
-                        await captureWithCapacitor();
+                        const { Camera } = window.Capacitor.Plugins;
+                        const image = await Camera.getPhoto({
+                            quality: 90,
+                            allowEditing: false,
+                            resultType: 'base64',
+                            source: 'CAMERA'
+                        });
+                        const res  = await fetch(`data:${image.format};base64,${image.base64String}`);
+                        const blob = await res.blob();
+                        const file = new File([blob], 'capture.jpg', { type: 'image/jpeg' });
+                        await handleSelectedFile(file);
                     } catch (err) {
-                        console.error('Capacitor error:', err);
-                        // Fallback to native input
-                        cameraInput.click();
+                        console.error('Capacitor Camera error:', err);
+                        cameraInput.click(); // fallback
                     }
                 } else {
-                    // Web fallback
                     cameraInput.click();
                 }
             });
-            
-            // Gallery button
-            galleryBtn?.addEventListener('click', () => {
-                photoInput.click();
+
+            // Tombol galeri
+            galleryBtn?.addEventListener('click', () => galleryInput.click());
+
+            // Input kamera (web fallback)
+            cameraInput?.addEventListener('change', async (e) => {
+                if (e.target.files[0]) await handleSelectedFile(e.target.files[0]);
+                e.target.value = '';
             });
-            
-            // Handle photo input
-            photoInput?.addEventListener('change', (e) => {
-                handleFiles(e.target.files);
-                e.target.value = ''; // Reset
+
+            // Input galeri
+            galleryInput?.addEventListener('change', async (e) => {
+                if (e.target.files[0]) await handleSelectedFile(e.target.files[0]);
+                e.target.value = '';
             });
-            
-            // Handle camera input
-            cameraInput?.addEventListener('change', (e) => {
-                handleFiles(e.target.files);
-                e.target.value = ''; // Reset
-            });
-            
-            // Capacitor camera capture
-            async function captureWithCapacitor() {
-                const { Camera } = window.Capacitor.Plugins;
-                const image = await Camera.getPhoto({
-                    quality: 90,
-                    allowEditing: false,
-                    resultType: 'base64',
-                    source: 'CAMERA'
-                });
-                
-                // Convert base64 to blob and upload
-                const response = await fetch(`data:${image.format};base64,${image.base64String}`);
-                const blob = await response.blob();
-                const shortName = generateShortName() + '.jpg';
-                const file = new File([blob], shortName, { type: 'image/jpeg' });
-                
-                await uploadPhoto(file);
-            }
-            
-            // Generate short 5-character filename
-            function generateShortName() {
-                const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-                let name = '';
-                for (let i = 0; i < 5; i++) {
-                    name += chars.charAt(Math.floor(Math.random() * chars.length));
-                }
-                return name;
-            }
-            
-            // Handle files
-            async function handleFiles(files) {
-                if (!files || !files.length) return;
-                
-                const maxPhotos = 5;
-                const currentCount = uploadedPhotos.length;
-                
-                if (currentCount >= maxPhotos) {
-                    updateStatus('❌ Sudah mencapai maksimum 5 foto', 'error');
-                    return;
-                }
-                
-                let allowedCount = Math.min(files.length, maxPhotos - currentCount);
-                updateStatus(`⏳ Mengunggah ${allowedCount} foto...`, 'loading');
-                
-                for (let i = 0; i < allowedCount; i++) {
-                    const file = files[i];
-                    if (file.type.startsWith('image/')) {
-                        await uploadPhoto(file);
-                    }
-                }
-            }
-            
-            // Upload photo
-            async function uploadPhoto(file) {
-                try {
-                    const fd = new FormData();
-                    fd.append('file', file);
-                    fd.append('sequence', uploadedPhotos.length);
-                    fd.append('description', `Foto aktivitas - ${new Date().toLocaleTimeString()}`);
-                    
-                    const response = await fetch(`/api/activity-photos/${activityId}/upload`, {
-                        method: 'POST',
-                        headers: {
-                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                            'Accept': 'application/json'
-                        },
-                        body: fd
-                    });
-                    
-                    // Check response status FIRST before trying to parse JSON
-                    if (!response.ok) {
-                        const contentType = response.headers.get('content-type');
-                        let errorMsg = `Server error: ${response.status}`;
-                        
-                        if (contentType && contentType.includes('application/json')) {
-                            const data = await response.json();
-                            errorMsg = data.message || errorMsg;
-                        } else {
-                            const text = await response.text();
-                            console.error('Non-JSON response:', text.substring(0, 200));
-                            errorMsg = `Server error (${response.status}): Check console`;
-                        }
-                        throw new Error(errorMsg);
-                    }
-                    
-                    // Parse successful response
-                    const data = await response.json();
-                    
-                    if (data.success) {
-                        uploadedPhotos.push(data.photo);
-                        displayPhoto(data.photo);
-                        updateStatus(`✅ Foto berhasil diunggah (${uploadedPhotos.length}/5)`, 'success');
-                        
-                        // Auto-clear success message after 3 seconds
-                        setTimeout(() => {
-                            if (uploadStatus.textContent.includes('✅')) {
-                                updateStatus('', 'normal');
-                            }
-                        }, 3000);
-                    } else {
-                        throw new Error(data.message || 'Upload gagal');
-                    }
-                    
-                } catch (error) {
-                    console.error('Upload error:', error);
-                    updateStatus(`❌ Gagal: ${error.message}`, 'error');
-                }
-            }
-            
-            // Display photo
-            function displayPhoto(photo) {
-                const photoId = photo.id;
-                const photoUrl = photo.photo_url || `/storage/${photo.storage_path}`;
-                
-                const div = document.createElement('div');
-                div.className = 'flex items-center gap-2 p-2 bg-gray-50 rounded-lg';
-                div.innerHTML = `
-                    <img src="${photoUrl}" alt="Photo" class="w-12 h-12 rounded object-cover">
-                    <div class="flex-1">
-                        <p class="text-sm font-medium text-gray-700">${photo.photo_name || 'Foto aktivitas'}</p>
-                        <p class="text-xs text-gray-500">${new Date().toLocaleTimeString()}</p>
-                    </div>
-                    <button type="button" class="text-red-600 hover:text-red-800 font-bold px-2 py-1 text-sm" onclick="deletePhoto(${photoId})">
-                        🗑️ Hapus
-                    </button>
-                `;
-                photoList.appendChild(div);
-            }
-            
-            // Update status message
-            function updateStatus(message, type = 'normal') {
-                uploadStatus.textContent = message;
-                uploadStatus.className = 'mt-3 text-sm ';
-                if (type === 'error') {
-                    uploadStatus.className += 'text-red-600 font-semibold';
-                } else if (type === 'success') {
-                    uploadStatus.className += 'text-green-600 font-semibold';
-                } else if (type === 'loading') {
-                    uploadStatus.className += 'text-blue-600 font-semibold';
-                } else {
-                    uploadStatus.className += 'text-gray-600';
-                }
-            }
-            
-            // Load existing photos
+
+            // Tombol upload
+            uploadBtn?.addEventListener('click', uploadCompressedPhoto);
+
+            // Muat foto yang sudah ada
             await loadPhotos();
         });
     </script>
