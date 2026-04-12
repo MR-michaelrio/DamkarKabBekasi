@@ -16,11 +16,60 @@ class PatientRequestController extends Controller
     public function exportPdf(PatientRequest $patientRequest)
     {
         $patientRequest->load(['dispatches.driver', 'dispatches.ambulance']);
-        
-        $pdf = Pdf::loadView('admin.patient_requests.pdf', compact('patientRequest'))
+
+        $primaryDispatch = $patientRequest->dispatches->first();
+        $dispatchIds     = $patientRequest->dispatches->pluck('id');
+
+        // Load activity photos attached to all dispatches on this request
+        $activityLogs = \App\Models\ActivityLog::where('model', 'Dispatch')
+            ->whereIn('model_id', $dispatchIds)
+            ->with(['photos'])
+            ->get();
+
+        $dispatchMap = $patientRequest->dispatches->keyBy('id');
+        $photos = collect();
+        foreach ($activityLogs as $log) {
+            foreach ($log->photos as $photo) {
+                $driver = $dispatchMap->get($log->model_id)?->driver;
+                $photos->push((object)[
+                    'photo'    => $photo,
+                    'uploader' => $driver?->name ?? 'Petugas',
+                ]);
+            }
+        }
+
+        $dispatches  = $patientRequest->dispatches;
+        $otherPlates = $dispatches->skip(1)
+            ->map(fn($d) => $d->ambulance?->plate_number)
+            ->filter()
+            ->values();
+
+        $incident = [
+            'request_date'   => $patientRequest->request_date,
+            'pickup_time'    => $patientRequest->pickup_time,
+            'otw_at'         => $primaryDispatch?->otw_scene_at,
+            'arrive_at'      => $primaryDispatch?->pickup_at,
+            'handled_at'     => $primaryDispatch?->hospital_at,
+            'completed_at'   => $primaryDispatch?->completed_at,
+            'address'        => $patientRequest->pickup_address,
+            'kelurahan'      => $patientRequest->kelurahan,
+            'kecamatan'      => $patientRequest->kecamatan,
+            'reporter_name'  => $patientRequest->patient_name,
+            'reporter_phone' => $patientRequest->phone,
+            'condition'      => $patientRequest->patient_condition,
+            'unit_count'     => $dispatches->count(),
+            'plate_number'   => $primaryDispatch?->ambulance?->plate_number,
+            'other_plates'   => $otherPlates,
+            'nomor'          => $patientRequest->nomor,
+            'rt'             => $patientRequest->rt,
+            'rw'             => $patientRequest->rw,
+            'blok'           => $patientRequest->blok,
+        ];
+
+        $pdf = Pdf::loadView('admin.reports.kebakaran_pdf', compact('incident', 'dispatches', 'photos'))
             ->setPaper('a4', 'portrait');
 
-        return $pdf->download('laporan-masyarakat-' . $patientRequest->id . '-' . date('Ymd') . '.pdf');
+        return $pdf->download('laporan-kebakaran-' . $patientRequest->id . '-' . date('Ymd') . '.pdf');
     }
 
     public function index(Request $request)

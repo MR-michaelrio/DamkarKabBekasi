@@ -317,9 +317,51 @@ class DispatchController extends Controller
     {
         $dispatch->load(['driver', 'ambulance']);
 
-        $pdf = Pdf::loadView('admin.dispatches.single_pdf', compact('dispatch'))
+        // Load activity photos attached to this dispatch
+        $activityLogs = \App\Models\ActivityLog::where('model', 'Dispatch')
+            ->where('model_id', $dispatch->id)
+            ->with(['photos'])
+            ->get();
+
+        $photos = collect();
+        foreach ($activityLogs as $log) {
+            foreach ($log->photos as $photo) {
+                $photos->push((object)[
+                    'photo'    => $photo,
+                    'uploader' => $dispatch->driver?->name ?? 'Petugas',
+                ]);
+            }
+        }
+
+        $dispatches = collect([$dispatch]);
+
+        $otherPlates = collect();
+
+        $incident = [
+            'request_date'   => $dispatch->request_date,
+            'pickup_time'    => $dispatch->pickup_time,
+            'otw_at'         => $dispatch->otw_scene_at,
+            'arrive_at'      => $dispatch->pickup_at,
+            'handled_at'     => $dispatch->hospital_at,
+            'completed_at'   => $dispatch->completed_at,
+            'address'        => $dispatch->pickup_address,
+            'kelurahan'      => $dispatch->kelurahan,
+            'kecamatan'      => $dispatch->kecamatan,
+            'reporter_name'  => $dispatch->patient_name,
+            'reporter_phone' => $dispatch->patient_phone,
+            'condition'      => $dispatch->patient_condition,
+            'unit_count'     => 1,
+            'plate_number'   => $dispatch->ambulance?->plate_number,
+            'other_plates'   => $otherPlates,
+            'nomor'          => $dispatch->nomor,
+            'rt'             => $dispatch->rt,
+            'rw'             => $dispatch->rw,
+            'blok'           => $dispatch->blok,
+        ];
+
+        $pdf = Pdf::loadView('admin.reports.kebakaran_pdf', compact('incident', 'dispatches', 'photos'))
             ->setPaper('a4', 'portrait');
 
-        return $pdf->download('laporan-kejadian-' . $dispatch->id . '-' . date('Ymd') . '.pdf');
+        return $pdf->download('laporan-kebakaran-' . $dispatch->id . '-' . date('Ymd') . '.pdf');
     }
 }
