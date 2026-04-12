@@ -35,21 +35,21 @@ class DriverDashboardController extends Controller
             // If not exists, create new activity log
             if (!$activityLog) {
                 $activityLog = ActivityLog::create([
-                    'user_id' => $ambulance->id,
+                    'user_id' => null,
                     'action' => 'dispatch_in_progress',
                     'model' => 'Dispatch',
                     'model_id' => $activeDispatch->id,
-                    'description' => "Dispatch sedang berlangsung: {$activeDispatch->patient_name}",
+                    'description' => "Dispatch sedang berlangsung: {$activeDispatch->patient_name} [ambulance_id:{$ambulance->id}]",
                 ]);
             }
         } else {
             // Create activity log for login/idle status
             $activityLog = ActivityLog::create([
-                'user_id' => $ambulance->id,
+                'user_id' => null,
                 'action' => 'driver_login',
                 'model' => 'Ambulance',
                 'model_id' => $ambulance->id,
-                'description' => "Driver login: {$ambulance->plate_number}",
+                'description' => "Driver login: {$ambulance->plate_number} [ambulance_id:{$ambulance->id}]",
             ]);
         }
 
