@@ -506,7 +506,7 @@ if ($kecamatan && $kecamatan !== '-') {
      HALAMAN 2 — BERITA ACARA KEJADIAN KEBAKARAN
 ══════════════════════════════════════════════════════════ --}}
 
-@include('pdf.partials.kop', ['logoPath' => $logoPath])
+@include('admin.reports.kop', ['logoPath' => $logoPath])
 
 <p class="ba-title">BERITA ACARA KEJADIAN KEBAKARAN</p>
 <p class="ba-nomor">NOMOR : &nbsp; / &nbsp; /DAMKAR {{ $tahun }}</p>
