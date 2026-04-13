@@ -164,8 +164,7 @@
     </style>
 </head>
 <body>
-    <div class="paper">
-        <div class="header">
+    <div class="header">
             <img src="{{ asset('logo-dinas.png') }}" class="logo-dinas" alt="Logo Dinas">
             <h1>Pemerintah Kabupaten Bekasi</h1>
             <h2>Dinas Pemadam Kebakaran</h2>
@@ -409,6 +408,5 @@
                 </td>
             </tr>
         </table>
-    </div>
 </body>
 </html>
