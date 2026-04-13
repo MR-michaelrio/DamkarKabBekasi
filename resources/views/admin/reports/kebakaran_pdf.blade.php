@@ -165,14 +165,14 @@
 </head>
 <body>
     <div class="header">
-            <img src="{{ asset('logo-dinas.png') }}" class="logo-dinas" alt="Logo Dinas">
+            <img src="https://damkarkabbekasi.my.id/logo-dinas.png" class="logo-dinas" alt="Logo Dinas">
             <h1>Pemerintah Kabupaten Bekasi</h1>
             <h2>Dinas Pemadam Kebakaran</h2>
             <p>Jalan Teuku Umar No.1 Cikarang Barat</p>
             <p>Desa Ganda Sari Kecamatan Cikarang Barat Kabupaten Bekasi – Jawa Barat</p>
             <p>(021)-89101527</p>
             <div class="bekasi">B E K A S I</div>
-            <img src="{{ asset('logo-damkar.png') }}" class="logo-damkar" alt="Logo Damkar">
+            <img src="https://damkarkabbekasi.my.id/logo-damkar.png" class="logo-damkar" alt="Logo Damkar">
         </div>
 
         <div class="top-info">
