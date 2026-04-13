@@ -140,6 +140,44 @@ Route::match(['post', 'options'], '/public-fcm-token', function (\Illuminate\Htt
 Route::post('/api/driver/location', [DriverLocationController::class, 'updateLocation'])
     ->middleware('auth:ambulance'); // specific guard here if we want, or just 'auth' if we configure defaults properly
 
+// Temporary Preview Route
+Route::get('/preview-report', function () {
+    return view('report.template1', [
+        'nomor' => '123/Laporan/Damkar/2026',
+        'sifat' => 'Penting',
+        'attachment' => '-',
+        'place_date' => 'Bekasi, Sabtu 10 Januari 2026',
+        'day_date' => 'Sabtu, 10 Januari 2026',
+        'time_report' => '10 : 35',
+        'time_departure' => '10 : 37',
+        'time_arrival' => '10 : 47',
+        'time_finished' => '11 : 25',
+        'chronology' => 'Laporan dari warga; kebakaran berasal dari kendaraan bus yang mengalami kebakaran mesin',
+        'address' => 'Jl pantrua toyogiri indoporlen',
+        'village' => 'Setia Mekar',
+        'district' => 'Tambun Selatan',
+        'reporter_name' => 'vanesa',
+        'reporter_phone' => '081314451876',
+        'community_leader_name' => '-',
+        'community_leader_phone' => '-',
+        'area_size' => '100m²',
+        'building_type' => 'Kendaraan roda empat/Bus',
+        'owner_name' => '-',
+        'owner_age' => '-',
+        'owner_phone' => '-',
+        'owner_occupation' => '-',
+        'fire_origin' => 'Listrik',
+        'unit_count' => '1 Unit',
+        'vehicle_number' => 'B 9001 FHA',
+        'additional_units' => [],
+        'scba_usage' => '0',
+        'apar_usage' => '0',
+        'injured' => '0',
+        'fatalities' => '0',
+        'displaced' => '0',
+    ]);
+});
+
 // Activity Photo Routes (API)
 Route::prefix('api')->middleware(['auth:web,ambulance'])->group(function () {
     // Photo Management Routes
