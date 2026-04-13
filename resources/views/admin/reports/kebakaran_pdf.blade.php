@@ -10,9 +10,9 @@
             font-size: 11pt;
             line-height: 1.4;
             margin: 0;
-            padding: 40px;
+            padding: 10px;
             color: #000;
-            background-color: #f0f0f0;
+            background-color: #fff;
         }
 
         .paper {
