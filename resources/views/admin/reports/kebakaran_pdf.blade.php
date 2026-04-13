@@ -13,17 +13,17 @@
             margin: 0;
             padding: 40px;
             color: #000;
-            background-color: #f0f0f0;
+            background-color: #fff;
         }
 
         .paper {
-            background-color: #fff;
+            /* background-color: #fff;
             width: 210mm;
             min-height: 297mm;
             margin: 0 auto;
             padding: 20mm;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            position: relative;
+            position: relative; */
         }
 
         .header {
@@ -295,7 +295,8 @@
                     <tr>
                         <td>Hal</td>
                         <td>:</td>
-                        <td><span style="font-weight: bold; text-decoration: underline;">Laporan Kejadian Kebakaran</span></td>
+                        <td><span style="font-weight: bold; text-decoration: underline;">Laporan Kejadian
+                                Kebakaran</span></td>
                     </tr>
                     <tr>
                         <td>Lampiran</td>
@@ -326,7 +327,8 @@
         </div>
 
         <div class="content">
-            <p class="content-intro">Dengan ini kami laporkan kejadian kebakaran di Wilayah Kabupaten Bekasi, Sebagai Berikut :</p>
+            <p class="content-intro">Dengan ini kami laporkan kejadian kebakaran di Wilayah Kabupaten Bekasi, Sebagai
+                Berikut :</p>
 
             <table class="data-table">
                 <tr>
@@ -532,11 +534,14 @@
 
         <div class="ba-container">
             <div class="ba-title">Berita Acara Kejadian Kebakaran</div>
-            <div class="ba-number">NOMOR : &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; / &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /DAMKAR 2025</div>
+            <div class="ba-number">NOMOR : &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /DAMKAR 2025</div>
         </div>
 
         <div class="intro-text">
-            Pada Hari ini {{ $ba_hari ?? '..........' }} tanggal {{ $ba_tanggal ?? '...' }} bulan {{ $ba_bulan ?? '..........' }} tahun {{ $ba_tahun ?? '2026' }} Pukul {{ $ba_pukul ?? '... : ...' }} WIB WIB, telah terjadi kebakaran di Wilayah Kabupaten Bekasi, Sebagai Berikut
+            Pada Hari ini {{ $ba_hari ?? '..........' }} tanggal {{ $ba_tanggal ?? '...' }} bulan
+            {{ $ba_bulan ?? '..........' }} tahun {{ $ba_tahun ?? '2026' }} Pukul {{ $ba_pukul ?? '... : ...' }} WIB
+            WIB, telah terjadi kebakaran di Wilayah Kabupaten Bekasi, Sebagai Berikut
         </div>
 
         <table class="data-table-ba">
