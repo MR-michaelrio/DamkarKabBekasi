@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -10,9 +11,9 @@
             font-size: 11pt;
             line-height: 1.4;
             margin: 0;
-            padding: 10px;
+            padding: 40px;
             color: #000;
-            background-color: #fff;
+            background-color: #f0f0f0;
         }
 
         .paper {
@@ -22,6 +23,7 @@
             margin: 0 auto;
             padding: 20mm;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            position: relative;
         }
 
         .header {
@@ -76,6 +78,10 @@
             letter-spacing: 2px;
             font-size: 12pt;
             margin-top: 5px;
+        }
+
+        .header-double {
+            border-bottom: 4px double #000;
         }
 
         .top-info {
@@ -156,23 +162,121 @@
             font-size: 9pt;
         }
 
+        /* Styles for Page 2 (Berita Acara) */
+        .ba-container {
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        .ba-title {
+            font-weight: bold;
+            text-decoration: underline;
+            text-transform: uppercase;
+            font-size: 12pt;
+            margin-bottom: 2px;
+        }
+
+        .ba-number {
+            font-weight: bold;
+            font-size: 11pt;
+        }
+
+        .intro-text {
+            margin-bottom: 15px;
+            text-align: justify;
+            font-size: 10pt;
+        }
+
+        .data-table-ba {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+            font-size: 10pt;
+        }
+
+        .data-table-ba td {
+            vertical-align: top;
+            padding: 2px 0;
+        }
+
+        .num-col-ba {
+            width: 30px;
+            text-align: left;
+        }
+
+        .label-col-ba {
+            width: 250px;
+        }
+
+        .colon-col-ba {
+            width: 15px;
+            text-align: center;
+        }
+
+        .signature-section-ba {
+            width: 100%;
+            margin-top: 30px;
+            font-size: 10pt;
+        }
+
+        .signature-section-ba td {
+            width: 50%;
+            text-align: center;
+            vertical-align: top;
+        }
+
+        .signature-space-ba {
+            height: 60px;
+        }
+
+        .signature-name-ba {
+            font-weight: bold;
+            text-decoration: underline;
+            text-transform: uppercase;
+        }
+
+        .signature-role-ba {
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
         @media print {
-            body { margin: 0; padding: 0; background-color: #fff; }
-            .paper { box-shadow: none; }
-            .no-print { display: none; }
+            body {
+                margin: 0;
+                padding: 0;
+                background-color: #fff;
+            }
+
+            .paper {
+                box-shadow: none;
+                margin: 0;
+                width: 100%;
+                page-break-after: always;
+            }
+
+            .paper:last-child {
+                page-break-after: avoid;
+            }
+
+            .no-print {
+                display: none;
+            }
         }
     </style>
 </head>
+
 <body>
-    <div class="header">
-            <img src="https://damkarkabbekasi.my.id/logo-dinas.png" class="logo-dinas" alt="Logo Dinas">
+    <!-- Halaman 1: Laporan Kejadian Kebakaran -->
+    <div class="paper">
+        <div class="header">
+            <img src="{{ asset('logo-dinas.png') }}" class="logo-dinas" alt="Logo">
             <h1>Pemerintah Kabupaten Bekasi</h1>
             <h2>Dinas Pemadam Kebakaran</h2>
             <p>Jalan Teuku Umar No.1 Cikarang Barat</p>
             <p>Desa Ganda Sari Kecamatan Cikarang Barat Kabupaten Bekasi – Jawa Barat</p>
             <p>(021)-89101527</p>
             <div class="bekasi">B E K A S I</div>
-            <img src="https://damkarkabbekasi.my.id/logo-damkar.png" class="logo-damkar" alt="Logo Damkar">
+            <img src="{{ asset('logo-damkar.png') }}" class="logo-damkar" alt="Logo">
         </div>
 
         <div class="top-info">
@@ -196,7 +300,7 @@
                     <tr>
                         <td>Lampiran</td>
                         <td>:</td>
-                        <td>{{ $attachment ?? '-' }}</td>
+                        <td>{{ $lampiran ?? '-' }}</td>
                     </tr>
                 </table>
             </div>
@@ -233,6 +337,7 @@
                 <tr>
                     <td class="label-col">2. Waktu Kejadian</td>
                     <td class="colon-col">:</td>
+                    <td class="value-col"></td>
                 </tr>
                 <tr>
                     <td style="padding-left: 22px;">Laporan Kejadian</td>
@@ -262,6 +367,7 @@
                 <tr>
                     <td class="label-col">4. Lokasi</td>
                     <td class="colon-col"></td>
+                    <td class="value-col"></td>
                 </tr>
                 <tr>
                     <td style="padding-left: 22px;">Alamat</td>
@@ -285,8 +391,8 @@
                 </tr>
                 <tr>
                     <td style="padding-left: 22px;">No. Telp Pelapor</td>
-                    <td class="colon-col">:</td>
-                    <td class="value-col">{{ $reporter_phone ?? '-' }}</td>
+                    <td>:</td>
+                    <td>{{ $reporter_phone ?? '-' }}</td>
                 </tr>
                 <tr>
                     <td class="label-col">6. Nama Ketua RT/RW</td>
@@ -295,8 +401,8 @@
                 </tr>
                 <tr>
                     <td style="padding-left: 22px;">No.Telp Ketua RT/RW</td>
-                    <td class="colon-col">:</td>
-                    <td class="value-col">{{ $community_leader_phone ?? '-' }}</td>
+                    <td>:</td>
+                    <td>{{ $community_leader_phone ?? '-' }}</td>
                 </tr>
                 <tr>
                     <td class="label-col">7. Luas Areal</td>
@@ -315,18 +421,18 @@
                 </tr>
                 <tr>
                     <td style="padding-left: 22px;">Umur</td>
-                    <td class="colon-col">:</td>
-                    <td class="value-col">{{ $owner_age ?? '-' }}</td>
+                    <td>:</td>
+                    <td>{{ $owner_age ?? '-' }}</td>
                 </tr>
                 <tr>
                     <td style="padding-left: 22px;">Telp</td>
-                    <td class="colon-col">:</td>
-                    <td class="value-col">{{ $owner_phone ?? '-' }}</td>
+                    <td>:</td>
+                    <td>{{ $owner_phone ?? '-' }}</td>
                 </tr>
                 <tr>
                     <td style="padding-left: 22px;">Pekerjaan</td>
-                    <td class="colon-col">:</td>
-                    <td class="value-col">{{ $owner_occupation ?? '-' }}</td>
+                    <td>:</td>
+                    <td>{{ $owner_occupation ?? '-' }}</td>
                 </tr>
                 <tr>
                     <td class="label-col">10. Asal Api</td>
@@ -363,12 +469,13 @@
                 </tr>
                 <tr>
                     <td style="padding-left: 29px;">Penggunaan APAR</td>
-                    <td class="colon-col">:</td>
-                    <td class="value-col">{{ $apar_usage ?? '0' }} Tabung</td>
+                    <td>:</td>
+                    <td>{{ $apar_usage ?? '0' }} Tabung</td>
                 </tr>
                 <tr>
                     <td class="label-col">15. Korban Kebakaran</td>
                     <td class="colon-col"></td>
+                    <td class="value-col"></td>
                 </tr>
                 <tr>
                     <td style="padding-left: 29px;">Luka - Luka</td>
@@ -408,5 +515,254 @@
                 </td>
             </tr>
         </table>
+    </div>
+
+    <!-- Halaman 2: Berita Acara Kejadian Kebakaran -->
+    <div class="paper">
+        <div class="header header-double">
+            <img src="{{ asset('logo-dinas.png') }}" class="logo-dinas" alt="Logo">
+            <h1>Pemerintah Kabupaten Bekasi</h1>
+            <h2>Dinas Pemadam Kebakaran</h2>
+            <p>Jalan Teuku Umar No.1 Cikarang Barat</p>
+            <p>Desa Ganda Sari Kecamatan Cikarang Barat Kabupaten Bekasi – Jawa Barat</p>
+            <p>(021)-89101527</p>
+            <div class="bekasi">B E K A S I</div>
+            <img src="{{ asset('logo-damkar.png') }}" class="logo-damkar" alt="Logo">
+        </div>
+
+        <div class="ba-container">
+            <div class="ba-title">Berita Acara Kejadian Kebakaran</div>
+            <div class="ba-number">NOMOR : &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; / &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /DAMKAR 2025</div>
+        </div>
+
+        <div class="intro-text">
+            Pada Hari ini {{ $ba_hari ?? '..........' }} tanggal {{ $ba_tanggal ?? '...' }} bulan {{ $ba_bulan ?? '..........' }} tahun {{ $ba_tahun ?? '2026' }} Pukul {{ $ba_pukul ?? '... : ...' }} WIB WIB, telah terjadi kebakaran di Wilayah Kabupaten Bekasi, Sebagai Berikut
+        </div>
+
+        <table class="data-table-ba">
+            <tr>
+                <td class="num-col-ba">1.</td>
+                <td class="label-col-ba">Hari/Tanggal</td>
+                <td class="colon-col-ba">:</td>
+                <td>{{ $ba_hari_tanggal ?? '-' }}</td>
+            </tr>
+            <tr>
+                <td class="num-col-ba">2.</td>
+                <td class="label-col-ba">Waktu Kejadian</td>
+                <td class="colon-col-ba">:</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td></td>
+                <td>Laporan Kejadian</td>
+                <td class="colon-col-ba">:</td>
+                <td>{{ $ba_waktu_laporan ?? '-' }} WIB</td>
+            </tr>
+            <tr>
+                <td></td>
+                <td>Unit Berangkat</td>
+                <td class="colon-col-ba">:</td>
+                <td>{{ $ba_waktu_berangkat ?? '-' }} WIB</td>
+            </tr>
+            <tr>
+                <td></td>
+                <td>Tiba di TKK</td>
+                <td class="colon-col-ba">:</td>
+                <td>{{ $ba_waktu_tiba ?? '-' }} WIB</td>
+            </tr>
+            <tr>
+                <td></td>
+                <td>Selesai Penanganan</td>
+                <td class="colon-col-ba">:</td>
+                <td>{{ $ba_waktu_selesai ?? '-' }} WIB</td>
+            </tr>
+            <tr>
+                <td class="num-col-ba">3.</td>
+                <td class="label-col-ba">Kronologi</td>
+                <td class="colon-col-ba">:</td>
+                <td>{{ $ba_kronologi ?? '-' }}</td>
+            </tr>
+            <tr>
+                <td class="num-col-ba">4.</td>
+                <td class="label-col-ba">Lokasi Kebakaran</td>
+                <td class="colon-col-ba">:</td>
+                <td>{{ $ba_lokasi_kebakaran ?? '-' }}</td>
+            </tr>
+            <tr>
+                <td class="num-col-ba">5.</td>
+                <td class="label-col-ba">Jenis Bangunan yang terbakar</td>
+                <td class="colon-col-ba">:</td>
+                <td>{{ $ba_jenis_bangunan ?? '-' }}</td>
+            </tr>
+            <tr>
+                <td class="num-col-ba">6.</td>
+                <td class="label-col-ba">Penyebab Kebakaran</td>
+                <td class="colon-col-ba">:</td>
+                <td>{{ $ba_penyebab ?? '-' }}</td>
+            </tr>
+            <tr>
+                <td class="num-col-ba">7.</td>
+                <td class="label-col-ba">Luas Area</td>
+                <td class="colon-col-ba">:</td>
+                <td>{{ $ba_luas_area ?? '-' }}</td>
+            </tr>
+            <tr>
+                <td class="num-col-ba">8.</td>
+                <td class="label-col-ba">Nama Pemilik</td>
+                <td class="colon-col-ba">:</td>
+                <td>{{ $ba_nama_pemilik ?? '-' }}</td>
+            </tr>
+            <tr>
+                <td class="num-col-ba">9.</td>
+                <td class="label-col-ba">Umur</td>
+                <td class="colon-col-ba">:</td>
+                <td>{{ $ba_umur_pemilik ?? '-' }}</td>
+            </tr>
+            <tr>
+                <td class="num-col-ba">10.</td>
+                <td class="label-col-ba">Pekerjaan</td>
+                <td class="colon-col-ba">:</td>
+                <td>{{ $ba_pekerjaan_pemilik ?? '-' }}</td>
+            </tr>
+            <tr>
+                <td class="num-col-ba">11.</td>
+                <td class="label-col-ba">Lokasi</td>
+                <td class="colon-col-ba">:</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td></td>
+                <td>Alamat</td>
+                <td class="colon-col-ba">:</td>
+                <td>{{ $ba_alamat ?? '-' }}</td>
+            </tr>
+            <tr>
+                <td></td>
+                <td>Kelurahan/Desa</td>
+                <td class="colon-col-ba">:</td>
+                <td>{{ $ba_kelurahan ?? '-' }}</td>
+            </tr>
+            <tr>
+                <td></td>
+                <td>Kecamatan</td>
+                <td class="colon-col-ba">:</td>
+                <td>{{ $ba_kecamatan ?? '-' }}</td>
+            </tr>
+            <tr>
+                <td class="num-col-ba">12.</td>
+                <td class="label-col-ba">Nama Pelapor</td>
+                <td class="colon-col-ba">:</td>
+                <td>{{ $ba_nama_pelapor ?? '-' }}</td>
+            </tr>
+            <tr>
+                <td></td>
+                <td>No.Telp Pelapor</td>
+                <td class="colon-col-ba">:</td>
+                <td>{{ $ba_telp_pelapor ?? '-' }}</td>
+            </tr>
+            <tr>
+                <td class="num-col-ba">13.</td>
+                <td class="label-col-ba">Nama Ketua RT/RW</td>
+                <td class="colon-col-ba">:</td>
+                <td>{{ $ba_nama_rt_rw ?? '-' }}</td>
+            </tr>
+            <tr>
+                <td></td>
+                <td>No.Telp Ketua RT/RW</td>
+                <td class="colon-col-ba">:</td>
+                <td>{{ $ba_telp_rt_rw ?? '-' }}</td>
+            </tr>
+            <tr>
+                <td class="num-col-ba">14.</td>
+                <td class="label-col-ba">Unit Mobil Pemadam yang dikerahkan</td>
+                <td class="colon-col-ba">:</td>
+                <td>{{ $ba_jumlah_unit ?? '-' }} Unit</td>
+            </tr>
+            <tr>
+                <td class="num-col-ba">15.</td>
+                <td class="label-col-ba">No. Seri Kendaraan</td>
+                <td class="colon-col-ba">:</td>
+                <td>{{ $ba_no_seri_kendaraan ?? '-' }}</td>
+            </tr>
+            <tr>
+                <td class="num-col-ba">16.</td>
+                <td class="label-col-ba">Bantuan Unit Mobil Pemadam</td>
+                <td class="colon-col-ba">:</td>
+                <td>
+                    @if(isset($ba_bantuan_unit) && count($ba_bantuan_unit) > 0)
+                        @foreach($ba_bantuan_unit as $unit)
+                            <div>{{ $unit }}</div>
+                        @endforeach
+                    @else
+                        -
+                    @endif
+                </td>
+            </tr>
+            <tr>
+                <td class="num-col-ba">17.</td>
+                <td class="label-col-ba">Penggunaan BA/SCBA</td>
+                <td class="colon-col-ba">:</td>
+                <td>- {{ $ba_scba_usage ?? '...' }} Tabung</td>
+            </tr>
+            <tr>
+                <td></td>
+                <td>Penggunaan APAR</td>
+                <td class="colon-col-ba">:</td>
+                <td>- {{ $ba_apar_usage ?? '...' }} Tabung</td>
+            </tr>
+            <tr>
+                <td class="num-col-ba">18.</td>
+                <td class="label-col-ba">Korban Kebakaran</td>
+                <td class="colon-col-ba">:</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td></td>
+                <td>Luka – Luka</td>
+                <td class="colon-col-ba">:</td>
+                <td>{{ $ba_korban_luka ?? '...' }} Orang</td>
+            </tr>
+            <tr>
+                <td></td>
+                <td>Korban Jiwa</td>
+                <td class="colon-col-ba">:</td>
+                <td>{{ $ba_korban_jiwa ?? '...' }} Orang</td>
+            </tr>
+            <tr>
+                <td></td>
+                <td>Korban Terdampak</td>
+                <td class="colon-col-ba">:</td>
+                <td>{{ $ba_korban_terdampak ?? '...' }} Orang</td>
+            </tr>
+        </table>
+
+        <div class="intro-text">
+            Demikian Berita Acara Kejadian Kebakaran ini dibuat dengan sebenarnya, Demikian agar maklum.
+        </div>
+
+        <table class="signature-section-ba">
+            <tr>
+                <td></td>
+                <td>
+                    Bekasi, {{ $ba_tanggal_laporan ?? date('d F Y') }}
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <div class="signature-role-ba">KOMANDAN REGU</div>
+                    <div class="signature-space-ba"></div>
+                    <div class="signature-name-ba">{{ $ba_komandan_regu ?? 'SUKARDI YUSUF' }}</div>
+                    <div>NIP. {{ $ba_nip_danru ?? '198709212025211001' }}</div>
+                </td>
+                <td>
+                    <div class="signature-role-ba">KOMANDAN PELETON III</div>
+                    <div class="signature-space-ba"></div>
+                    <div class="signature-name-ba">{{ $ba_komandan_peleton ?? 'JAJANG SUSANTO, SI.P' }}</div>
+                    <div>NIP. {{ $ba_nip_danton ?? '19682007101103' }}</div>
+                </td>
+            </tr>
+        </table>
+    </div>
 </body>
+
 </html>
