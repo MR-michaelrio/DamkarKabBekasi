@@ -239,6 +239,14 @@
             text-transform: uppercase;
         }
 
+        .paper {
+            page-break-after: always;
+        }
+
+        .paper:last-child {
+            page-break-after: avoid;
+        }
+
         @media print {
             body {
                 margin: 0;
@@ -250,11 +258,6 @@
                 box-shadow: none;
                 margin: 0;
                 width: 100%;
-                page-break-after: always;
-            }
-
-            .paper:last-child {
-                page-break-after: avoid;
             }
 
             .no-print {
