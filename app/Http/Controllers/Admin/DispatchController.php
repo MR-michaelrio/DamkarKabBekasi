@@ -334,8 +334,16 @@ class DispatchController extends Controller
         }
 
         $dispatches = collect([$dispatch]);
+        if ($dispatch->patient_request_id) {
+            $dispatches = Dispatch::where('patient_request_id', $dispatch->patient_request_id)
+                ->with(['driver', 'ambulance'])
+                ->get();
+        }
 
-        $otherPlates = collect();
+        $otherPlates = $dispatches->reject(fn($d) => $d->id === $dispatch->id)
+            ->map(fn($d) => $d->ambulance?->plate_number)
+            ->filter()
+            ->values();
 
         $incident = [
             'request_date'   => $dispatch->request_date,
@@ -350,7 +358,7 @@ class DispatchController extends Controller
             'reporter_name'  => $dispatch->patient_name,
             'reporter_phone' => $dispatch->patient_phone,
             'condition'      => $dispatch->patient_condition,
-            'unit_count'     => 1,
+            'unit_count'     => $dispatches->count(),
             'plate_number'   => $dispatch->ambulance?->plate_number,
             'other_plates'   => $otherPlates,
             'nomor'          => $dispatch->nomor,

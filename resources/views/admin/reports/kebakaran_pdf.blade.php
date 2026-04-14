@@ -768,6 +768,101 @@
             </tr>
         </table>
     </div>
+    <!-- Halaman 3: Data Respon Armada -->
+    <div class="paper">
+        <div class="header header-double">
+            <img src="{{ asset('logo-dinas.png') }}" class="logo-dinas" alt="Logo">
+            <h1>Pemerintah Kabupaten Bekasi</h1>
+            <h2>Dinas Pemadam Kebakaran</h2>
+            <p>Jalan Teuku Umar No.1 Cikarang Barat</p>
+            <p>Desa Ganda Sari Kecamatan Cikarang Barat Kabupaten Bekasi – Jawa Barat</p>
+            <p>(021)-89101527</p>
+            <div class="bekasi">B E K A S I</div>
+            <img src="{{ asset('logo-damkar.png') }}" class="logo-damkar" alt="Logo">
+        </div>
+
+        <div class="ba-container">
+            <div class="ba-title">Data Respon Armada Dispatch</div>
+            <p style="text-align: center; margin-top: 5px; font-size: 10pt;">Daftar unit mobil yang dikerahkan ke lokasi kejadian</p>
+        </div>
+
+        <style>
+            .fleet-table {
+                width: 100%;
+                border-collapse: collapse;
+                margin-top: 10px;
+                font-size: 10pt;
+            }
+
+            .fleet-table th {
+                background-color: #f2f2f2;
+                border: 1px solid #000;
+                padding: 8px 5px;
+                text-align: center;
+                text-transform: uppercase;
+            }
+
+            .fleet-table td {
+                border: 1px solid #000;
+                padding: 8px 5px;
+                text-align: center;
+                vertical-align: middle;
+            }
+
+            .fleet-table .text-left {
+                text-align: left;
+            }
+        </style>
+
+        <table class="fleet-table">
+            <thead>
+                <tr>
+                    <th style="width: 30px;">No.</th>
+                    <th>Unit / No. Polisi</th>
+                    <th>Komandan / Driver</th>
+                    <th>Berangkat (OTW)</th>
+                    <th>Sampai (TKK)</th>
+                    <th style="width: 80px;">Durasi (Mnt)</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach($dispatches as $index => $d)
+                @php
+                    $otw = $d->otw_scene_at;
+                    $tkk = $d->pickup_at;
+                    $duration = null;
+                    if ($otw && $tkk) {
+                        $duration = $tkk->diffInMinutes($otw);
+                    }
+                @endphp
+                <tr>
+                    <td>{{ $index + 1 }}</td>
+                    <td class="text-left">
+                        <strong>{{ $d->ambulance?->name ?? 'Unit Damkar' }}</strong><br>
+                        <span style="font-size: 9pt;">{{ $d->ambulance?->plate_number ?? '-' }}</span>
+                    </td>
+                    <td class="text-left">
+                        {{ $d->driver?->name ?? '-' }}<br>
+                        <span style="font-size: 8pt; color: #555;">{{ $d->driver?->pleton?->name ?? '-' }}</span>
+                    </td>
+                    <td>{{ $otw ? $otw->format('H:i:s') : '-' }}</td>
+                    <td>{{ $tkk ? $tkk->format('H:i:s') : '-' }}</td>
+                    <td style="font-weight: bold;">
+                        {{ $duration !== null ? $duration . ' Min' : '-' }}
+                    </td>
+                </tr>
+                @endforeach
+            </tbody>
+        </table>
+
+        <div style="margin-top: 30px; font-size: 10pt;">
+            <p><strong>Catatan:</strong></p>
+            <ul>
+                <li>Waktu di atas menggunakan zona waktu lokal (WIB).</li>
+                <li>Durasi dihitung dari unit keluar pos (OTW) hingga tiba di lokasi kejadian (TKK).</li>
+            </ul>
+        </div>
+    </div>
 </body>
 
 </html>
