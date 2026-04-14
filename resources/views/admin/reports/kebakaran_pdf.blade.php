@@ -38,7 +38,7 @@
             position: absolute;
             left: 0;
             top: 0;
-            width: 120px;
+            width: 100px;
             height: auto;
         }
 
@@ -46,7 +46,7 @@
             position: absolute;
             right: 0;
             top: 0;
-            width: 150px;
+            width: 120px;
             height: auto;
         }
 
