@@ -529,7 +529,7 @@
 
     <!-- Halaman 2: Berita Acara Kejadian Kebakaran -->
     <div class="paper">
-        <div class="header header-double">
+        <div class="header">
             <img src="{{ public_path('logo-dinas.png') }}" class="logo-dinas" alt="Logo">
             <h1>Pemerintah Kabupaten Bekasi</h1>
             <h2>Dinas Pemadam Kebakaran</h2>
@@ -778,7 +778,7 @@
     </div>
     <!-- Halaman 3: Data Respon Armada -->
     <div class="paper">
-        <div class="header header-double">
+        <div class="header">
             <img src="{{ public_path('logo-dinas.png') }}" class="logo-dinas" alt="Logo">
             <h1>Pemerintah Kabupaten Bekasi</h1>
             <h2>Dinas Pemadam Kebakaran</h2>
@@ -786,7 +786,7 @@
             <p>Desa Ganda Sari Kecamatan Cikarang Barat Kabupaten Bekasi – Jawa Barat</p>
             <p>(021)-89101527</p>
             <div class="bekasi">B E K A S I</div>
-            <img src="{{ asset('logo-damkar.png') }}" class="logo-damkar" alt="Logo">
+            <img src="{{ public_path('logo-damkar.png') }}" class="logo-damkar" alt="Logo">
         </div>
 
         <div class="ba-container">
