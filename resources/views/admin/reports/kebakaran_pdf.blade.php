@@ -85,8 +85,7 @@
         }
 
         .top-info {
-            display: flex;
-            justify-content: space-between;
+            width: 100%;
             margin-bottom: 20px;
         }
 
@@ -269,62 +268,68 @@
     <!-- Halaman 1: Laporan Kejadian Kebakaran -->
     <div class="paper">
         <div class="header">
-            <img src="{{ asset('logo-dinas.png') }}" class="logo-dinas" alt="Logo">
+            <img src="{{ public_path('logo-dinas.png') }}" class="logo-dinas" alt="Logo">
             <h1>Pemerintah Kabupaten Bekasi</h1>
             <h2>Dinas Pemadam Kebakaran</h2>
             <p>Jalan Teuku Umar No.1 Cikarang Barat</p>
             <p>Desa Ganda Sari Kecamatan Cikarang Barat Kabupaten Bekasi – Jawa Barat</p>
             <p>(021)-89101527</p>
             <div class="bekasi">B E K A S I</div>
-            <img src="{{ asset('logo-damkar.png') }}" class="logo-damkar" alt="Logo">
+            <img src="{{ public_path('logo-damkar.png') }}" class="logo-damkar" alt="Logo">
         </div>
 
-        <div class="top-info">
-            <div class="left-info">
-                <table>
-                    <tr>
-                        <td>Nomor</td>
-                        <td>:</td>
-                        <td>{{ $nomor ?? '- / /Damkar/2025' }}</td>
-                    </tr>
-                    <tr>
-                        <td>Sifat</td>
-                        <td>:</td>
-                        <td>{{ $sifat ?? 'Penting' }}</td>
-                    </tr>
-                    <tr>
-                        <td>Hal</td>
-                        <td>:</td>
-                        <td><span style="font-weight: bold; text-decoration: underline;">Laporan Kejadian
-                                Kebakaran</span></td>
-                    </tr>
-                    <tr>
-                        <td>Lampiran</td>
-                        <td>:</td>
-                        <td>{{ $lampiran ?? '-' }}</td>
-                    </tr>
-                </table>
-            </div>
-            <div class="right-info">
-                <table>
-                    <tr>
-                        <td>{{ $place_date ?? 'Bekasi, ' . date('d F Y') }}</td>
-                    </tr>
-                    <tr>
-                        <td>Kepada</td>
-                    </tr>
-                    <tr>
-                        <td style="font-weight: bold;">Yth. Kepala Dinas Pemadam Kebakaran</td>
-                    </tr>
-                    <tr>
-                        <td style="font-weight: bold;">Kabupaten Bekasi</td>
-                    </tr>
-                    <tr>
-                        <td>Di Bekasi</td>
-                    </tr>
-                </table>
-            </div>
-        </div>
+        <table class="top-info">
+            <tr>
+                <td style="width: 50%; vertical-align: top;">
+                    <div class="left-info">
+                        <table>
+                            <tr>
+                                <td>Nomor</td>
+                                <td>:</td>
+                                <td>{{ $nomor ?? '- / /Damkar/2025' }}</td>
+                            </tr>
+                            <tr>
+                                <td>Sifat</td>
+                                <td>:</td>
+                                <td>{{ $sifat ?? 'Penting' }}</td>
+                            </tr>
+                            <tr>
+                                <td>Hal</td>
+                                <td>:</td>
+                                <td><span style="font-weight: bold; text-decoration: underline;">Laporan Kejadian
+                                        Kebakaran</span></td>
+                            </tr>
+                            <tr>
+                                <td>Lampiran</td>
+                                <td>:</td>
+                                <td>{{ $lampiran ?? '-' }}</td>
+                            </tr>
+                        </table>
+                    </div>
+                </td>
+                <td style="width: 50%; vertical-align: top;">
+                    <div class="right-info">
+                        <table style="margin-left: auto;">
+                            <tr>
+                                <td>{{ $place_date ?? 'Bekasi, ' . date('d F Y') }}</td>
+                            </tr>
+                            <tr>
+                                <td>Kepada</td>
+                            </tr>
+                            <tr>
+                                <td style="font-weight: bold;">Yth. Kepala Dinas Pemadam Kebakaran</td>
+                            </tr>
+                            <tr>
+                                <td style="font-weight: bold;">Kabupaten Bekasi</td>
+                            </tr>
+                            <tr>
+                                <td style="font-weight: bold;">Di Bekasi</td>
+                            </tr>
+                        </table>
+                    </div>
+                </td>
+            </tr>
+        </table>
 
         <div class="content">
             <p class="content-intro">Dengan ini kami laporkan kejadian kebakaran di Wilayah Kabupaten Bekasi, Sebagai
@@ -522,14 +527,14 @@
     <!-- Halaman 2: Berita Acara Kejadian Kebakaran -->
     <div class="paper">
         <div class="header header-double">
-            <img src="{{ asset('logo-dinas.png') }}" class="logo-dinas" alt="Logo">
+            <img src="{{ public_path('logo-dinas.png') }}" class="logo-dinas" alt="Logo">
             <h1>Pemerintah Kabupaten Bekasi</h1>
             <h2>Dinas Pemadam Kebakaran</h2>
             <p>Jalan Teuku Umar No.1 Cikarang Barat</p>
             <p>Desa Ganda Sari Kecamatan Cikarang Barat Kabupaten Bekasi – Jawa Barat</p>
             <p>(021)-89101527</p>
             <div class="bekasi">B E K A S I</div>
-            <img src="{{ asset('logo-damkar.png') }}" class="logo-damkar" alt="Logo">
+            <img src="{{ public_path('logo-damkar.png') }}" class="logo-damkar" alt="Logo">
         </div>
 
         <div class="ba-container">
@@ -771,7 +776,7 @@
     <!-- Halaman 3: Data Respon Armada -->
     <div class="paper">
         <div class="header header-double">
-            <img src="{{ asset('logo-dinas.png') }}" class="logo-dinas" alt="Logo">
+            <img src="{{ public_path('logo-dinas.png') }}" class="logo-dinas" alt="Logo">
             <h1>Pemerintah Kabupaten Bekasi</h1>
             <h2>Dinas Pemadam Kebakaran</h2>
             <p>Jalan Teuku Umar No.1 Cikarang Barat</p>
@@ -783,7 +788,8 @@
 
         <div class="ba-container">
             <div class="ba-title">Data Respon Armada Dispatch</div>
-            <p style="text-align: center; margin-top: 5px; font-size: 10pt;">Daftar unit mobil yang dikerahkan ke lokasi kejadian</p>
+            <p style="text-align: center; margin-top: 5px; font-size: 10pt;">Daftar unit mobil yang dikerahkan ke lokasi
+                kejadian</p>
         </div>
 
         <style>
@@ -827,30 +833,30 @@
             </thead>
             <tbody>
                 @foreach($dispatches as $index => $d)
-                @php
-                    $otw = $d->otw_scene_at;
-                    $tkk = $d->pickup_at;
-                    $duration = null;
-                    if ($otw && $tkk) {
-                        $duration = $tkk->diffInMinutes($otw);
-                    }
-                @endphp
-                <tr>
-                    <td>{{ $index + 1 }}</td>
-                    <td class="text-left">
-                        <strong>{{ $d->ambulance?->name ?? 'Unit Damkar' }}</strong><br>
-                        <span style="font-size: 9pt;">{{ $d->ambulance?->plate_number ?? '-' }}</span>
-                    </td>
-                    <td class="text-left">
-                        {{ $d->driver?->name ?? '-' }}<br>
-                        <span style="font-size: 8pt; color: #555;">{{ $d->driver?->pleton?->name ?? '-' }}</span>
-                    </td>
-                    <td>{{ $otw ? $otw->format('H:i:s') : '-' }}</td>
-                    <td>{{ $tkk ? $tkk->format('H:i:s') : '-' }}</td>
-                    <td style="font-weight: bold;">
-                        {{ $duration !== null ? $duration . ' Min' : '-' }}
-                    </td>
-                </tr>
+                    @php
+                        $otw = $d->otw_scene_at;
+                        $tkk = $d->pickup_at;
+                        $duration = null;
+                        if ($otw && $tkk) {
+                            $duration = $tkk->diffInMinutes($otw);
+                        }
+                    @endphp
+                    <tr>
+                        <td>{{ $index + 1 }}</td>
+                        <td class="text-left">
+                            <strong>{{ $d->ambulance?->name ?? 'Unit Damkar' }}</strong><br>
+                            <span style="font-size: 9pt;">{{ $d->ambulance?->plate_number ?? '-' }}</span>
+                        </td>
+                        <td class="text-left">
+                            {{ $d->driver?->name ?? '-' }}<br>
+                            <span style="font-size: 8pt; color: #555;">{{ $d->driver?->pleton?->name ?? '-' }}</span>
+                        </td>
+                        <td>{{ $otw ? $otw->format('H:i:s') : '-' }}</td>
+                        <td>{{ $tkk ? $tkk->format('H:i:s') : '-' }}</td>
+                        <td style="font-weight: bold;">
+                            {{ $duration !== null ? $duration . ' Min' : '-' }}
+                        </td>
+                    </tr>
                 @endforeach
             </tbody>
         </table>
