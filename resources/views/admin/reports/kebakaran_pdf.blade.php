@@ -6,12 +6,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Laporan Kejadian Kebakaran</title>
     <style>
+        @page {
+            margin: 10mm 12mm;
+        }
+
         body {
             font-family: 'Arial', sans-serif;
             font-size: 11pt;
             line-height: 1.4;
             margin: 0;
-            padding: 30px;
+            padding: 15px;
             color: #000;
             background-color: #fff;
         }
