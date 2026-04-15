@@ -776,7 +776,8 @@
             </tr>
         </table>
     </div>
-    <!-- Halaman 3: Data Respon Armada -->
+    <!-- Halaman 3: Foto Kejadian -->
+    @if(isset($photos) && $photos->count() > 0)
     <div class="paper">
         <div class="header">
             <img src="{{ public_path('logo-dinas.png') }}" class="logo-dinas" alt="Logo">
@@ -790,87 +791,165 @@
         </div>
 
         <div class="ba-container">
-            <div class="ba-title">Data Respon Armada Dispatch</div>
-            <p style="text-align: center; margin-top: 5px; font-size: 10pt;">Daftar unit mobil yang dikerahkan ke lokasi
-                kejadian</p>
+            <div class="ba-title">Dokumentasi Foto Kejadian</div>
+            <p style="text-align: center; margin-top: 5px; font-size: 10pt;">Foto yang diambil oleh petugas di lokasi kejadian</p>
+        </div>
+
+        <table style="width: 100%; border-collapse: collapse; margin-top: 15px;">
+            @foreach($photos->chunk(2) as $row)
+            <tr>
+                @foreach($row as $item)
+                <td style="width: 50%; padding: 10px; vertical-align: top; text-align: center;">
+                    <img src="{{ public_path('storage/' . $item->photo->photo_path) }}"
+                         style="width: 100%; height: 210px; border: 1px solid #ccc;"
+                         alt="Foto Kejadian">
+                    <div style="margin-top: 6px; font-size: 9pt; color: #333; text-align: left;">
+                        @if($item->photo->description)
+                            <em>{{ $item->photo->description }}</em><br>
+                        @endif
+                        <strong>Petugas:</strong> {{ $item->uploader }}
+                    </div>
+                </td>
+                @endforeach
+                {{-- Jika baris terakhir hanya 1 foto, isi kolom kosong --}}
+                @if($row->count() === 1)
+                <td style="width: 50%;"></td>
+                @endif
+            </tr>
+            @endforeach
+        </table>
+    </div>
+    @endif
+
+    <!-- Halaman 4: Data Respon Unit Armada -->
+    <div class="paper">
+        <div class="header">
+            <img src="{{ public_path('logo-dinas.png') }}" class="logo-dinas" alt="Logo">
+            <h1>Pemerintah Kabupaten Bekasi</h1>
+            <h2>Dinas Pemadam Kebakaran</h2>
+            <p>Jalan Teuku Umar No.1 Cikarang Barat</p>
+            <p>Desa Ganda Sari Kecamatan Cikarang Barat Kabupaten Bekasi – Jawa Barat</p>
+            <p>(021)-89101527</p>
+            <div class="bekasi">B E K A S I</div>
+            <img src="{{ public_path('logo-damkar.png') }}" class="logo-damkar" alt="Logo">
+        </div>
+
+        <div class="ba-container">
+            <div class="ba-title">Data Respon Unit Armada</div>
+            <p style="text-align: center; margin-top: 5px; font-size: 10pt;">Detail waktu respon setiap unit yang dikerahkan ke lokasi kejadian</p>
         </div>
 
         <style>
-            .fleet-table {
+            .unit-card {
+                margin-top: 18px;
+                margin-bottom: 20px;
+            }
+
+            .unit-info {
+                font-size: 10.5pt;
+                line-height: 1.8;
+                margin-bottom: 8px;
+            }
+
+            .unit-time-table {
                 width: 100%;
                 border-collapse: collapse;
-                margin-top: 10px;
                 font-size: 10pt;
             }
 
-            .fleet-table th {
-                background-color: #f2f2f2;
+            .unit-time-table th {
                 border: 1px solid #000;
-                padding: 8px 5px;
+                padding: 7px 10px;
                 text-align: center;
-                text-transform: uppercase;
+                font-weight: bold;
+                background-color: #f2f2f2;
             }
 
-            .fleet-table td {
+            .unit-time-table td {
                 border: 1px solid #000;
-                padding: 8px 5px;
-                text-align: center;
+                padding: 7px 10px;
                 vertical-align: middle;
             }
 
-            .fleet-table .text-left {
+            .unit-time-table .col-desc {
+                width: 55%;
                 text-align: left;
+            }
+
+            .unit-time-table .col-time {
+                width: 25%;
+                text-align: center;
+            }
+
+            .unit-time-table .col-dur {
+                width: 20%;
+                text-align: center;
+                font-weight: bold;
             }
         </style>
 
-        <table class="fleet-table">
-            <thead>
-                <tr>
-                    <th style="width: 30px;">No.</th>
-                    <th>Unit / No. Polisi</th>
-                    <th>Komandan / Driver</th>
-                    <th>Berangkat (OTW)</th>
-                    <th>Sampai (TKK)</th>
-                    <th style="width: 80px;">Durasi (Mnt)</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach($dispatches as $index => $d)
-                    @php
-                        $otw = $d->otw_scene_at;
-                        $tkk = $d->pickup_at;
-                        $duration = null;
-                        if ($otw && $tkk) {
-                            $duration = $tkk->diffInMinutes($otw);
-                        }
-                    @endphp
-                    <tr>
-                        <td>{{ $index + 1 }}</td>
-                        <td class="text-left">
-                            <strong>{{ $d->ambulance?->name ?? 'Unit Damkar' }}</strong><br>
-                            <span style="font-size: 9pt;">{{ $d->ambulance?->plate_number ?? '-' }}</span>
-                        </td>
-                        <td class="text-left">
-                            {{ $d->driver?->name ?? '-' }}<br>
-                            <span style="font-size: 8pt; color: #555;">{{ $d->driver?->pleton?->name ?? '-' }}</span>
-                        </td>
-                        <td>{{ $otw ? $otw->format('H:i:s') : '-' }}</td>
-                        <td>{{ $tkk ? $tkk->format('H:i:s') : '-' }}</td>
-                        <td style="font-weight: bold;">
-                            {{ $duration !== null ? $duration . ' Min' : '-' }}
-                        </td>
-                    </tr>
-                @endforeach
-            </tbody>
-        </table>
+        @foreach($dispatches as $index => $d)
+        @php
+            $otw      = $d->otw_scene_at;
+            $tiba     = $d->pickup_at;
+            $selesai  = $d->hospital_at;
+            $kembali  = $d->completed_at;
+            $assigned = $d->assigned_at;
 
-        <div style="margin-top: 30px; font-size: 10pt;">
-            <p><strong>Catatan:</strong></p>
-            <ul>
-                <li>Waktu di atas menggunakan zona waktu lokal (WIB).</li>
-                <li>Durasi dihitung dari unit keluar pos (OTW) hingga tiba di lokasi kejadian (TKK).</li>
-            </ul>
+            $durOtw     = ($otw && $tiba)        ? $tiba->diffInMinutes($otw)        : null;
+            $durTkp     = ($tiba && $selesai)     ? $selesai->diffInMinutes($tiba)     : null;
+            $durKembali = ($selesai && $kembali)  ? $kembali->diffInMinutes($selesai)  : null;
+
+            $statusMap = [
+                'pending'                => 'PENDING',
+                'on_the_way_scene'       => 'OTW',
+                'on_scene'               => 'DI TKP',
+                'on_the_way_kantor_pos'  => 'KEMBALI',
+                'completed'              => 'COMPLETED',
+            ];
+            $statusLabel = $statusMap[$d->status] ?? strtoupper($d->status);
+        @endphp
+
+        <div class="unit-card">
+            <div class="unit-info">
+                <strong>Unit {{ $index + 1 }}:</strong> {{ $d->ambulance?->name ?? 'Unit Damkar' }} ({{ $d->ambulance?->plate_number ?? '-' }})<br>
+                <strong>Petugas:</strong> {{ $d->driver?->name ?? '-' }}<br>
+                <strong>Waktu Penugasan:</strong> {{ $assigned ? $assigned->format('d-m-Y H:i') : '-' }}<br>
+                <strong>Status Unit:</strong> {{ $statusLabel }}
+            </div>
+
+            <table class="unit-time-table">
+                <thead>
+                    <tr>
+                        <th class="col-desc">Keterangan Waktu</th>
+                        <th class="col-time">Jam</th>
+                        <th class="col-dur">Durasi</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="col-desc">Berangkat (OTW)</td>
+                        <td class="col-time">{{ $otw ? $otw->format('H:i:s') : '-' }}</td>
+                        <td class="col-dur" rowspan="2">{{ $durOtw !== null ? $durOtw . ' mnt' : '-' }}</td>
+                    </tr>
+                    <tr>
+                        <td class="col-desc">Tiba di TKP</td>
+                        <td class="col-time">{{ $tiba ? $tiba->format('H:i:s') : '-' }}</td>
+                    </tr>
+                    <tr>
+                        <td class="col-desc">Selesai TKP (Kembali)</td>
+                        <td class="col-time">{{ $selesai ? $selesai->format('H:i:s') : '-' }}</td>
+                        <td class="col-dur">{{ $durTkp !== null ? $durTkp . ' mnt' : '-' }}</td>
+                    </tr>
+                    <tr>
+                        <td class="col-desc">Sampai di Mako</td>
+                        <td class="col-time">{{ $kembali ? $kembali->format('H:i:s') : '-' }}</td>
+                        <td class="col-dur">{{ $durKembali !== null ? $durKembali . ' mnt' : '-' }}</td>
+                    </tr>
+                </tbody>
+            </table>
         </div>
+        @endforeach
     </div>
 </body>
 
