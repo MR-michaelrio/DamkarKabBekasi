@@ -7,7 +7,7 @@
     <title>Laporan Kejadian Kebakaran</title>
     <style>
         @page {
-            margin: 10mm 12mm;
+            margin: 0mm 5mm;
         }
 
         body {
