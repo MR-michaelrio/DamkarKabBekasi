@@ -315,28 +315,13 @@ class DispatchController extends Controller
 
     public function exportSinglePdf(Dispatch $dispatch)
     {
-        $dispatch->load(['driver', 'ambulance']);
+        $dispatch->load(['driver', 'ambulance', 'driver.pleton']);
 
-        // Load activity photos attached to this dispatch
-        $activityLogs = \App\Models\ActivityLog::where('model', 'Dispatch')
-            ->where('model_id', $dispatch->id)
-            ->with(['photos'])
-            ->get();
-
-        $photos = collect();
-        foreach ($activityLogs as $log) {
-            foreach ($log->photos as $photo) {
-                $photos->push((object)[
-                    'photo'    => $photo,
-                    'uploader' => $dispatch->driver?->name ?? 'Petugas',
-                ]);
-            }
-        }
-
+        // ── Kumpulkan semua dispatch terkait (satu event/patient_request) ──
         $dispatches = collect([$dispatch]);
         if ($dispatch->patient_request_id) {
             $dispatches = Dispatch::where('patient_request_id', $dispatch->patient_request_id)
-                ->with(['driver', 'ambulance'])
+                ->with(['driver', 'ambulance', 'driver.pleton'])
                 ->get();
         }
 
@@ -345,30 +330,170 @@ class DispatchController extends Controller
             ->filter()
             ->values();
 
-        $incident = [
-            'request_date'   => $dispatch->request_date,
-            'pickup_time'    => $dispatch->pickup_time,
-            'otw_at'         => $dispatch->otw_scene_at,
-            'arrive_at'      => $dispatch->pickup_at,
-            'handled_at'     => $dispatch->hospital_at,
-            'completed_at'   => $dispatch->completed_at,
-            'address'        => $dispatch->pickup_address,
-            'kelurahan'      => $dispatch->kelurahan,
-            'kecamatan'      => $dispatch->kecamatan,
-            'reporter_name'  => $dispatch->patient_name,
-            'reporter_phone' => $dispatch->patient_phone,
-            'condition'      => $dispatch->patient_condition,
-            'unit_count'     => $dispatches->count(),
-            'plate_number'   => $dispatch->ambulance?->plate_number,
-            'other_plates'   => $otherPlates,
-            'nomor'          => $dispatch->nomor,
-            'rt'             => $dispatch->rt,
-            'rw'             => $dispatch->rw,
-            'blok'           => $dispatch->blok,
-        ];
+        $plateNumbers = $dispatches
+            ->map(fn($d) => $d->ambulance?->plate_number)
+            ->filter()
+            ->values();
 
-        $pdf = Pdf::loadView('admin.reports.kebakaran_pdf', compact('incident', 'dispatches', 'photos'))
-            ->setPaper('a4', 'portrait');
+        // ── Kumpulkan foto dari ActivityLog ──
+        // Cari ActivityLog yang terkait dengan dispatch ini (dari semua driver yg terlibat)
+        $driverIds = $dispatches->pluck('driver_id')->filter()->values()->toArray();
+
+        $activityLogs = \App\Models\ActivityLog::where(function ($q) use ($dispatch, $driverIds) {
+                $q->where(function ($q2) use ($dispatch) {
+                    $q2->where('model', 'Dispatch')->where('model_id', $dispatch->id);
+                })->orWhere(function ($q2) use ($dispatch) {
+                    $q2->where('model', 'dispatch')->where('model_id', $dispatch->id);
+                });
+                if ($dispatch->patient_request_id) {
+                    $q->orWhere(function ($q2) use ($dispatch) {
+                        $q2->where('model', 'PatientRequest')->where('model_id', $dispatch->patient_request_id);
+                    });
+                }
+            })
+            ->with(['photos', 'user'])
+            ->get();
+
+        // Juga ambil ActivityLog by user_id driver yang terlibat pada tanggal yang sama
+        if ($activityLogs->isEmpty() && count($driverIds) > 0) {
+            $activityLogs = \App\Models\ActivityLog::whereIn('user_id', $driverIds)
+                ->with(['photos', 'user'])
+                ->whereHas('photos')
+                ->orderByDesc('created_at')
+                ->get();
+        }
+
+        $photos = collect();
+        foreach ($activityLogs as $log) {
+            foreach ($log->photos as $photo) {
+                $driverName = $dispatches->first(fn($d) => $d->driver_id == $log->user_id)?->driver?->name
+                    ?? $log->user?->name
+                    ?? $dispatch->driver?->name
+                    ?? 'Petugas';
+                $photos->push((object)[
+                    'photo'    => $photo,
+                    'uploader' => $driverName,
+                ]);
+            }
+        }
+
+        // ── Format tanggal ──
+        $requestDate = $dispatch->request_date
+            ? ($dispatch->request_date instanceof \Carbon\Carbon ? $dispatch->request_date : Carbon::parse($dispatch->request_date))
+            : null;
+        $otwAt      = $dispatch->otw_scene_at;
+        $arriveAt   = $dispatch->pickup_at;
+        $handledAt  = $dispatch->hospital_at;
+        $completedAt = $dispatch->completed_at;
+
+        $hariId   = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
+        $bulanId  = ['','Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+
+        $hariNama  = $requestDate ? $hariId[$requestDate->dayOfWeek] : '..........';
+        $bulanNama = $requestDate ? $bulanId[(int)$requestDate->format('n')] : '..........';
+        $tglAngka  = $requestDate ? $requestDate->format('d') : '...';
+        $tahun     = $requestDate ? $requestDate->format('Y') : '2026';
+
+        $dayDate   = $requestDate ? "{$hariNama}, {$tglAngka} {$bulanNama} {$tahun}" : '-';
+        $placeDate = 'Bekasi, ' . ($requestDate ? "{$tglAngka} {$bulanNama} {$tahun}" : now()->format('d F Y'));
+
+        $timeReport    = $dispatch->pickup_time   ? substr($dispatch->pickup_time, 0, 5) : '-';
+        $timeDeparture = $otwAt    ? $otwAt->format('H:i')    : '-';
+        $timeArrival   = $arriveAt ? $arriveAt->format('H:i') : '-';
+        $timeFinished  = $handledAt ? $handledAt->format('H:i') : '-';
+
+        $lokasiLengkap = collect([$dispatch->pickup_address, $dispatch->kelurahan, $dispatch->kecamatan])
+            ->filter()->implode(', ');
+
+        $pdf = Pdf::loadView('admin.reports.kebakaran_pdf', [
+            // ── Halaman 1: Info Surat ──
+            'nomor'       => $dispatch->nomor ?? '-',
+            'sifat'       => 'Penting',
+            'lampiran'    => '-',
+            'place_date'  => $placeDate,
+
+            // ── Halaman 1: Data Kejadian ──
+            'day_date'        => $dayDate,
+            'time_report'     => $timeReport,
+            'time_departure'  => $timeDeparture,
+            'time_arrival'    => $timeArrival,
+            'time_finished'   => $timeFinished,
+            'chronology'      => $dispatch->patient_condition === 'kebakaran' ? 'Kebakaran' : ucfirst($dispatch->patient_condition ?? '-'),
+            'address'         => $dispatch->pickup_address ?? '-',
+            'village'         => $dispatch->kelurahan ?? '-',
+            'district'        => $dispatch->kecamatan ?? '-',
+            'reporter_name'   => $dispatch->patient_name ?? '-',
+            'reporter_phone'  => $dispatch->patient_phone ?? '-',
+            'community_leader_name'  => '-',
+            'community_leader_phone' => '-',
+            'area_size'       => '-',
+            'building_type'   => '-',
+            'owner_name'      => '-',
+            'owner_age'       => '-',
+            'owner_phone'     => '-',
+            'owner_occupation'=> '-',
+            'fire_origin'     => '-',
+            'unit_count'      => $dispatches->count() . ' Unit',
+            'vehicle_number'  => $plateNumbers->implode(', '),
+            'additional_units'=> $otherPlates->toArray(),
+            'scba_usage'      => '0',
+            'apar_usage'      => '0',
+            'injured'         => '0',
+            'fatalities'      => '0',
+            'displaced'       => '0',
+
+            // ── Tanda tangan Halaman 1 ──
+            'approver_name' => 'MULYADI HADI SAPUTRA, SE',
+            'approver_rank' => 'Pembina – IV/a',
+            'approver_nip'  => '19740410 200311 1 001',
+            'officer_name'  => 'AHMAD FAUZI, ST',
+            'officer_rank'  => 'Penata Tk.I – III/d',
+            'officer_nip'   => '19751104 200901 1 001',
+
+            // ── Halaman 2: Berita Acara ──
+            'ba_hari'            => $hariNama,
+            'ba_tanggal'         => $tglAngka,
+            'ba_bulan'           => $bulanNama,
+            'ba_tahun'           => $tahun,
+            'ba_pukul'           => $timeReport,
+            'ba_hari_tanggal'    => $dayDate,
+            'ba_waktu_laporan'   => $timeReport,
+            'ba_waktu_berangkat' => $timeDeparture,
+            'ba_waktu_tiba'      => $timeArrival,
+            'ba_waktu_selesai'   => $timeFinished,
+            'ba_kronologi'       => '-',
+            'ba_lokasi_kebakaran'=> $lokasiLengkap ?: '-',
+            'ba_jenis_bangunan'  => '-',
+            'ba_penyebab'        => '-',
+            'ba_luas_area'       => '-',
+            'ba_nama_pemilik'    => '-',
+            'ba_umur_pemilik'    => '-',
+            'ba_pekerjaan_pemilik' => '-',
+            'ba_alamat'          => $dispatch->pickup_address ?? '-',
+            'ba_kelurahan'       => $dispatch->kelurahan ?? '-',
+            'ba_kecamatan'       => $dispatch->kecamatan ?? '-',
+            'ba_nama_pelapor'    => $dispatch->patient_name ?? '-',
+            'ba_telp_pelapor'    => $dispatch->patient_phone ?? '-',
+            'ba_nama_rt_rw'      => 'RT ' . ($dispatch->rt ?? '-') . ' / RW ' . ($dispatch->rw ?? '-'),
+            'ba_telp_rt_rw'      => '-',
+            'ba_jumlah_unit'     => $dispatches->count(),
+            'ba_no_seri_kendaraan' => $plateNumbers->implode(', '),
+            'ba_bantuan_unit'    => $otherPlates->toArray(),
+            'ba_scba_usage'      => '0',
+            'ba_apar_usage'      => '0',
+            'ba_korban_luka'     => '0',
+            'ba_korban_jiwa'     => '0',
+            'ba_korban_terdampak'=> '0',
+            'ba_tanggal_laporan' => $placeDate,
+            'ba_komandan_regu'   => strtoupper($dispatch->driver?->name ?? 'KOMANDAN REGU'),
+            'ba_nip_danru'       => '-',
+            'ba_komandan_peleton'=> strtoupper($dispatch->driver?->pleton?->name ?? 'KOMANDAN PELETON'),
+            'ba_nip_danton'      => '-',
+
+            // ── Halaman 3 & 4: Foto + Armada ──
+            'dispatches' => $dispatches,
+            'photos'     => $photos,
+        ])->setPaper('a4', 'portrait');
 
         return $pdf->download('laporan-kebakaran-' . $dispatch->id . '-' . date('Ymd') . '.pdf');
     }
