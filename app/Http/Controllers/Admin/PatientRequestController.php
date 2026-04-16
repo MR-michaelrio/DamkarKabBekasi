@@ -15,7 +15,7 @@ class PatientRequestController extends Controller
 {
     public function exportPdf(PatientRequest $patientRequest)
     {
-        $patientRequest->load(['dispatches.driver', 'dispatches.ambulance']);
+        $patientRequest->load(['dispatches.driver', 'dispatches.ambulance', 'dispatches.pleton']);
 
         $primaryDispatch = $patientRequest->dispatches->first();
         $dispatchIds     = $patientRequest->dispatches->pluck('id');
@@ -44,30 +44,116 @@ class PatientRequestController extends Controller
             ->filter()
             ->values();
 
-        $incident = [
-            'request_date'   => $patientRequest->request_date,
-            'pickup_time'    => $patientRequest->pickup_time,
-            'otw_at'         => $primaryDispatch?->otw_scene_at,
-            'arrive_at'      => $primaryDispatch?->pickup_at,
-            'handled_at'     => $primaryDispatch?->hospital_at,
-            'completed_at'   => $primaryDispatch?->completed_at,
-            'address'        => $patientRequest->pickup_address,
-            'kelurahan'      => $patientRequest->kelurahan,
-            'kecamatan'      => $patientRequest->kecamatan,
-            'reporter_name'  => $patientRequest->patient_name,
-            'reporter_phone' => $patientRequest->phone,
-            'condition'      => $patientRequest->patient_condition,
-            'unit_count'     => $dispatches->count(),
-            'plate_number'   => $primaryDispatch?->ambulance?->plate_number,
-            'other_plates'   => $otherPlates,
-            'nomor'          => $patientRequest->nomor,
-            'rt'             => $patientRequest->rt,
-            'rw'             => $patientRequest->rw,
-            'blok'           => $patientRequest->blok,
-        ];
+        // ── Format waktu ──
+        $requestDate = \Carbon\Carbon::parse($patientRequest->request_date);
+        $dayDate = $requestDate->isoFormat('dddd, DD MMMM YYYY');
+        $placeDate = 'Bekasi, ' . $requestDate->format('d F Y');
+        $hariNama = $requestDate->isoFormat('dddd');
+        $tglAngka = $requestDate->format('d');
+        $bulanNama = $requestDate->isoFormat('MMMM');
+        $tahun = $requestDate->format('Y');
+        
+        $timeReport = $patientRequest->pickup_time ? substr($patientRequest->pickup_time, 0, 5) : '-';
+        $otwAt = $primaryDispatch?->otw_scene_at ? \Carbon\Carbon::parse($primaryDispatch->otw_scene_at) : null;
+        $arriveAt = $primaryDispatch?->pickup_at ? \Carbon\Carbon::parse($primaryDispatch->pickup_at) : null;
+        $handledAt = $primaryDispatch?->hospital_at ? \Carbon\Carbon::parse($primaryDispatch->hospital_at) : null;
+        
+        $timeDeparture = $otwAt ? $otwAt->format('H:i') : '-';
+        $timeArrival = $arriveAt ? $arriveAt->format('H:i') : '-';
+        $timeFinished = $handledAt ? $handledAt->format('H:i') : '-';
+        
+        $lokasiLengkap = collect([$patientRequest->pickup_address, $patientRequest->kelurahan, $patientRequest->kecamatan])
+            ->filter()->implode(', ');
 
-        $pdf = Pdf::loadView('admin.reports.kebakaran_pdf', compact('incident', 'dispatches', 'photos'))
-            ->setPaper('a4', 'portrait');
+        $pdf = Pdf::loadView('admin.reports.kebakaran_pdf', [
+            // ── Halaman 1: Info Surat ──
+            'nomor'       => $patientRequest->nomor ?? '-',
+            'sifat'       => 'Penting',
+            'lampiran'    => '-',
+            'place_date'  => $placeDate,
+
+            // ── Halaman 1: Data Kejadian ──
+            'day_date'        => $dayDate,
+            'time_report'     => $timeReport,
+            'time_departure'  => $timeDeparture,
+            'time_arrival'    => $timeArrival,
+            'time_finished'   => $timeFinished,
+            'chronology'      => $patientRequest->patient_condition === 'kebakaran' ? 'Kebakaran' : ucfirst($patientRequest->patient_condition ?? '-'),
+            'address'         => $patientRequest->pickup_address ?? '-',
+            'village'         => $patientRequest->kelurahan ?? '-',
+            'district'        => $patientRequest->kecamatan ?? '-',
+            'reporter_name'   => $patientRequest->patient_name ?? '-',
+            'reporter_phone'  => $patientRequest->phone ?? '-',
+            'community_leader_name'  => '-',
+            'community_leader_phone' => '-',
+            'area_size'       => '-',
+            'building_type'   => '-',
+            'owner_name'      => '-',
+            'owner_age'       => '-',
+            'owner_phone'     => '-',
+            'owner_occupation'=> '-',
+            'fire_origin'     => '-',
+            'unit_count'      => $dispatches->count() . ' Unit',
+            'vehicle_number'  => $dispatches->map(fn($d) => trim(($d->ambulance?->plate_number ?? '') . ' (' . ($d->ambulance?->code ?? '-') . ')'))->filter()->implode(', '),
+            'additional_units'=> $otherPlates->toArray(),
+            'scba_usage'      => '0',
+            'apar_usage'      => '0',
+            'injured'         => '0',
+            'fatalities'      => '0',
+            'displaced'       => '0',
+
+            // ── Tanda tangan Halaman 1 ──
+            'approver_name' => 'MULYADI HADI SAPUTRA, SE',
+            'approver_rank' => 'Pembina – IV/a',
+            'approver_nip'  => '19740410 200311 1 001',
+            'officer_name'  => 'AHMAD FAUZI, ST',
+            'officer_rank'  => 'Penata Tk.I – III/d',
+            'officer_nip'   => '19751104 200901 1 001',
+
+            // ── Halaman 2: Berita Acara ──
+            'ba_hari'            => $hariNama,
+            'ba_tanggal'         => $tglAngka,
+            'ba_bulan'           => $bulanNama,
+            'ba_tahun'           => $tahun,
+            'ba_pukul'           => $timeReport,
+            'ba_hari_tanggal'    => $dayDate,
+            'ba_waktu_laporan'   => $timeReport,
+            'ba_waktu_berangkat' => $timeDeparture,
+            'ba_waktu_tiba'      => $timeArrival,
+            'ba_waktu_selesai'   => $timeFinished,
+            'ba_kronologi'       => '-',
+            'ba_lokasi_kebakaran'=> $lokasiLengkap ?: '-',
+            'ba_jenis_bangunan'  => '-',
+            'ba_penyebab'        => '-',
+            'ba_luas_area'       => '-',
+            'ba_nama_pemilik'    => '-',
+            'ba_umur_pemilik'    => '-',
+            'ba_pekerjaan_pemilik' => '-',
+            'ba_alamat'          => $patientRequest->pickup_address ?? '-',
+            'ba_kelurahan'       => $patientRequest->kelurahan ?? '-',
+            'ba_kecamatan'       => $patientRequest->kecamatan ?? '-',
+            'ba_nama_pelapor'    => $patientRequest->patient_name ?? '-',
+            'ba_telp_pelapor'    => $patientRequest->phone ?? '-',
+            'ba_nama_rt_rw'      => 'RT ' . ($patientRequest->rt ?? '-') . ' / RW ' . ($patientRequest->rw ?? '-'),
+            'ba_telp_rt_rw'      => '-',
+            'ba_jumlah_unit'     => $dispatches->count(),
+            'ba_no_seri_kendaraan' => $dispatches->map(fn($d) => $d->ambulance?->plate_number)->filter()->implode(', '),
+            'ba_bantuan_unit'    => $otherPlates->toArray(),
+            'ba_scba_usage'      => '0',
+            'ba_apar_usage'      => '0',
+            'ba_korban_luka'     => '0',
+            'ba_korban_jiwa'     => '0',
+            'ba_korban_terdampak'=> '0',
+            'ba_tanggal_laporan' => $placeDate,
+            'ba_komandan_regu'   => strtoupper($primaryDispatch?->driver?->name ?? 'KOMANDAN REGU'),
+            'ba_nip_danru'       => '-',
+            'ba_komandan_peleton'=> strtoupper($primaryDispatch?->driver?->pleton?->name ?? 'KOMANDAN PELETON'),
+            'ba_nip_danton'      => '-',
+
+            // ── Halaman 3 & 4: Foto + Armada ──
+            'dispatches' => $dispatches,
+            'photos'     => $photos,
+        ])->setPaper('a4', 'portrait');
 
         return $pdf->download('laporan-kebakaran-' . $patientRequest->id . '-' . date('Ymd') . '.pdf');
     }

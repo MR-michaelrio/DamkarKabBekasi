@@ -719,13 +719,13 @@
                 <td class="num-col-ba">17.</td>
                 <td class="label-col-ba">Penggunaan BA/SCBA</td>
                 <td class="colon-col-ba">:</td>
-                <td>- {{ $ba_scba_usage ?? '...' }} Tabung</td>
+                <td>{{ $ba_scba_usage ?? '0' }} Tabung</td>
             </tr>
             <tr>
                 <td></td>
                 <td>Penggunaan APAR</td>
                 <td class="colon-col-ba">:</td>
-                <td>- {{ $ba_apar_usage ?? '...' }} Tabung</td>
+                <td>{{ $ba_apar_usage ?? '0' }} Tabung</td>
             </tr>
             <tr>
                 <td class="num-col-ba">18.</td>
