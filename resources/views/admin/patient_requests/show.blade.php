@@ -10,10 +10,16 @@
         <h1 class="text-2xl font-bold text-gray-800">
             📋 Detail Laporan Masyarakat
         </h1>
-        <a href="{{ route('admin.patient-requests.pdf', $patientRequest->id) }}" 
-           class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-bold shadow-md transition transform active:scale-95 flex items-center gap-2">
-            📄 Cetak PDF
-        </a>
+        <div class="flex gap-3">
+            <a href="{{ route('admin.patient-requests.edit', $patientRequest->id) }}" 
+               class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-bold shadow-md transition transform active:scale-95 flex items-center gap-2">
+                ✏️ Edit
+            </a>
+            <a href="{{ route('admin.patient-requests.pdf', $patientRequest->id) }}" 
+               class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-bold shadow-md transition transform active:scale-95 flex items-center gap-2">
+                📄 Cetak PDF
+            </a>
+        </div>
     </div>
 
     <!-- Request Details Card -->
