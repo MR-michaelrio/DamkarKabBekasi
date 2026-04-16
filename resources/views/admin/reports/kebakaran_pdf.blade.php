@@ -41,7 +41,7 @@
         .header .logo-dinas {
             position: absolute;
             left: 0;
-            top: 0;
+            top: 10;
             width: 100px;
             height: auto;
         }
