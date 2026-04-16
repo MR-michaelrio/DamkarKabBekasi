@@ -24,6 +24,7 @@ Route::get('/', function () {
     return view('home');
 })->name('home');
 
+
 Route::get('/portal', function () {
     return view('auth.portal');
 })->name('portal');

@@ -964,7 +964,7 @@
 
         <div class="unit-card">
             <div class="unit-info">
-                <strong>Unit {{ $index + 1 }}:</strong> {{ $d->ambulance?->name ?? 'Unit Damkar' }} ({{ $d->ambulance?->plate_number ?? '-' }})<br>
+                <strong>Unit {{ $index + 1 }}:</strong> {{ $d->ambulance?->plate_number ?? 'Unit Damkar' }} ({{ $d->ambulance?->code ?? '-' }})<br>
                 <strong>Petugas:</strong> {{ $d->driver?->name ?? '-' }}<br>
                 <strong>Waktu Penugasan:</strong> {{ $assigned ? $assigned->format('d-m-Y H:i') : '-' }}<br>
                 <strong>Status Unit:</strong> {{ $statusLabel }}
