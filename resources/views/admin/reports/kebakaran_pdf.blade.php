@@ -805,7 +805,15 @@
             <tr>
                 @foreach($row as $item)
                 <td style="width: 50%; padding: 10px; vertical-align: top; text-align: center;">
-                    <img src="{{ 'file://' . storage_path('app/public/' . $item->photo->photo_path) }}"
+                    @php
+                        $photoPath = storage_path('app/public/' . $item->photo->photo_path);
+                        $photoSrc = '';
+                        if (file_exists($photoPath)) {
+                            $mime = $item->photo->mime_type ?? 'image/jpeg';
+                            $photoSrc = 'data:' . $mime . ';base64,' . base64_encode(file_get_contents($photoPath));
+                        }
+                    @endphp
+                    <img src="{{ $photoSrc }}"
                          style="width: 100%; height: 210px; border: 1px solid #ccc;"
                          alt="Foto Kejadian">
                     <div style="margin-top: 6px; font-size: 9pt; color: #333; text-align: left;">
@@ -848,7 +856,15 @@
             <tr>
                 @foreach($row as $item)
                 <td style="width: 50%; padding: 10px; vertical-align: top; text-align: center;">
-                    <img src="{{ 'file://' . storage_path('app/public/' . $item->photo->photo_path) }}"
+                    @php
+                        $photoPath = storage_path('app/public/' . $item->photo->photo_path);
+                        $photoSrc = '';
+                        if (file_exists($photoPath)) {
+                            $mime = $item->photo->mime_type ?? 'image/jpeg';
+                            $photoSrc = 'data:' . $mime . ';base64,' . base64_encode(file_get_contents($photoPath));
+                        }
+                    @endphp
+                    <img src="{{ $photoSrc }}"
                          style="width: 100%; height: 210px; border: 1px solid #ccc;"
                          alt="Foto Kejadian">
                     <div style="margin-top: 6px; font-size: 9pt; color: #333; text-align: left;">
