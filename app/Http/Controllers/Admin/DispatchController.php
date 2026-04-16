@@ -403,7 +403,12 @@ class DispatchController extends Controller
         $tahun     = $requestDate ? $requestDate->format('Y') : '2026';
 
         $dayDate   = $requestDate ? "{$hariNama}, {$tglAngka} {$bulanNama} {$tahun}" : '-';
-        $placeDate = 'Bekasi, ' . ($requestDate ? "{$tglAngka} {$bulanNama} {$tahun}" : now()->format('d F Y'));
+        $placeDate = 'Bekasi, ' . ($requestDate ? "{$tglAngka} {$bulanNama} {$tahun}" : (function() {
+            $now = now();
+            $hariId = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
+            $bulanId = ['','Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+            return $now->format('d') . ' ' . $bulanId[(int)$now->format('n')] . ' ' . $now->format('Y');
+        })());
 
         $timeReport    = $dispatch->pickup_time   ? substr($dispatch->pickup_time, 0, 5) : '-';
         $timeDeparture = $otwAt    ? $otwAt->format('H:i')    : '-';

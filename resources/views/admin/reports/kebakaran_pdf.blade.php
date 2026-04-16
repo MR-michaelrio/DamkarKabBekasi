@@ -318,7 +318,7 @@
                     <div class="right-info">
                         <table style="margin-left: auto;">
                             <tr>
-                                <td>{{ $place_date ?? 'Bekasi, ' . date('d F Y') }}</td>
+                                <td>{{ $place_date ?? 'Bekasi' }}</td>
                             </tr>
                             <tr>
                                 <td>Kepada</td>
@@ -522,7 +522,7 @@
                 </td>
                 <td>
                     <p>&nbsp;</p>
-                    <p class="signature-title">KEPALA SEKSI PEMADAM DAN INVESTIGASI</p>
+                    <p class="signature-title">KEPALA SEKSI PEMADAM DAN <br>INVESTIGASI</p>
                     <p class="signature-name">{{ $officer_name ?? 'AHMAD FAUZI, ST' }}</p>
                     <p class="signature-rank">{{ $officer_rank ?? 'Penata Tk.I – III/d' }}</p>
                     <p>NIP. {{ $officer_nip ?? '19751104 200901 1 001' }}</p>
@@ -761,7 +761,7 @@
             <tr>
                 <td></td>
                 <td>
-                    Bekasi, {{ $ba_tanggal_laporan ?? date('d F Y') }}
+                    {{ $ba_tanggal_laporan ?? 'Bekasi' }}
                 </td>
             </tr>
             <tr>
