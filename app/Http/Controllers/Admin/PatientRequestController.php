@@ -15,7 +15,7 @@ class PatientRequestController extends Controller
 {
     public function exportPdf(PatientRequest $patientRequest)
     {
-        $patientRequest->load(['dispatches.driver', 'dispatches.ambulance', 'dispatches.pleton']);
+        $patientRequest->load(['dispatches.driver.pleton', 'dispatches.ambulance']);
 
         $primaryDispatch = $patientRequest->dispatches->first();
         $dispatchIds     = $patientRequest->dispatches->pluck('id');
