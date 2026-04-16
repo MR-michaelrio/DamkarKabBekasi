@@ -131,7 +131,17 @@
         <tr>
             <td class="info-label">Hari</td>
             <td class="info-sep">:</td>
-            <td>{{ $dispatch->request_date ? \Carbon\Carbon::parse($dispatch->request_date)->translatedFormat('l') : '-' }}</td>
+            <td>
+                @php
+                    if($dispatch->request_date) {
+                        $date = \Carbon\Carbon::parse($dispatch->request_date);
+                        $hariId = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
+                        echo $hariId[$date->dayOfWeek];
+                    } else {
+                        echo '-';
+                    }
+                @endphp
+            </td>
         </tr>
         <tr>
             <td class="info-label">Tanggal</td>

@@ -93,7 +93,7 @@
         <tr>
             <td class="label">Hari / Tanggal Kejadian</td>
             <td class="colon">:</td>
-            <td>{{ \Carbon\Carbon::parse($patientRequest->request_date)->translatedFormat('l, d-m-Y') }}</td>
+            <td>{{ $dayDate ?? '-' }}</td>
         </tr>
         <tr>
             <td class="label">Jam Kejadian</td>

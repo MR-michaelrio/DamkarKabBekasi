@@ -46,10 +46,18 @@ class PatientRequestController extends Controller
 
         // ── Format waktu ──
         $requestDate = \Carbon\Carbon::parse($patientRequest->request_date);
-        $dayDate = $requestDate->isoFormat('dddd, DD MMMM YYYY');
-        $placeDate = 'Bekasi, ' . $requestDate->format('d F Y');
-        $hariNama = $requestDate->isoFormat('dddd');
+        
+        // Format tanggal Bahasa Indonesia
+        $hariId   = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
+        $bulanId  = ['','Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+        
+        $hariNama = $hariId[$requestDate->dayOfWeek];
+        $bulanNama = $bulanId[(int)$requestDate->format('n')];
         $tglAngka = $requestDate->format('d');
+        $tahun = $requestDate->format('Y');
+        
+        $dayDate = "{$hariNama}, {$tglAngka} {$bulanNama} {$tahun}";
+        $placeDate = 'Bekasi, ' . $requestDate->format('d') . ' ' . $bulanNama . ' ' . $tahun;
         $bulanNama = $requestDate->isoFormat('MMMM');
         $tahun = $requestDate->format('Y');
         
