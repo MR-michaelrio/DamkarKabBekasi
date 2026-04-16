@@ -23,7 +23,7 @@ class PatientRequestController extends Controller
             'patient_name' => 'required|string|max:255',
             'service_type' => 'required|in:kebakaran,rescue',
             'request_date' => 'required|date',
-            'pickup_time' => 'required',
+            'pickup_time' => 'required|date_format:H:i',
             'phone' => 'required|string|max:20',
             'pickup_address' => 'required|string',
             'destination' => 'nullable|string',

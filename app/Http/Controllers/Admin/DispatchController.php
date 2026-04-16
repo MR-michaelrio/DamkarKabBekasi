@@ -45,7 +45,7 @@ class DispatchController extends Controller
         $validated = $request->validate([
             'patient_name' => 'required',
             'request_date' => 'required|date',
-            'pickup_time' => 'required',
+            'pickup_time' => 'required|date_format:H:i',
             'patient_condition' => 'required|in:kebakaran,rescue',
             'pickup_address' => 'required',
             'destination' => 'nullable',
