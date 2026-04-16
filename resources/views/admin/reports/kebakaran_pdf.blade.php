@@ -49,7 +49,7 @@
         .header .logo-damkar {
             position: absolute;
             right: 0;
-            top: 0;
+            top: 15;
             width: 120px;
             height: auto;
         }
