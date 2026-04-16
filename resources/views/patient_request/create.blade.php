@@ -47,13 +47,6 @@
         <div class="bg-white shadow-lg rounded-lg p-8">
             <form id="request-form" method="POST" action="{{ route('patient-request.store') }}" class="space-y-6">
                 @csrf
-
-                <!-- INFO BOX -->
-                <div class="p-4 bg-amber-50 border border-amber-300 rounded-lg">
-                    <p class="text-sm text-amber-800"><strong>ℹ️ Data lengkap akan dilengkapi oleh admin</strong><br>
-                    Warga hanya perlu mengisi informasi dasar kejadian untuk laporan awal.</p>
-                </div>
-
                 <!-- E. DATA PELAPOR -->
                 <div class="border-t-4 border-red-600 pt-4 mb-6">
                     <h2 class="text-lg font-bold text-gray-900 mb-4">👤 Data Pelapor</h2>
@@ -106,9 +99,9 @@
                     
                     <div>
                         <label class="block text-sm font-bold text-gray-700 mb-2">
-                            Deskripsikan Kejadian <span class="text-red-500">*</span>
+                            Deskripsikan Kejadian
                         </label>
-                        <textarea name="event_description" rows="4" required placeholder="Deskripsikan kejadian secara detail (apa yang terjadi, dimulai dari kapan, dll)"
+                        <textarea name="event_description" rows="4" placeholder="Deskripsikan kejadian secara detail (apa yang terjadi, dimulai dari kapan, dll)"
                             class="w-full border border-gray-300 rounded-lg shadow-sm focus:ring-red-500 focus:border-red-500 py-2 px-3">{{ old('event_description') }}</textarea>
                     </div>
                 </div>
