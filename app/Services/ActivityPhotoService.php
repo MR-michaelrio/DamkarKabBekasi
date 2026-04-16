@@ -72,8 +72,17 @@ class ActivityPhotoService
         }
 
         try {
-            // Generate unique filename with .jpg extension
-            $filename    = now()->timestamp . '_' . uniqid() . '.jpg';
+            // Get next sequence number first (needed for filename)
+            $nextSequence = $activityLog->photos()->max('sequence') + 1;
+            
+            // Get dispatch ID if activity is associated with a dispatch
+            $dispatchId = ($activityLog->model === 'Dispatch') ? $activityLog->model_id : 'activity';
+            
+            // Generate filename with format: {dispatch_id}_{photo_id}_{date}.jpg
+            // Example: 123_1_2026-04-16.jpg
+            $currentDate = now()->format('Y-m-d');
+            $filename    = "{$dispatchId}_{$nextSequence}_{$currentDate}.jpg";
+            
             $relativeDir = self::STORAGE_PATH . '/' . $activityLog->id;
             $fullPath    = $relativeDir . '/' . $filename;
 
@@ -89,9 +98,6 @@ class ActivityPhotoService
             if (!$saved) {
                 throw new Exception('Gagal menyimpan file ke storage.');
             }
-
-            // Get next sequence number
-            $nextSequence = $activityLog->photos()->max('sequence') + 1;
 
             // Create photo record
             $photo = $activityLog->photos()->create([

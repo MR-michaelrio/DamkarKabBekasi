@@ -12,6 +12,14 @@
         </p>
     </div>
 
+    <!-- Info Box -->
+    <div class="mb-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
+        <p class="text-sm text-blue-800">
+            <strong>ℹ️ Info:</strong> Nomor Laporan akan otomatis dibuat dengan format: 
+            <span class="font-mono bg-blue-100 px-2 py-1 rounded font-bold">001/Kebakaran/Damkar/2026</span>
+        </p>
+    </div>
+
     <form method="POST" action="{{ route('admin.dispatches.store') }}"
           class="bg-white p-6 rounded-xl shadow border border-gray-100 space-y-6">
         @csrf
@@ -58,14 +66,8 @@
                 <select name="patient_condition" id="patient_condition" required 
                         class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-red-500 focus:border-red-500">
                     <option value="kebakaran" {{ old('patient_condition', $patientRequest->service_type ?? '') === 'kebakaran' ? 'selected' : '' }}>🔥 Kebakaran</option>
-                    <option value="rescue" {{ old('patient_condition', $patientRequest->service_type ?? '') === 'rescue' ? 'selected' : '' }}>🚒 Rescue</option>
+                    <option value="rescue" {{ old('patient_condition', $patientRequest->service_type ?? '') === 'rescue' ? 'selected' : '' }}>🚒 Rescue / Penyelamatan</option>
                 </select>
-            </div>
-            <div>
-                <label class="block text-sm font-bold text-gray-700 mb-1">Nomor Laporan</label>
-                <input type="text" name="nomor" placeholder="Contoh: 001/Laporan"
-                       class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-red-500 focus:border-red-500"
-                       value="{{ old('nomor', $patientRequest->nomor ?? '') }}">
             </div>
         </div>
 

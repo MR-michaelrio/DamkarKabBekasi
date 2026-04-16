@@ -781,7 +781,7 @@
         </table>
     </div>
     <!-- Halaman 3a: Foto Kejadian (Halaman 1 dari 2) -->
-    @if(false && isset($photos) && $photos->count() > 0)
+    @if(isset($photos) && $photos->count() > 0)
     @php $photosPage1 = $photos->take(4); $photosPage2 = $photos->slice(4); @endphp
     <div class="paper">
         <div class="header">

@@ -42,7 +42,7 @@ class DispatchController extends Controller
 
     public function store(Request $request)
     {
-        $dispatch = Dispatch::create($request->validate([
+        $validated = $request->validate([
             'patient_name' => 'required',
             'request_date' => 'required|date',
             'pickup_time' => 'required',
@@ -61,7 +61,15 @@ class DispatchController extends Controller
             'nomor' => 'nullable|string',
             'patient_phone' => 'nullable|string',
             'patient_request_id' => 'nullable|exists:patient_requests,id',
-        ]) + [
+        ]);
+        
+        // Auto-generate report number if not provided
+        if (empty($validated['nomor'])) {
+            $reportNumberService = new \App\Services\ReportNumberService();
+            $validated['nomor'] = $reportNumberService->generate($validated['patient_condition']);
+        }
+        
+        $dispatch = Dispatch::create($validated + [
             'status' => 'pending',
             'assigned_at' => now(),
         ]);
