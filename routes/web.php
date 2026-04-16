@@ -356,3 +356,30 @@ Route::middleware(['auth:ambulance'])->prefix('driver')->name('driver.')->group(
     // Manual complete report by driver
     Route::post('/dispatches/{dispatch}/complete-report', [DriverDashboardController::class, 'completeReport'])->name('dispatches.complete-report');
 });
+// ──── DEBUG ROUTE (remove after testing) ────
+Route::get('/debug/pdf-test', function() {
+    return view('admin.reports.kebakaran_pdf_simple', [
+        'nomor' => 'TEST-001/2026',
+        'sifat' => 'Penting',
+        'place_date' => 'Bekasi, 16 April 2026',
+        'day_date' => 'Rabu, 16 April 2026',
+        'time_report' => '10:30',
+        'time_departure' => '10:35',
+        'time_arrival' => '10:45',
+        'time_finished' => '11:15',
+        'chronology' => 'Kebakaran',
+        'address' => 'Jalan Raya Bekasi No. 123',
+        'village' => 'Kelurahan Test',
+        'district' => 'Kecamatan Test',
+        'reporter_name' => 'Budi Santoso',
+        'reporter_phone' => '08123456789',
+        'photos' => collect(),
+    ]);
+});
+
+// Test Dompdf with minimal template
+Route::get('/debug/pdf-minimal', function() {
+    $html = view('admin.reports.kebakaran_pdf_test_minimal')->render();
+    $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadHTML($html)->setPaper('a4', 'portrait');
+    return $pdf->stream('test-minimal.pdf');
+});
