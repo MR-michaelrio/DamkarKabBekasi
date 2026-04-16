@@ -232,13 +232,43 @@ class PatientRequestController extends Controller
     public function update(Request $request, PatientRequest $patientRequest)
     {
         $validated = $request->validate([
-            'patient_name' => 'required',
-            'service_type' => 'required|in:ambulance,jenazah',
+            'patient_name' => 'required|string|max:255',
+            'service_type' => 'required|in:kebakaran,rescue,ambulance,jenazah',
             'request_date' => 'required|date',
-            'phone' => 'nullable',
-            'pickup_address' => 'required',
-            'destination' => 'nullable',
-            'patient_condition' => 'nullable|in:emergency,kontrol,pasien_pulang',
+            'pickup_time' => 'nullable|date_format:H:i',
+            'phone' => 'nullable|string|max:20',
+            'pickup_address' => 'required|string',
+            'destination' => 'nullable|string',
+            'patient_condition' => 'nullable|in:emergency,kontrol,pasien_pulang,kebakaran,rescue',
+            'blok' => 'nullable|string|max:255',
+            'rt' => 'nullable|string|max:10',
+            'rw' => 'nullable|string|max:10',
+            'kelurahan' => 'nullable|string|max:255',
+            'kecamatan' => 'nullable|string|max:255',
+            'nomor' => 'nullable|string|max:255',
+            // C. DETAIL KEJADIAN
+            'event_description' => 'nullable|string',
+            'building_type' => 'nullable|string|max:255',
+            'fire_cause' => 'nullable|string|max:255',
+            'affected_area' => 'nullable|string|max:255',
+            // D. DATA PEMILIK
+            'owner_name' => 'nullable|string|max:255',
+            'owner_age' => 'nullable|string|max:10',
+            'owner_phone' => 'nullable|string|max:20',
+            'owner_profession' => 'nullable|string|max:255',
+            // F. DATA KETUA RT/RW
+            'community_leader_name' => 'nullable|string|max:255',
+            'community_leader_phone' => 'nullable|string|max:20',
+            // G. OPERASIONAL PEMADAM
+            'unit_assistance' => 'nullable|string|max:255',
+            // H. PENGGUNAAN PERALATAN (dispatcher)
+            'time_finished' => 'nullable|date_format:H:i',
+            'scba_usage' => 'nullable|integer|min:0',
+            'apar_usage' => 'nullable|integer|min:0',
+            // I. DATA KORBAN (dispatcher)
+            'injured_count' => 'nullable|integer|min:0',
+            'fatalities_count' => 'nullable|integer|min:0',
+            'displaced_count' => 'nullable|integer|min:0',
         ]);
 
         $patientRequest->update($validated);

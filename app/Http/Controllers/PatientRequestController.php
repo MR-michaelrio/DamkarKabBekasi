@@ -36,6 +36,29 @@ class PatientRequestController extends Controller
             'kelurahan' => 'nullable|string',
             'kecamatan' => 'nullable|string',
             'nomor' => 'nullable|string',
+            // C. DETAIL KEJADIAN
+            'event_description' => 'nullable|string',
+            'building_type' => 'nullable|string',
+            'fire_cause' => 'nullable|string',
+            'affected_area' => 'nullable|string',
+            // D. DATA PEMILIK
+            'owner_name' => 'nullable|string|max:255',
+            'owner_age' => 'nullable|string|max:10',
+            'owner_phone' => 'nullable|string|max:20',
+            'owner_profession' => 'nullable|string|max:255',
+            // F. DATA KETUA RT/RW
+            'community_leader_name' => 'nullable|string|max:255',
+            'community_leader_phone' => 'nullable|string|max:20',
+            // G. OPERASIONAL PEMADAM
+            'unit_assistance' => 'nullable|string|max:255',
+            // H. PENGGUNAAN PERALATAN (dispatcher)
+            'time_finished' => 'nullable|date_format:H:i',
+            'scba_usage' => 'nullable|integer|min:0',
+            'apar_usage' => 'nullable|integer|min:0',
+            // I. DATA KORBAN (dispatcher)
+            'injured_count' => 'nullable|integer|min:0',
+            'fatalities_count' => 'nullable|integer|min:0',
+            'displaced_count' => 'nullable|integer|min:0',
         ]);
 
         $patientRequest = PatientRequest::create($validated);

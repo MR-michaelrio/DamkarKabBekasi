@@ -29,6 +29,23 @@ class PatientRequest extends Model
         'kecamatan',
         'nomor',
         'tts_url',
+        'event_description',
+        'building_type',
+        'fire_cause',
+        'affected_area',
+        'owner_name',
+        'owner_age',
+        'owner_phone',
+        'owner_profession',
+        'community_leader_name',
+        'community_leader_phone',
+        'unit_assistance',
+        'time_finished',
+        'scba_usage',
+        'apar_usage',
+        'injured_count',
+        'fatalities_count',
+        'displaced_count',
     ];
 
     protected function casts(): array
