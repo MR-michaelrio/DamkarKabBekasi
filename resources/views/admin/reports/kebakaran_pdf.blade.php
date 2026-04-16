@@ -350,7 +350,7 @@
                 </tr>
                 <tr>
                     <td class="label-col">2. Waktu Kejadian</td>
-                    <td class="colon-col">:</td>
+                    <td class="colon-col"></td>
                     <td class="value-col"></td>
                 </tr>
                 <tr>
@@ -419,7 +419,7 @@
                     <td>{{ $community_leader_phone ?? '-' }}</td>
                 </tr>
                 <tr>
-                    <td class="label-col">7. Luas Areal</td>
+                    <td class="label-col">7. Luas Area</td>
                     <td class="colon-col">:</td>
                     <td class="value-col">{{ $area_size ?? '-' }}</td>
                 </tr>
@@ -566,7 +566,7 @@
             <tr>
                 <td class="num-col-ba">2.</td>
                 <td class="label-col-ba">Waktu Kejadian</td>
-                <td class="colon-col-ba">:</td>
+                <td class="colon-col-ba"></td>
                 <td></td>
             </tr>
             <tr>
@@ -805,7 +805,7 @@
             <tr>
                 @foreach($row as $item)
                 <td style="width: 50%; padding: 10px; vertical-align: top; text-align: center;">
-                    <img src="{{ public_path('storage/' . $item->photo->photo_path) }}"
+                    <img src="{{ 'file://' . storage_path('app/public/' . $item->photo->photo_path) }}"
                          style="width: 100%; height: 210px; border: 1px solid #ccc;"
                          alt="Foto Kejadian">
                     <div style="margin-top: 6px; font-size: 9pt; color: #333; text-align: left;">
@@ -848,7 +848,7 @@
             <tr>
                 @foreach($row as $item)
                 <td style="width: 50%; padding: 10px; vertical-align: top; text-align: center;">
-                    <img src="{{ public_path('storage/' . $item->photo->photo_path) }}"
+                    <img src="{{ 'file://' . storage_path('app/public/' . $item->photo->photo_path) }}"
                          style="width: 100%; height: 210px; border: 1px solid #ccc;"
                          alt="Foto Kejadian">
                     <div style="margin-top: 6px; font-size: 9pt; color: #333; text-align: left;">
