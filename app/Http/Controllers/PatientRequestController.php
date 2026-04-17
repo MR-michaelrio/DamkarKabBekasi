@@ -19,6 +19,12 @@ class PatientRequestController extends Controller
 
     public function store(Request $request)
     {
+        // Format time fields to H:i format
+        if ($request->filled('pickup_time') && strpos($request->pickup_time, ':') !== false) {
+            $parts = explode(':', $request->pickup_time);
+            $request->merge(['pickup_time' => $parts[0] . ':' . $parts[1]]);
+        }
+
         $validated = $request->validate([
             'patient_name' => 'required|string|max:255',
             'service_type' => 'required|in:kebakaran,rescue',

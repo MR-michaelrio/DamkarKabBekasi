@@ -42,6 +42,12 @@ class DispatchController extends Controller
 
     public function store(Request $request)
     {
+        // Format time field to H:i format
+        if ($request->filled('pickup_time') && strpos($request->pickup_time, ':') !== false) {
+            $parts = explode(':', $request->pickup_time);
+            $request->merge(['pickup_time' => $parts[0] . ':' . $parts[1]]);
+        }
+
         $validated = $request->validate([
             'patient_name' => 'required',
             'request_date' => 'required|date',

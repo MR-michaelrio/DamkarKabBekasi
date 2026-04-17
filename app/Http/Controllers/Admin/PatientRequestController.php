@@ -231,6 +231,16 @@ class PatientRequestController extends Controller
 
     public function update(Request $request, PatientRequest $patientRequest)
     {
+        // Extract and format time fields to H:i format
+        if ($request->filled('pickup_time') && strpos($request->pickup_time, ':') !== false) {
+            $parts = explode(':', $request->pickup_time);
+            $request->merge(['pickup_time' => $parts[0] . ':' . $parts[1]]);
+        }
+        if ($request->filled('time_finished') && strpos($request->time_finished, ':') !== false) {
+            $parts = explode(':', $request->time_finished);
+            $request->merge(['time_finished' => $parts[0] . ':' . $parts[1]]);
+        }
+
         $validated = $request->validate([
             'patient_name' => 'required|string|max:255',
             'service_type' => 'required|in:kebakaran,rescue,ambulance,jenazah',

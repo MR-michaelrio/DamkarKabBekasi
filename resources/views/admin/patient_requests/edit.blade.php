@@ -82,7 +82,7 @@
                         Jam Kejadian
                     </label>
                     <input type="time" name="pickup_time"
-                           value="{{ old('pickup_time', $patientRequest->pickup_time) }}"
+                           value="{{ old('pickup_time', $patientRequest->pickup_time ? substr($patientRequest->pickup_time, 0, 5) : '') }}"
                            class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-red-500 focus:border-red-500">
                 </div>
             </div>
@@ -215,7 +215,7 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                         <label class="block text-sm font-bold text-gray-700 mb-1">Waktu Selesai Penanganan</label>
-                        <input type="time" name="time_finished" value="{{ old('time_finished', $patientRequest->time_finished) }}" 
+                        <input type="time" name="time_finished" value="{{ old('time_finished', $patientRequest->time_finished ? substr($patientRequest->time_finished, 0, 5) : '') }}" 
                                class="w-full border-gray-300 rounded-lg shadow-sm">
                     </div>
                     <div>
