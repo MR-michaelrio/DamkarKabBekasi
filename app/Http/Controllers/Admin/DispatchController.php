@@ -513,6 +513,19 @@ class DispatchController extends Controller
             'dispatches' => $dispatches,
             'photos'     => $photos,
         ])->setPaper('a4', 'portrait');
+        
+        // ── Debug Log ──
+        \Illuminate\Support\Facades\Log::channel('stack')->info('PDF Export - Kebakaran Report', [
+            'dispatch_id' => $dispatch->id,
+            'timestamp' => now(),
+            'photos_count' => $photos->count(),
+            'activity_logs_count' => $activityLogs->count(),
+            'photos_data' => $photos->map(fn($p) => [
+                'id' => $p->photo->id,
+                'path' => $p->photo->photo_path,
+                'uploader' => $p->uploader,
+            ])->toArray(),
+        ]);
 
         return $pdf->download('laporan-kebakaran-' . $dispatch->id . '-' . date('Ymd') . '.pdf');
     }

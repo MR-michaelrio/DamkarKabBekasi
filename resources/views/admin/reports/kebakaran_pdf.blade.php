@@ -805,7 +805,13 @@
             <tr>
                 @foreach($row as $item)
                 <td style="width: 50%; padding: 10px; vertical-align: top; text-align: center;">
-                    <img src="{{ public_path('storage/' . $item->photo->photo_path) }}"
+                    @php
+                        $photoPath = public_path('storage/' . $item->photo->photo_path);
+                        $imageSrc = file_exists($photoPath) 
+                            ? 'file://' . $photoPath 
+                            : asset('storage/' . $item->photo->photo_path);
+                    @endphp
+                    <img src="{{ $imageSrc }}"
                          style="width: 100%; height: 210px; border: 1px solid #ccc;"
                          alt="Foto Kejadian">
                     <div style="margin-top: 6px; font-size: 9pt; color: #333; text-align: left;">
@@ -848,7 +854,13 @@
             <tr>
                 @foreach($row as $item)
                 <td style="width: 50%; padding: 10px; vertical-align: top; text-align: center;">
-                    <img src="{{ public_path('storage/' . $item->photo->photo_path) }}"
+                    @php
+                        $photoPath = public_path('storage/' . $item->photo->photo_path);
+                        $imageSrc = file_exists($photoPath) 
+                            ? 'file://' . $photoPath 
+                            : asset('storage/' . $item->photo->photo_path);
+                    @endphp
+                    <img src="{{ $imageSrc }}"
                          style="width: 100%; height: 210px; border: 1px solid #ccc;"
                          alt="Foto Kejadian">
                     <div style="margin-top: 6px; font-size: 9pt; color: #333; text-align: left;">
