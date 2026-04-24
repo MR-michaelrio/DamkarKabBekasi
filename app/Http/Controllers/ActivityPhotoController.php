@@ -47,15 +47,33 @@ class ActivityPhotoController extends Controller
             $photoUrl = Storage::disk('public')->url($path);
 
             // Create ActivityPhoto record
-            $photo = ActivityPhoto::create([
-                'activity_log_id' => $activityLog->id,
-                'photo_path'      => $path,
-                'photo_name'      => $shortName,
-                'mime_type'       => $file->getMimeType(),
-                'file_size'       => $fileSize,
-                'description'     => $request->input('description'),
-                'sequence'        => $request->input('sequence', $photoCount),
-            ]);
+            try {
+                $photo = ActivityPhoto::create([
+                    'activity_log_id' => $activityLog->id,
+                    'photo_path'      => $path,
+                    'photo_name'      => $shortName,
+                    'mime_type'       => $file->getMimeType(),
+                    'file_size'       => $fileSize,
+                    'description'     => $request->input('description'),
+                    'sequence'        => $request->input('sequence', $photoCount),
+                ]);
+                
+                // DEBUG: Log successful creation
+                Log::info('Photo created successfully', [
+                    'photo_id' => $photo->id,
+                    'activity_log_id' => $activityLog->id,
+                    'photo_path' => $path,
+                ]);
+            } catch (\Throwable $dbError) {
+                Log::error('Failed to create ActivityPhoto record', [
+                    'activity_log_id' => $activityLog->id,
+                    'photo_path' => $path,
+                    'error' => $dbError->getMessage(),
+                    'file' => $dbError->getFile(),
+                    'line' => $dbError->getLine(),
+                ]);
+                throw $dbError;
+            }
 
             return response()->json([
                 'success' => true,
@@ -68,11 +86,14 @@ class ActivityPhotoController extends Controller
                 'exception_class' => get_class($e),
                 'file'            => $e->getFile(),
                 'line'            => $e->getLine(),
+                'activity_log_id' => $activityLog ?? null,
+                'trace'           => $e->getTraceAsString(),
             ]);
 
             return response()->json([
                 'success' => false,
                 'message' => 'Gagal mengunggah foto: ' . $e->getMessage(),
+                'debug' => env('APP_DEBUG') ? $e->getMessage() : null,
             ], 500);
         }
     }

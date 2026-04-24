@@ -78,9 +78,18 @@ class ActivityPhotoController extends Controller
                 ]
             ], 201);
         } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('API Photo upload failed', [
+                'message' => $e->getMessage(),
+                'activity_id' => $activity_id,
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+            
             return response()->json([
                 'success' => false,
-                'message' => $e->getMessage()
+                'message' => $e->getMessage(),
+                'debug' => env('APP_DEBUG') ? ['file' => $e->getFile(), 'line' => $e->getLine()] : null,
             ], 400);
         }
     }
