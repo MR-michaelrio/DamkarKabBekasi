@@ -4,7 +4,7 @@
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
     <div class="mb-6 flex justify-between items-center">
         <h1 class="text-2xl font-bold text-gray-800">
-            📅 Jadwal Layanan
+            📅 Jadwal Event
         </h1>
         <div class="flex items-center gap-4">
             @php
@@ -68,71 +68,6 @@
                                     </div>
                                     <div class="font-bold mt-0.5">{{ $item->event_name }}</div>
                                     <div class="text-[8px] opacity-80 truncate">{{ $item->needs }}</div>
-                                    
-                                    @if($item->dispatches->isNotEmpty())
-                                        <div class="mt-1 pt-1 border-t border-white/20 space-y-1">
-                                            @foreach($item->dispatches as $d)
-                                                <div class="flex flex-col">
-                                                    <span class="font-black">🚑 {{ $d->ambulance?->code ?? '?' }}</span>
-                                                    <span class="opacity-80 text-[7px]">👤 {{ explode(' ', $d->driver?->name ?? 'No Driver')[0] }}</span>
-                                                </div>
-                                            @endforeach
-                                        </div>
-                                    @endif
-                                </div>
-                            @else
-                                @php
-                                    $isPending = $item->calendar_type === 'request';
-                                    $isJenazah = $isPending 
-                                        ? ($item->service_type === 'jenazah') 
-                                        : ($item->patient_condition === 'jenazah');
-                                    
-                                    $title = '';
-                                    if ($isPending) {
-                                        $title = 'MENUNGGU';
-                                    } else {
-                                        if ($item->status === 'completed') {
-                                            $title = 'SELESAI';
-                                        } elseif ($item->status === 'assigned') {
-                                            $title = 'ASSIGNED';
-                                        } else {
-                                            $title = strtoupper($item->status);
-                                        }
-                                    }
-                                @endphp
-                                <div class="text-[9px] p-1.5 rounded-md leading-tight border shadow-sm
-                                    @if($isJenazah) 
-                                        bg-stone-900 border-stone-950 text-white
-                                    @else
-                                        bg-red-600 border-red-700 text-white
-                                    @endif">
-                                    <div class="font-bold flex justify-between items-center mb-0.5">
-                                        <span class="bg-white/20 px-1 rounded">
-                                            @if($item->pickup_time)
-                                                {{ \Carbon\Carbon::parse($item->pickup_time)->format('H:i') }}
-                                            @else
-                                                {{ $item->created_at->format('H:i') }}
-                                            @endif
-                                        </span>
-                                        <span class="text-[8px] font-black tracking-tighter opacity-80">{{ $title }}</span>
-                                    </div>
-                                    <div class="truncate font-black">
-                                        @if($isPending)
-                                            🕒 STANDBY
-                                        @else
-                                            {{ $item->ambulance?->code ?? '?' }}
-                                        @endif
-                                    </div>
-                                    <div class="truncate opacity-90 font-medium">
-                                        @if($isPending)
-                                            -
-                                        @else
-                                            👤 {{ explode(' ', $item->driver?->name ?? 'No Driver')[0] }}
-                                        @endif
-                                    </div>
-                                    <div class="truncate italic opacity-75 mt-0.5 text-[8px]">
-                                        {{ $item->patient_name }}
-                                    </div>
                                 </div>
                             @endif
                         @endforeach
@@ -153,10 +88,7 @@
     <!-- Legend -->
     <div class="mt-6 flex flex-wrap gap-4 text-[10px] font-black uppercase tracking-widest text-gray-400">
         <div class="flex items-center gap-2">
-            <span class="w-3 h-3 rounded bg-red-600"></span> Ambulance
-        </div>
-        <div class="flex items-center gap-2">
-            <span class="w-3 h-3 rounded bg-stone-900"></span> Jenazah
+            <span class="w-3 h-3 rounded bg-orange-600"></span> Bencana
         </div>
         <div class="flex items-center gap-2">
             <span class="w-3 h-3 rounded bg-pink-600"></span> Event
