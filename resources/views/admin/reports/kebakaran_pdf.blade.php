@@ -780,10 +780,17 @@
             </tr>
         </table>
     </div>
-    <!-- Halaman 3a: Foto Kejadian (Halaman 1 dari 2) -->
+    <!-- Halaman Foto Kejadian (Dynamic - Otomatis sesuai jumlah foto) -->
     @if(isset($photos) && $photos->count() > 0)
-    @php $photosPage1 = $photos->take(4); $photosPage2 = $photos->slice(4); @endphp
+    @php
+        // Split photos into chunks of 4 (2x2 grid per page)
+        $photoPages = $photos->chunk(4);
+        $totalPhotoPages = $photoPages->count();
+    @endphp
+
+    @foreach($photoPages as $pageIndex => $photosPerPage)
     <div class="paper">
+        <!-- Header -->
         <div class="header">
             <img src="{{ public_path('logo-dinas.png') }}" class="logo-dinas" alt="Logo">
             <h1>Pemerintah Kabupaten Bekasi</h1>
@@ -795,13 +802,23 @@
             <img src="{{ public_path('logo-damkar.png') }}" class="logo-damkar" alt="Logo">
         </div>
 
+        <!-- Title -->
         <div class="ba-container">
             <div class="ba-title">Dokumentasi Foto Kejadian</div>
-            <p style="text-align: center; margin-top: 5px; font-size: 10pt;">Foto yang diambil oleh petugas di lokasi kejadian</p>
+            <p style="text-align: center; margin-top: 5px; font-size: 10pt;">
+                @if($pageIndex === 0)
+                    Foto yang diambil oleh petugas di lokasi kejadian
+                @elseif($pageIndex === $totalPhotoPages - 1)
+                    Foto lanjutan (hal. {{ $pageIndex + 1 }} dari {{ $totalPhotoPages }})
+                @else
+                    Foto lanjutan (hal. {{ $pageIndex + 1 }} dari {{ $totalPhotoPages }})
+                @endif
+            </p>
         </div>
 
+        <!-- Photo Grid (2x2) -->
         <table style="width: 100%; border-collapse: collapse; margin-top: 15px;">
-            @foreach($photosPage1->chunk(2) as $row)
+            @foreach($photosPerPage->chunk(2) as $row)
             <tr>
                 @foreach($row as $item)
                 <td style="width: 50%; padding: 10px; vertical-align: top; text-align: center;">
@@ -829,60 +846,7 @@
             @endforeach
         </table>
     </div>
-
-    <!-- Halaman 3b: Foto Kejadian (Halaman 2 dari 2) -->
-    <div class="paper">
-        <div class="header">
-            <img src="{{ public_path('logo-dinas.png') }}" class="logo-dinas" alt="Logo">
-            <h1>Pemerintah Kabupaten Bekasi</h1>
-            <h2>Dinas Pemadam Kebakaran</h2>
-            <p>Jalan Teuku Umar No.1 Cikarang Barat</p>
-            <p>Desa Ganda Sari Kecamatan Cikarang Barat Kabupaten Bekasi – Jawa Barat</p>
-            <p>(021)-89101527</p>
-            <div class="bekasi">B E K A S I</div>
-            <img src="{{ public_path('logo-damkar.png') }}" class="logo-damkar" alt="Logo">
-        </div>
-
-        <div class="ba-container">
-            <div class="ba-title">Dokumentasi Foto Kejadian</div>
-            <p style="text-align: center; margin-top: 5px; font-size: 10pt;">Foto yang diambil oleh petugas di lokasi kejadian (lanjutan)</p>
-        </div>
-
-        @if($photosPage2->count() > 0)
-        <table style="width: 100%; border-collapse: collapse; margin-top: 15px;">
-            @foreach($photosPage2->chunk(2) as $row)
-            <tr>
-                @foreach($row as $item)
-                <td style="width: 50%; padding: 10px; vertical-align: top; text-align: center;">
-                    @php
-                        $photoPath = public_path('storage/' . $item->photo->photo_path);
-                        $imageSrc = file_exists($photoPath) 
-                            ? 'file://' . $photoPath 
-                            : asset('storage/' . $item->photo->photo_path);
-                    @endphp
-                    <img src="{{ $imageSrc }}"
-                         style="width: 100%; height: 210px; border: 1px solid #ccc;"
-                         alt="Foto Kejadian">
-                    <div style="margin-top: 6px; font-size: 9pt; color: #333; text-align: left;">
-                        @if($item->photo->description)
-                            <em>{{ $item->photo->description }}</em><br>
-                        @endif
-                        <strong>Petugas:</strong> {{ $item->uploader }}
-                    </div>
-                </td>
-                @endforeach
-                @if($row->count() === 1)
-                <td style="width: 50%;"></td>
-                @endif
-            </tr>
-            @endforeach
-        </table>
-        @else
-        <p style="margin-top: 30px; text-align: center; font-size: 10pt; color: #666;">
-            <em>— Tidak ada foto tambahan —</em>
-        </p>
-        @endif
-    </div>
+    @endforeach
     @endif
 
     <!-- Halaman 4: Data Respon Unit Armada -->
