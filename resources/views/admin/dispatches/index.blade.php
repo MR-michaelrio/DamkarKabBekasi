@@ -44,7 +44,7 @@
             }
         }" 
         x-init="setInterval(() => refresh(), 10000)"
-        @new-patient-request.window="refresh()">
+        @new-laporan-masyarakat.window="refresh()">
         <div class="overflow-x-auto" x-ref="tableContainer">
             @include('admin.dispatches._table')
         </div>

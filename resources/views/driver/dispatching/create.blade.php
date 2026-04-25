@@ -89,7 +89,7 @@
         </div>
     </div>
 
-    <form method="POST" action="{{ route('driver.patient-requests.store-dispatch', $patientRequest) }}">
+    <form method="POST" action="{{ route('driver.laporan-masyarakat.store-dispatch', $patientRequest) }}">
         @csrf
 
         <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 space-y-5">

@@ -41,13 +41,13 @@
             }
         }"
         x-init="setInterval(() => refresh(), 10000)"
-        @new-patient-request.window="refresh()">
+        @new-laporan-masyarakat.window="refresh()">
         <div class="overflow-x-auto" x-ref="tableContainer">
             <table class="min-w-full divide-y divide-gray-200 text-sm">
                 <thead class="bg-gray-50">
                     <tr>
                         <th class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider whitespace-nowrap">
-                            <a href="{{ route('admin.patient-requests.index', ['direction' => ($direction === 'asc' ? 'desc' : 'asc')]) }}" class="flex items-center gap-1 hover:text-blue-600 transition">
+                            <a href="{{ route('admin.laporan-masyarakat.index', ['direction' => ($direction === 'asc' ? 'desc' : 'asc')]) }}" class="flex items-center gap-1 hover:text-blue-600 transition">
                                 Tanggal
                                 @if($direction === 'asc')
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -118,15 +118,15 @@
                                 @endif
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm flex items-center gap-3">
-                                <a href="{{ route('admin.patient-requests.show', $request) }}"
+                                <a href="{{ route('admin.laporan-masyarakat.show', $request) }}"
                                    class="text-blue-600 hover:text-blue-800 font-bold">
                                     Lihat
                                 </a>
-                                <a href="{{ route('admin.patient-requests.edit', $request) }}"
+                                <a href="{{ route('admin.laporan-masyarakat.edit', $request) }}"
                                    class="text-amber-600 hover:text-amber-800 font-bold">
                                     Edit
                                 </a>
-                                <form action="{{ route('admin.patient-requests.destroy', $request) }}" method="POST" onsubmit="return confirm('Yakin ingin menghapus permintaan ini?')" class="inline">
+                                <form action="{{ route('admin.laporan-masyarakat.destroy', $request) }}" method="POST" onsubmit="return confirm('Yakin ingin menghapus permintaan ini?')" class="inline">
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" class="text-red-600 hover:text-red-800 font-bold">
@@ -134,7 +134,7 @@
                                     </button>
                                 </form>
                                 @if (in_array($request->status, ['pending', 'dispatched']))
-                                    <a href="{{ route('admin.patient-requests.create-dispatch', $request) }}"
+                                    <a href="{{ route('admin.laporan-masyarakat.create-dispatch', $request) }}"
                                        class="text-green-600 hover:text-green-800 font-bold">
                                         {{ $request->status === 'dispatched' ? 'Tambah Armada' : 'Dispatch' }}
                                     </a>

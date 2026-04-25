@@ -292,21 +292,21 @@ Route::middleware(['auth'])->group(function () {
 
             // Patient Requests Management
             Route::get('laporan-masyarakat', [AdminPatientRequestController::class, 'index'])
-                ->name('patient-requests.index');
+                ->name('laporan-masyarakat.index');
             Route::get('laporan-masyarakat/{patientRequest}', [AdminPatientRequestController::class, 'show'])
-                ->name('patient-requests.show');
+                ->name('laporan-masyarakat.show');
             Route::get('laporan-masyarakat/{patientRequest}/edit', [AdminPatientRequestController::class, 'edit'])
-                ->name('patient-requests.edit');
+                ->name('laporan-masyarakat.edit');
             Route::put('laporan-masyarakat/{patientRequest}', [AdminPatientRequestController::class, 'update'])
-                ->name('patient-requests.update');
+                ->name('laporan-masyarakat.update');
             Route::delete('laporan-masyarakat/{patientRequest}', [AdminPatientRequestController::class, 'destroy'])
-                ->name('patient-requests.destroy');
+                ->name('laporan-masyarakat.destroy');
             Route::get('laporan-masyarakat/{patientRequest}/dispatch', [AdminPatientRequestController::class, 'createDispatch'])
-                ->name('patient-requests.create-dispatch');
+                ->name('laporan-masyarakat.create-dispatch');
             Route::get('laporan-masyarakat/{patientRequest}/pdf', [AdminPatientRequestController::class, 'exportPdf'])
-                ->name('patient-requests.pdf');
+                ->name('laporan-masyarakat.pdf');
             Route::post('laporan-masyarakat/{patientRequest}/reject', [AdminPatientRequestController::class, 'reject'])
-                ->name('patient-requests.reject');
+                ->name('laporan-masyarakat.reject');
         }
     );
 });
@@ -339,8 +339,8 @@ Route::middleware(['auth:ambulance'])->prefix('driver')->name('driver.')->group(
 
     // New Dispatching Routes for Drivers
     Route::get('/dispatching', [DriverDashboardController::class, 'dispatching'])->name('dispatching');
-    Route::get('/dispatching/{patientRequest}', [DriverDashboardController::class, 'createSelfDispatch'])->name('patient-requests.create-dispatch');
-    Route::post('/dispatching/{patientRequest}', [DriverDashboardController::class, 'storeSelfDispatch'])->name('patient-requests.store-dispatch');
+    Route::get('/dispatching/{patientRequest}', [DriverDashboardController::class, 'createSelfDispatch'])->name('laporan-masyarakat.create-dispatch');
+    Route::post('/dispatching/{patientRequest}', [DriverDashboardController::class, 'storeSelfDispatch'])->name('laporan-masyarakat.store-dispatch');
 
     // Save FCM Token
     Route::post('/fcm-token', [DriverDashboardController::class, 'saveFcmToken'])->name('fcm-token.save');

@@ -228,7 +228,7 @@
                     const notification = new Notification('🚨 Permintaan Baru Masuk!', {
                         body: `${request.patient_name} - ${request.service_type} di ${request.pickup_address}`,
                         icon: '{{ asset("logo-damkar.png") }}',
-                        tag: 'new-patient-request-' + request.id,
+                        tag: 'new-laporan-masyarakat-' + request.id,
                         requireInteraction: true
                     });
 
@@ -302,13 +302,13 @@
         checkFirebaseReady().then(async (database) => {
             const { ref, onChildAdded, query, orderByKey, limitToLast } = await import("https://www.gstatic.com/firebasejs/12.11.0/firebase-database.js");
 
-            // Listen for new patient requests in Firebase
+            // Listen for new laporan masyarakat in Firebase
             const requestsRef = ref(database, 'patient_requests');
             const recentRequestsQuery = query(requestsRef, orderByKey(), limitToLast(1));
 
             onChildAdded(recentRequestsQuery, (snapshot) => {
                 const request = snapshot.val();
-                console.log('New patient request from Firebase:', request);
+                console.log('New laporan masyarakat from Firebase:', request);
 
                 // Always show notifications and play audio for authenticated users
                 // Show browser notification
@@ -316,12 +316,12 @@
                     const notification = new Notification('🚨 Permintaan Baru Masuk!', {
                         body: `${request.patient_name} - ${request.service_type} di ${request.pickup_address}`,
                         icon: '{{ asset("logo-damkar.png") }}',
-                        tag: 'new-patient-request',
+                        tag: 'new-laporan-masyarakat',
                         requireInteraction: true
                     });
 
                     notification.onclick = function () {
-                        // Redirect to patient requests page
+                        // Redirect to laporan masyarakat page
                         window.location.href = '/admin/laporan-masyarakat';
                         notification.close();
                     };
@@ -333,9 +333,9 @@
                     window.audioContext.playTTS(request.tts_url);
                 }
 
-                // Trigger table refresh only if on patient requests page
+                // Trigger table refresh only if on laporan masyarakat page
                 if (window.location.pathname.includes('laporan-masyarakat')) {
-                    window.dispatchEvent(new CustomEvent('new-patient-request'));
+                    window.dispatchEvent(new CustomEvent('new-laporan-masyarakat'));
                 }
             });
             console.log('Firebase real-time listener active');

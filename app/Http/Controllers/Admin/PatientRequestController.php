@@ -283,7 +283,7 @@ class PatientRequestController extends Controller
 
         $patientRequest->update($validated);
 
-        return redirect()->route('admin.patient-requests.index')
+        return redirect()->route('admin.laporan-masyarakat.index')
             ->with('success', 'Permintaan berhasil diperbarui');
     }
 
@@ -291,7 +291,7 @@ class PatientRequestController extends Controller
     {
         $patientRequest->delete();
 
-        return redirect()->route('admin.patient-requests.index')
+        return redirect()->route('admin.laporan-masyarakat.index')
             ->with('success', 'Permintaan berhasil dihapus');
     }
 
@@ -299,7 +299,7 @@ class PatientRequestController extends Controller
     {
         $patientRequest->update(['status' => 'rejected']);
 
-        return redirect()->route('admin.patient-requests.index')
+        return redirect()->route('admin.laporan-masyarakat.index')
             ->with('success', 'Permintaan ditolak');
     }
 }

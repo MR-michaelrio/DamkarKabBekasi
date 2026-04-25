@@ -25,7 +25,7 @@
                         class="text-sm font-medium text-gray-700 hover:text-indigo-600 transition">📅 Kalender</a>
                     <a href="{{ route('admin.event-requests.index') }}"
                         class="text-sm font-medium text-gray-700 hover:text-indigo-600 transition">📋 Daftar Event</a>
-                    <a href="{{ route('admin.patient-requests.index') }}"
+                    <a href="{{ route('admin.laporan-masyarakat.index') }}"
                         class="text-sm font-medium text-gray-700 hover:text-indigo-600 transition">📋 Laporan
                         Masyarakat</a>
                     
@@ -89,7 +89,7 @@
             <a href="{{ route('admin.event-requests.index') }}"
                 class="block pl-3 pr-4 py-2 border-l-4 border-transparent text-base font-medium text-gray-600 hover:bg-gray-50 hover:border-gray-300 transition">📋
                 Daftar Event</a>
-            <a href="{{ route('admin.patient-requests.index') }}"
+            <a href="{{ route('admin.laporan-masyarakat.index') }}"
                 class="block pl-3 pr-4 py-2 border-l-4 border-transparent text-base font-medium text-gray-600 hover:bg-gray-50 hover:border-gray-300 transition">📋
                 Laporan Masyarakat</a>
             

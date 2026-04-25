@@ -11,11 +11,11 @@
             📋 Detail Laporan Masyarakat
         </h1>
         <div class="flex gap-3">
-            <a href="{{ route('admin.patient-requests.edit', $patientRequest->id) }}" 
+            <a href="{{ route('admin.laporan-masyarakat.edit', $patientRequest->id) }}" 
                class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-bold shadow-md transition transform active:scale-95 flex items-center gap-2">
                 ✏️ Edit
             </a>
-            <a href="{{ route('admin.patient-requests.pdf', $patientRequest->id) }}" 
+            <a href="{{ route('admin.laporan-masyarakat.pdf', $patientRequest->id) }}" 
                class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-bold shadow-md transition transform active:scale-95 flex items-center gap-2">
                 📄 Cetak PDF
             </a>
@@ -162,20 +162,20 @@
 
     <!-- Actions -->
     <div class="mt-6 flex flex-col sm:flex-row justify-between items-center gap-4">
-        <a href="{{ route('admin.patient-requests.index') }}"
+        <a href="{{ route('admin.laporan-masyarakat.index') }}"
            class="text-gray-600 hover:text-gray-800 font-bold flex items-center w-full sm:w-auto">
             ← Kembali
         </a>
 
         @if (in_array($patientRequest->status, ['pending', 'dispatched']))
             <div class="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
-                <a href="{{ route('admin.patient-requests.create-dispatch', $patientRequest) }}"
+                <a href="{{ route('admin.laporan-masyarakat.create-dispatch', $patientRequest) }}"
                    class="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-bold shadow-lg text-center transition transform active:scale-95">
                     {{ $patientRequest->status === 'dispatched' ? '➕ Tambah Armada' : '✅ Buat Dispatch' }}
                 </a>
 
                 @if ($patientRequest->status === 'pending')
-                <form method="POST" action="{{ route('admin.patient-requests.reject', $patientRequest) }}"
+                <form method="POST" action="{{ route('admin.laporan-masyarakat.reject', $patientRequest) }}"
                       class="inline"
                       onsubmit="return confirm('Yakin ingin menolak laporan ini?')">
                     @csrf

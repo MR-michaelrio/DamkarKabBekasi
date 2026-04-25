@@ -77,7 +77,7 @@
             </p>
 
             <div class="flex flex-wrap gap-4">
-                <a href="{{ route('patient-request.create') }}"
+                <a href="{{ route('laporan-pemadam.create') }}"
                     class="px-6 py-3 rounded-xl bg-red-600 hover:bg-red-700 text-white font-semibold shadow">
                     🚒 Buat Laporan Kejadian
                 </a>

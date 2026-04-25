@@ -29,7 +29,7 @@
             </div>
         @endif
 
-        <form method="POST" action="{{ route('admin.patient-requests.update', $patientRequest->id) }}" class="space-y-5">
+        <form method="POST" action="{{ route('admin.laporan-masyarakat.update', $patientRequest->id) }}" class="space-y-5">
             @csrf
             @method('PUT')
 
@@ -255,7 +255,7 @@
 
             <!-- Actions -->
             <div class="flex flex-col sm:flex-row justify-between gap-4 pt-4 border-t border-gray-100">
-                <a href="{{ route('admin.patient-requests.index') }}"
+                <a href="{{ route('admin.laporan-masyarakat.index') }}"
                    class="text-gray-600 hover:text-gray-800 font-bold flex items-center">
                     ← Kembali
                 </a>

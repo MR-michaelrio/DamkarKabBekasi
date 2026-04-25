@@ -45,7 +45,7 @@
 
         <!-- Form Card -->
         <div class="bg-white shadow-lg rounded-lg p-8">
-            <form id="request-form" method="POST" action="{{ route('patient-request.store') }}" class="space-y-6">
+            <form id="request-form" method="POST" action="{{ route('laporan-pemadam.store') }}" class="space-y-6">
                 @csrf
                 <!-- E. DATA PELAPOR -->
                 <div class="border-t-4 border-red-600 pt-4 mb-6">
