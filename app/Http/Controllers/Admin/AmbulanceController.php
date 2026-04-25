@@ -47,7 +47,7 @@ class AmbulanceController extends Controller
             'password' => bcrypt('password'), // Default password
         ]);
 
-        return redirect()->route('admin.ambulances.index')
+        return redirect()->route('admin.pemadam.index')
             ->with('success', "Ambulans berhasil ditambahkan. Username: $username, Password: password");
     }
 
@@ -83,7 +83,7 @@ class AmbulanceController extends Controller
         $ambulance->update($validated);
 
         return redirect()
-            ->route('admin.ambulances.index')
+            ->route('admin.pemadam.index')
             ->with('success', 'Armada berhasil diperbarui');
     }
 
@@ -95,7 +95,7 @@ class AmbulanceController extends Controller
         $ambulance->delete();
 
         return redirect()
-            ->route('admin.ambulances.index')
+            ->route('admin.pemadam.index')
             ->with('success', 'Armada berhasil dihapus');
     }
 }

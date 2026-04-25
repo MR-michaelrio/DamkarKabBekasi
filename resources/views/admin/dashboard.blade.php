@@ -200,7 +200,7 @@
     const markers = {};
 
     function updateMap() {
-        fetch('{{ route("admin.maps.ambulances") }}')
+        fetch('{{ route("admin.maps.pemadam") }}')
             .then(res => res.json())
             .then(ambulances => {
                 ambulances.forEach(a => {

@@ -2,16 +2,16 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Admin\AdminDashboardController;
-use App\Http\Controllers\Admin\PemadamController;
+use App\Http\Controllers\Admin\AmbulanceController;
 use App\Http\Controllers\Admin\DriverController;
 use App\Http\Controllers\Admin\DispatchController;
 use App\Http\Controllers\Admin\MapController;
-use App\Http\Controllers\Admin\LaporanPemadamController as AdminLaporanPemadamController;
+use App\Http\Controllers\Admin\PatientRequestController as AdminPatientRequestController;
 use App\Http\Controllers\Admin\UserController;
-use App\Http\Controllers\LaporanPemadamController;
+use App\Http\Controllers\PatientRequestController as PublicPatientRequestController;
 use App\Http\Controllers\Driver\DriverDashboardController;
-use App\Http\Controllers\Admin\PemadamMaintenanceController;
-use App\Http\Controllers\Admin\PemadamTypeController;
+use App\Http\Controllers\Admin\AmbulanceMaintenanceController;
+use App\Http\Controllers\Admin\AmbulanceTypeController;
 use App\Http\Controllers\Admin\PletonController;
 use App\Http\Controllers\Api\DriverLocationController;
 
@@ -34,9 +34,9 @@ Route::get('/privacy', function () {
 })->name('privacy');
 
 // Public Laporan Pemadam Form
-Route::get('/laporan-pemadam', [PublicLaporanPemadamController::class, 'create'])
+Route::get('/laporan-pemadam', [PublicPatientRequestController::class, 'create'])
     ->name('laporan-pemadam.create');
-Route::post('/laporan-pemadam', [PublicLaporanPemadamController::class, 'store'])
+Route::post('/laporan-pemadam', [PublicPatientRequestController::class, 'store'])
     ->name('laporan-pemadam.store');
 
 // Public Monitoring (No Auth Required)
@@ -238,14 +238,14 @@ Route::middleware(['auth'])->group(function () {
             Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
 
             // Resource Routes
-            Route::resource('pemadam', PemadamController::class);
-            Route::resource('tipe-pemadam', PemadamTypeController::class)->parameters([
+            Route::resource('pemadam', AmbulanceController::class);
+            Route::resource('tipe-pemadam', AmbulanceTypeController::class)->parameters([
                 'tipe-pemadam' => 'pemadam_type'
             ])->names('pemadam-types');
-            Route::get('pemadam/{pemadam}/maintenance', [PemadamMaintenanceController::class, 'index'])->name('pemadam.maintenance.index');
-            Route::post('pemadam/{pemadam}/maintenance', [PemadamMaintenanceController::class, 'store'])->name('pemadam.maintenance.store');
-            Route::put('maintenance/{maintenance}', [PemadamMaintenanceController::class, 'update'])->name('maintenance.update');
-            Route::delete('maintenance/{maintenance}', [PemadamMaintenanceController::class, 'destroy'])->name('maintenance.destroy');
+            Route::get('pemadam/{pemadam}/maintenance', [AmbulanceMaintenanceController::class, 'index'])->name('pemadam.maintenance.index');
+            Route::post('pemadam/{pemadam}/maintenance', [AmbulanceMaintenanceController::class, 'store'])->name('pemadam.maintenance.store');
+            Route::put('maintenance/{maintenance}', [AmbulanceMaintenanceController::class, 'update'])->name('maintenance.update');
+            Route::delete('maintenance/{maintenance}', [AmbulanceMaintenanceController::class, 'destroy'])->name('maintenance.destroy');
 
             Route::resource('drivers', DriverController::class);
             Route::resource('pletons', PletonController::class);
@@ -271,7 +271,7 @@ Route::middleware(['auth'])->group(function () {
             // ✅ MAPS (INI YANG SEBELUMNYA HILANG)
             Route::get('maps', [MapController::class, 'index'])
                 ->name('maps');
-            Route::get('maps/pemadam', [MapController::class, 'getPemadam'])
+            Route::get('maps/pemadam', [MapController::class, 'getAmbulances'])
                 ->name('maps.pemadam');
 
             Route::get('schedules', [\App\Http\Controllers\Admin\ScheduleController::class, 'index'])

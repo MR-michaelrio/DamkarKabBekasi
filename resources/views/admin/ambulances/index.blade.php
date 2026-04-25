@@ -11,7 +11,7 @@
             🚒 Manajemen Mobil Damkar
         </h1>
 
-        <a href="{{ route('admin.ambulances.create') }}"
+        <a href="{{ route('admin.pemadam.create') }}"
            class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm font-semibold shadow w-full sm:w-auto text-center">
             ➕ Tambah Mobil Damkar
         </a>
@@ -62,17 +62,17 @@
                                 @endif
                             </td>
                             <td class="px-6 py-4 text-right space-x-3 whitespace-nowrap">
-                                <a href="{{ route('admin.ambulances.maintenance.index', $ambulance) }}"
+                                <a href="{{ route('admin.pemadam.maintenance.index', $ambulance) }}"
                                    class="text-green-600 hover:text-green-800 font-bold">
                                     Riwayat
                                 </a>
 
-                                <a href="{{ route('admin.ambulances.edit', $ambulance) }}"
+                                <a href="{{ route('admin.pemadam.edit', $ambulance) }}"
                                    class="text-blue-600 hover:text-blue-800 font-bold">
                                     Edit
                                 </a>
 
-                                <form action="{{ route('admin.ambulances.destroy', $ambulance) }}"
+                                <form action="{{ route('admin.pemadam.destroy', $ambulance) }}"
                                       method="POST" class="inline">
                                     @csrf
                                     @method('DELETE')

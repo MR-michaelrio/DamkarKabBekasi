@@ -73,7 +73,7 @@
     }
 
     function updateAmbulances() {
-        fetch('/admin/maps/ambulances')
+        fetch('/admin/maps/pemadam')
             .then(response => response.json())
             .then(ambulances => {
                 const listContainer = document.getElementById('ambulance-list');

@@ -179,7 +179,7 @@ class PatientRequestController extends Controller
             \Log::error('FCM Send Error: ' . $e->getMessage());
         }
 
-        return redirect()->route('patient-request.create')
+        return redirect()->route('laporan-pemadam.create')
             ->with('success', 'Permintaan Anda telah dikirim. Kami akan segera menghubungi Anda.');
     }
 }

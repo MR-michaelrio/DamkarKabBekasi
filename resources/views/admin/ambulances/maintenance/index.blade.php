@@ -9,7 +9,7 @@
     <nav class="flex mb-5" aria-label="Breadcrumb">
         <ol class="inline-flex items-center space-x-1 md:space-x-3 text-sm text-gray-500">
             <li>
-                <a href="{{ route('admin.ambulances.index') }}" class="hover:text-blue-600">Armada</a>
+                <a href="{{ route('admin.pemadam.index') }}" class="hover:text-blue-600">Armada</a>
             </li>
             <li>
                 <span class="mx-2">/</span>
@@ -114,7 +114,7 @@
                 class="text-gray-500 hover:text-gray-800 text-2xl font-bold leading-none">&times;</button>
         </div>
 
-        <form action="{{ route('admin.ambulances.maintenance.store', $ambulance) }}" method="POST"
+        <form action="{{ route('admin.pemadam.maintenance.store', $ambulance) }}" method="POST"
             class="p-6 space-y-4">
             @csrf
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">

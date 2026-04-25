@@ -27,7 +27,7 @@ class AmbulanceTypeController extends Controller
 
         AmbulanceType::create($validated);
 
-        return redirect()->route('admin.ambulance-types.index')
+        return redirect()->route('admin.pemadam-types.index')
             ->with('success', 'Tipe armada berhasil ditambahkan');
     }
 
@@ -44,14 +44,14 @@ class AmbulanceTypeController extends Controller
 
         $ambulanceType->update($validated);
 
-        return redirect()->route('admin.ambulance-types.index')
+        return redirect()->route('admin.pemadam-types.index')
             ->with('success', 'Tipe armada berhasil diperbarui');
     }
 
     public function destroy(AmbulanceType $ambulanceType)
     {
         $ambulanceType->delete();
-        return redirect()->route('admin.ambulance-types.index')
+        return redirect()->route('admin.pemadam-types.index')
             ->with('success', 'Tipe armada berhasil dihapus');
     }
 }

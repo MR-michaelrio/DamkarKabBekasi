@@ -29,7 +29,7 @@
             </div>
         @endif
 
-        <form method="POST" action="{{ route('admin.ambulances.update', $ambulance->id) }}" class="space-y-5">
+        <form method="POST" action="{{ route('admin.pemadam.update', $ambulance->id) }}" class="space-y-5">
             @csrf
             @method('PUT')
 
@@ -72,7 +72,7 @@
                     @endif
                 </select>
                 <p class="text-xs text-gray-500 mt-1">
-                    Atur tipe di menu <a href="{{ route('admin.ambulance-types.index') }}" class="text-blue-600 underline">Tipe Armada</a>
+                    Atur tipe di menu <a href="{{ route('admin.pemadam-types.index') }}" class="text-blue-600 underline">Tipe Armada</a>
                 </p>
             </div>
 
@@ -104,7 +104,7 @@
 
             <!-- Actions -->
             <div class="flex flex-col sm:flex-row justify-between gap-4 pt-4">
-                <a href="{{ route('admin.ambulances.index') }}"
+                <a href="{{ route('admin.pemadam.index') }}"
                    class="text-gray-600 hover:text-gray-800 font-bold flex items-center">
                     ← Kembali
                 </a>

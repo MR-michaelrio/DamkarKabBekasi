@@ -11,9 +11,9 @@
                 <!-- Desktop Links -->
                 <div class="hidden space-x-8 lg:-my-px lg:ml-10 lg:flex items-center">
                     @if(in_array(auth()->user()->role, ['admin', 'user', 'dispatcher']))
-                    <a href="{{ route('admin.ambulances.index') }}"
+                    <a href="{{ route('admin.pemadam.index') }}"
                         class="text-sm font-medium text-gray-700 hover:text-red-600 transition">Mobil Damkar</a>
-                    <a href="{{ route('admin.ambulance-types.index') }}"
+                    <a href="{{ route('admin.pemadam-types.index') }}"
                         class="text-sm font-medium text-gray-700 hover:text-indigo-600 transition">Tipe Armada</a>
                     <a href="{{ route('admin.drivers.index') }}"
                         class="text-sm font-medium text-gray-700 hover:text-indigo-600 transition">Driver</a>
@@ -71,10 +71,10 @@
     <div :class="{'block': open, 'hidden': ! open}" class="hidden lg:hidden border-t border-gray-100 bg-white">
         <div class="pt-2 pb-3 space-y-1">
             @if(in_array(auth()->user()->role, ['admin', 'user', 'dispatcher']))
-            <a href="{{ route('admin.ambulances.index') }}"
+            <a href="{{ route('admin.pemadam.index') }}"
                 class="block pl-3 pr-4 py-2 border-l-4 border-transparent text-base font-medium text-gray-600 hover:bg-gray-50 hover:border-red-300 transition">Mobil
                 Damkar</a>
-            <a href="{{ route('admin.ambulance-types.index') }}"
+            <a href="{{ route('admin.pemadam-types.index') }}"
                 class="block pl-3 pr-4 py-2 border-l-4 border-transparent text-base font-medium text-gray-600 hover:bg-gray-50 hover:border-gray-300 transition">Tipe
                 Armada</a>
             <a href="{{ route('admin.drivers.index') }}"

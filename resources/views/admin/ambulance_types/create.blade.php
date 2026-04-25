@@ -12,7 +12,7 @@
     </div>
 
     <div class="bg-white shadow rounded-xl p-6">
-        <form action="{{ route('admin.ambulance-types.store') }}" method="POST" class="space-y-4">
+        <form action="{{ route('admin.pemadam-types.store') }}" method="POST" class="space-y-4">
             @csrf
 
             <div>
@@ -26,7 +26,7 @@
             </div>
 
             <div class="pt-4 border-t flex justify-end gap-3">
-                <a href="{{ route('admin.ambulance-types.index') }}"
+                <a href="{{ route('admin.pemadam-types.index') }}"
                    class="px-4 py-2 text-gray-500 font-semibold hover:text-gray-700">
                     Batal
                 </a>

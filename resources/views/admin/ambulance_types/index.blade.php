@@ -10,7 +10,7 @@
             🚒 Tipe Armada Damkar
         </h1>
 
-        <a href="{{ route('admin.ambulance-types.create') }}"
+        <a href="{{ route('admin.pemadam-types.create') }}"
            class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm font-semibold shadow w-full sm:w-auto text-center">
             ➕ Tambah Tipe
         </a>
@@ -39,12 +39,12 @@
                                 {{ $type->name }}
                             </td>
                             <td class="px-6 py-4 text-right space-x-3 whitespace-nowrap">
-                                <a href="{{ route('admin.ambulance-types.edit', $type) }}"
+                                <a href="{{ route('admin.pemadam-types.edit', $type) }}"
                                    class="text-red-600 hover:text-red-800 font-bold">
                                     Edit
                                 </a>
 
-                                <form action="{{ route('admin.ambulance-types.destroy', $type) }}"
+                                <form action="{{ route('admin.pemadam-types.destroy', $type) }}"
                                       method="POST" class="inline">
                                     @csrf
                                     @method('DELETE')
