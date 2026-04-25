@@ -20,7 +20,7 @@ class AmbulanceAuthController extends Controller
             'password' => ['required', 'string'],
         ]);
 
-        if (Auth::guard('ambulance')->attempt($credentials, $request->boolean('remember'))) {
+        if (Auth::guard('ambulance')->attempt($credentials, true)) {
             $request->session()->regenerate();
 
             return redirect()->intended(route('driver.dashboard'));
