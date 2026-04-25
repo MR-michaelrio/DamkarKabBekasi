@@ -2,12 +2,18 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Admin\AdminDashboardController;
+use App\Http\Controllers\Admin\AmbulanceController;
 use App\Http\Controllers\Admin\DriverController;
 use App\Http\Controllers\Admin\DispatchController;
 use App\Http\Controllers\Admin\MapController;
+use App\Http\Controllers\Admin\PatientRequestController as AdminPatientRequestController;
 use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\PatientRequestController;
 use App\Http\Controllers\Driver\DriverDashboardController;
+use App\Http\Controllers\Admin\AmbulanceMaintenanceController;
+use App\Http\Controllers\Admin\AmbulanceTypeController;
 use App\Http\Controllers\Admin\PletonController;
+use App\Http\Controllers\Api\DriverLocationController;
 
 /*
  |--------------------------------------------------------------------------
@@ -27,7 +33,11 @@ Route::get('/privacy', function () {
     return view('privacy');
 })->name('privacy');
 
-
+// Public Patient Request Form
+Route::get('/request', [PatientRequestController::class, 'create'])
+    ->name('patient-request.create');
+Route::post('/request', [PatientRequestController::class, 'store'])
+    ->name('patient-request.store');
 
 // Public Monitoring (No Auth Required)
 Route::get('/monitoring', [\App\Http\Controllers\MonitoringController::class, 'index'])
@@ -60,7 +70,43 @@ Route::post('/portal/event-request', [\App\Http\Controllers\Admin\EventRequestCo
 
 // API Routes for real-time notifications
 Route::prefix('api')->group(function () {
-    // Placeholder for future API routes
+    Route::get('/check-new-requests', function (\Illuminate\Http\Request $request) {
+        $lastId = (int) $request->get('last_id', 0);
+        $limit = (int) $request->get('limit', 0);
+        $direction = $request->get('direction', 'asc');
+
+        $query = \App\Models\PatientRequest::query();
+
+        if ($lastId > 0) {
+            $query->where('id', '>', $lastId);
+        }
+
+        if ($limit > 0) {
+            if ($direction === 'desc') {
+                $query->orderBy('id', 'desc');
+            } else {
+                $query->orderBy('id', 'asc');
+            }
+            $query->limit($limit);
+        } else {
+            $query->orderBy('id', 'asc');
+        }
+
+        $newRequests = $query->get()->map(function ($request) {
+            return [
+                'id' => $request->id,
+                'patient_name' => $request->patient_name,
+                'service_type' => $request->service_type,
+                'pickup_address' => $request->pickup_address,
+                'patient_condition' => $request->patient_condition,
+                'tts_url' => $request->tts_url,
+            ];
+        });
+
+        return response()->json([
+            'new_requests' => $newRequests
+        ]);
+    });
 });
 
 Route::match(['post', 'options'], '/public-fcm-token', function (\Illuminate\Http\Request $request) {
@@ -91,7 +137,9 @@ Route::match(['post', 'options'], '/public-fcm-token', function (\Illuminate\Htt
         ->header('Access-Control-Allow-Headers', 'Content-Type, Accept, X-Requested-With, X-CSRF-TOKEN');
 })->name('public-fcm-token.save');
 
-
+// API Routes (for driver GPS tracking)
+Route::post('/api/driver/location', [DriverLocationController::class, 'updateLocation'])
+    ->middleware('auth:ambulance'); // specific guard here if we want, or just 'auth' if we configure defaults properly
 
 // Temporary Preview Route
 Route::get('/preview-report', function () {
@@ -132,7 +180,7 @@ Route::get('/preview-report', function () {
 });
 
 // Activity Photo Routes (API)
-Route::prefix('api')->middleware(['auth:web'])->group(function () {
+Route::prefix('api')->middleware(['auth:web,ambulance'])->group(function () {
     // Photo Management Routes
     Route::post('/activities/{activity_id}/photos', [\App\Http\Controllers\Api\ActivityPhotoController::class, 'store'])
         ->name('activity-photos.store');
@@ -160,10 +208,15 @@ Route::middleware(['auth'])->group(function () {
     Route::get(
         '/dashboard',
         function () {
-            // Redirect based on role
+            // Redirect based on role/guard
+            if (auth()->guard('ambulance')->check()) {
+                return redirect()->route('driver.dashboard');
+            }
+
             if (in_array(auth()->user()->role, ['admin', 'user', 'dispatcher'])) {
                 return redirect()->route('admin.dashboard');
             } else {
+                // Fallback (though drivers shouldn't use user auth anymore)
                 return redirect('/');
             }
         }
@@ -185,6 +238,15 @@ Route::middleware(['auth'])->group(function () {
             Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
 
             // Resource Routes
+            Route::resource('ambulances', AmbulanceController::class);
+            Route::resource('armada-types', AmbulanceTypeController::class)->parameters([
+                'armada-types' => 'ambulance_type'
+            ])->names('ambulance-types');
+            Route::get('ambulances/{ambulance}/maintenance', [AmbulanceMaintenanceController::class, 'index'])->name('ambulances.maintenance.index');
+            Route::post('ambulances/{ambulance}/maintenance', [AmbulanceMaintenanceController::class, 'store'])->name('ambulances.maintenance.store');
+            Route::put('maintenance/{maintenance}', [AmbulanceMaintenanceController::class, 'update'])->name('maintenance.update');
+            Route::delete('maintenance/{maintenance}', [AmbulanceMaintenanceController::class, 'destroy'])->name('maintenance.destroy');
+
             Route::resource('drivers', DriverController::class);
             Route::resource('pletons', PletonController::class);
             Route::resource('users', UserController::class)->middleware('role:admin');
@@ -206,9 +268,11 @@ Route::middleware(['auth'])->group(function () {
             Route::get('dispatches/{dispatch}/location-history', [DispatchController::class, 'locationHistory'])
                 ->name('dispatches.location-history');
 
-            // Maps
+            // ✅ MAPS (INI YANG SEBELUMNYA HILANG)
             Route::get('maps', [MapController::class, 'index'])
                 ->name('maps');
+            Route::get('maps/ambulances', [MapController::class, 'getAmbulances'])
+                ->name('maps.ambulances');
 
             Route::get('schedules', [\App\Http\Controllers\Admin\ScheduleController::class, 'index'])
                 ->name('schedules.index');
@@ -225,10 +289,73 @@ Route::middleware(['auth'])->group(function () {
                 ->name('event-requests.finish');
             Route::post('event-requests/{eventRequest}/replace-unit/{dispatch}', [\App\Http\Controllers\Admin\EventRequestController::class, 'replaceUnit'])
                 ->name('event-requests.replace-unit');
+
+            // Patient Requests Management
+            Route::get('laporan-masyarakat', [AdminPatientRequestController::class, 'index'])
+                ->name('patient-requests.index');
+            Route::get('laporan-masyarakat/{patientRequest}', [AdminPatientRequestController::class, 'show'])
+                ->name('patient-requests.show');
+            Route::get('laporan-masyarakat/{patientRequest}/edit', [AdminPatientRequestController::class, 'edit'])
+                ->name('patient-requests.edit');
+            Route::put('laporan-masyarakat/{patientRequest}', [AdminPatientRequestController::class, 'update'])
+                ->name('patient-requests.update');
+            Route::delete('laporan-masyarakat/{patientRequest}', [AdminPatientRequestController::class, 'destroy'])
+                ->name('patient-requests.destroy');
+            Route::get('laporan-masyarakat/{patientRequest}/dispatch', [AdminPatientRequestController::class, 'createDispatch'])
+                ->name('patient-requests.create-dispatch');
+            Route::get('laporan-masyarakat/{patientRequest}/pdf', [AdminPatientRequestController::class, 'exportPdf'])
+                ->name('patient-requests.pdf');
+            Route::post('laporan-masyarakat/{patientRequest}/reject', [AdminPatientRequestController::class, 'reject'])
+                ->name('patient-requests.reject');
         }
     );
 });
 
+/*
+ |--------------------------------------------------------------------------
+ | AMBULANCE AUTHENTICATED
+ |--------------------------------------------------------------------------
+ */
+// Middleware group for ambulance auth
+
+// Ambulance Auth Routes
+Route::prefix('ambulance')->name('ambulance.')->group(function () {
+    Route::get('login', [\App\Http\Controllers\Auth\AmbulanceAuthController::class, 'showLoginForm'])
+        ->middleware('guest:ambulance')
+        ->name('login');
+    Route::post('login', [\App\Http\Controllers\Auth\AmbulanceAuthController::class, 'login'])
+        ->middleware('guest:ambulance');
+});
+
+Route::post('ambulance/logout', [\App\Http\Controllers\Auth\AmbulanceAuthController::class, 'logout'])
+    ->name('ambulance.logout')
+    ->middleware('auth:ambulance');
+
+// Driver Dashboard (Now uses ambulance auth)
+Route::middleware(['auth:ambulance'])->prefix('driver')->name('driver.')->group(function () {
+    Route::get('/dashboard', [DriverDashboardController::class, 'index'])->name('dashboard');
+    Route::post('/dispatches/{dispatch}/status', [DriverDashboardController::class, 'updateStatus'])->name('dispatches.update-status');
+    Route::post('/dispatches/{dispatch}/toggle-pause', [DriverDashboardController::class, 'togglePause'])->name('dispatches.toggle-pause');
+
+    // New Dispatching Routes for Drivers
+    Route::get('/dispatching', [DriverDashboardController::class, 'dispatching'])->name('dispatching');
+    Route::get('/dispatching/{patientRequest}', [DriverDashboardController::class, 'createSelfDispatch'])->name('patient-requests.create-dispatch');
+    Route::post('/dispatching/{patientRequest}', [DriverDashboardController::class, 'storeSelfDispatch'])->name('patient-requests.store-dispatch');
+
+    // Save FCM Token
+    Route::post('/fcm-token', [DriverDashboardController::class, 'saveFcmToken'])->name('fcm-token.save');
+
+    // Post-completion routes
+    Route::post('/dispatches/{dispatch}/accept-next', [DriverDashboardController::class, 'acceptNextRequest'])->name('dispatches.accept-next');
+    Route::post('/return-to-base', [DriverDashboardController::class, 'returnToBase'])->name('return-to-base');
+    
+    // Available requests (for quick accept)
+    Route::get('/available-requests', [DriverDashboardController::class, 'getAvailableRequests'])->name('available-requests');
+    Route::post('/quick-accept-request/{patientRequest}', [DriverDashboardController::class, 'quickAcceptRequest'])->name('quick-accept-request');
+
+    // Manual complete report by driver
+    Route::post('/dispatches/{dispatch}/complete-report', [DriverDashboardController::class, 'completeReport'])->name('dispatches.complete-report');
+});
 // ──── DEBUG ROUTE (remove after testing) ────
 Route::get('/debug/pdf-test', function() {
     return view('admin.reports.kebakaran_pdf_simple', [
