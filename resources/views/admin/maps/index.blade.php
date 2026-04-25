@@ -31,7 +31,7 @@
             class="lg:col-span-1 bg-white rounded-xl shadow-sm border border-gray-100 flex flex-col h-[300px] sm:h-[400px] lg:h-[600px]">
             <div class="p-4 border-b border-gray-100">
                 <h2 class="font-bold text-gray-700 flex items-center gap-2">
-                    🚑 Unit Aktif (<span id="active-count">0</span>)
+                    🚒 Unit Aktif (<span id="active-count">0</span>)
                 </h2>
             </div>
             <div id="ambulance-list" class="flex-1 overflow-y-auto p-2 space-y-2">
@@ -62,7 +62,7 @@
 
     let markers = {};
 
-    function focusAmbulance(id) {
+    function focusArmada(id) {
         const marker = markers[id];
         if (marker) {
             map.flyTo(marker.getLatLng(), 15, {
@@ -98,7 +98,7 @@
                     // Populate Sidebar List
                     const listItem = document.createElement('div');
                     listItem.className = 'p-3 rounded-lg border border-gray-100 hover:bg-slate-50 transition cursor-pointer group';
-                    listItem.onclick = () => focusAmbulance(ambulance.id);
+                    listItem.onclick = () => focusArmada(ambulance.id);
 
                     listItem.innerHTML = `
                     <div class="flex justify-between items-start mb-1">
@@ -122,7 +122,7 @@
                     <div class="p-2 min-w-[200px]">
                         <div class="flex justify-between items-start border-b pb-2 mb-2">
                              <div>
-                                <h3 class="font-bold text-lg leading-tight">🚑 ${ambulance.plate_number}</h3>
+                                <h3 class="font-bold text-lg leading-tight">🚒 ${ambulance.plate_number}</h3>
                                 <p class="text-[11px] text-gray-500">${ambulance.code} - ${ambulance.type}</p>
                              </div>
                              ${ambulance.dispatch && ambulance.dispatch.is_paused ?
@@ -132,7 +132,7 @@
                         ${ambulance.dispatch ? `
                             <p class="text-sm"><strong>Pelapor:</strong> ${ambulance.dispatch.patient_name}</p>
                             <p class="text-sm"><strong>Status:</strong> ${ambulance.dispatch.status.replace(/_/g, ' ')}</p>
-                            <p class="text-sm line-clamp-2"><strong>Jemput:</strong> ${ambulance.dispatch.pickup_address}</p>
+                            <p class="text-sm"><strong>TKP:</strong> ${ambulance.dispatch.pickup_address}</p>
                             <p class="text-sm line-clamp-2"><strong>Tujuan:</strong> ${ambulance.dispatch.destination ?? '-'}</p>
                         ` : '<p class="text-sm text-gray-500 mt-2">Tidak ada dispatch aktif</p>'}
                         ${ambulance.last_update ? `<p class="text-[10px] text-gray-400 mt-2 border-t pt-1">Update: ${ambulance.last_update}</p>` : ''}

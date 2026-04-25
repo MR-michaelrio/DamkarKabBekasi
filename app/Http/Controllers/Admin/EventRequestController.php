@@ -126,7 +126,7 @@ class EventRequestController extends Controller
         ]);
 
         return redirect()->route('admin.event-requests.show', $eventRequest)
-                         ->with('success', 'Unit ' . $ambulance->code . ' berhasil ditugaskan ke event.');
+                         ->with('success', 'Armada ' . $ambulance->code . ' berhasil ditugaskan ke event.');
     }
 
     /**

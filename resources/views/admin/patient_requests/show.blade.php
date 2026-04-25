@@ -117,7 +117,7 @@
     <!-- Dispatches Card -->
     @if($patientRequest->dispatches->count() > 0)
     <div class="bg-white shadow rounded-xl p-6 mt-6 border border-gray-100">
-        <h2 class="font-black text-gray-800 uppercase tracking-tight text-sm mb-4">🚑 Unit Ditugaskan ({{ $patientRequest->dispatches->count() }})</h2>
+        <h2 class="font-black text-gray-800 uppercase tracking-tight text-sm mb-4">🚒 Armada Ditugaskan ({{ $patientRequest->dispatches->count() }})</h2>
         <div class="divide-y divide-gray-50">
             @foreach($patientRequest->dispatches->sortByDesc('assigned_at') as $d)
                 <div class="py-4 flex items-start justify-between">

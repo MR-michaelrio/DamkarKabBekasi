@@ -46,7 +46,7 @@
                     <label class="block text-sm font-bold text-gray-700 mb-1 uppercase tracking-wider">Kebutuhan / Deskripsi</label>
                     <textarea name="needs" rows="3" 
                               class="w-full rounded-lg border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 font-medium" 
-                              placeholder="Contoh: Butuh 1 Unit Ambulance dan 2 Tenaga Medis">{{ old('needs', $eventRequest->needs ?? '') }}</textarea>
+                              placeholder="Hubungi kami terkait detail personil, unit armada, atau peralatan yang dibutuhkan.">{{ old('needs', $eventRequest->needs ?? '') }}</textarea>
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">

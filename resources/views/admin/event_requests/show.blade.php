@@ -48,7 +48,7 @@
                 <form action="{{ route('admin.event-requests.assign-unit', $eventRequest) }}" method="POST" id="assign-form" class="space-y-4">
                     @csrf
                     <div>
-                        <label class="block text-xs font-black text-gray-400 uppercase tracking-widest mb-1">Ambulance / Unit</label>
+                        <label class="block text-xs font-black text-gray-400 uppercase tracking-widest mb-1">Armada Damkar / Unit</label>
                         <select name="ambulance_id" required class="w-full rounded-lg border-gray-300 text-sm font-bold focus:ring-emerald-500 focus:border-emerald-500">
                             <option value="">-- Pilih Unit --</option>
                             @foreach($availableAmbulances as $amb)
@@ -108,7 +108,7 @@
         <div class="lg:col-span-2">
             <div class="bg-white rounded-xl border border-gray-100 shadow overflow-hidden">
                 <div class="px-6 py-4 border-b border-gray-50 flex items-center justify-between">
-                    <h2 class="font-black text-gray-800 uppercase tracking-tight text-sm">🚑 Unit Ditugaskan ({{ $eventRequest->dispatches->count() }})</h2>
+                    <h2 class="font-black text-gray-800 uppercase tracking-tight text-sm">🚒 Armada Ditugaskan ({{ $eventRequest->dispatches->count() }})</h2>
                 </div>
 
                 @if($eventRequest->dispatches->isEmpty())

@@ -73,7 +73,7 @@
                                         <div class="mt-1 pt-1 border-t border-white/20 space-y-1">
                                             @foreach($item->dispatches as $d)
                                                 <div class="flex flex-col">
-                                                    <span class="font-black">🚑 {{ $d->ambulance?->code ?? '?' }}</span>
+                                                    <span class="font-black">🚒 {{ $d->ambulance?->code ?? '?' }}</span>
                                                     <span class="opacity-80 text-[7px]">👤 {{ explode(' ', $d->driver?->name ?? 'No Driver')[0] }}</span>
                                                 </div>
                                             @endforeach
@@ -153,10 +153,7 @@
     <!-- Legend -->
     <div class="mt-6 flex flex-wrap gap-4 text-[10px] font-black uppercase tracking-widest text-gray-400">
         <div class="flex items-center gap-2">
-            <span class="w-3 h-3 rounded bg-red-600"></span> Ambulance
-        </div>
-        <div class="flex items-center gap-2">
-            <span class="w-3 h-3 rounded bg-stone-900"></span> Jenazah
+            <span class="w-3 h-3 rounded bg-red-600"></span> Armada Damkar
         </div>
         <div class="flex items-center gap-2">
             <span class="w-3 h-3 rounded bg-pink-600"></span> Event

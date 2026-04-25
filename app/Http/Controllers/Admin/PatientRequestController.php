@@ -243,13 +243,13 @@ class PatientRequestController extends Controller
 
         $validated = $request->validate([
             'patient_name' => 'required|string|max:255',
-            'service_type' => 'required|in:kebakaran,rescue,ambulance,jenazah',
+            'service_type' => 'required|in:kebakaran,rescue',
             'request_date' => 'required|date',
             'pickup_time' => 'nullable|date_format:H:i',
             'phone' => 'nullable|string|max:20',
             'pickup_address' => 'required|string',
             'destination' => 'nullable|string',
-            'patient_condition' => 'nullable|in:emergency,kontrol,pasien_pulang,kebakaran,rescue',
+            'patient_condition' => 'nullable|in:kebakaran,rescue',
             'blok' => 'nullable|string|max:255',
             'rt' => 'nullable|string|max:10',
             'rw' => 'nullable|string|max:10',

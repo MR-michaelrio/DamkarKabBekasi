@@ -2,16 +2,16 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Admin\AdminDashboardController;
-use App\Http\Controllers\Admin\AmbulanceController;
+use App\Http\Controllers\Admin\PemadamController;
 use App\Http\Controllers\Admin\DriverController;
 use App\Http\Controllers\Admin\DispatchController;
 use App\Http\Controllers\Admin\MapController;
-use App\Http\Controllers\Admin\PatientRequestController as AdminPatientRequestController;
+use App\Http\Controllers\Admin\LaporanPemadamController as AdminLaporanPemadamController;
 use App\Http\Controllers\Admin\UserController;
-use App\Http\Controllers\PatientRequestController;
+use App\Http\Controllers\LaporanPemadamController;
 use App\Http\Controllers\Driver\DriverDashboardController;
-use App\Http\Controllers\Admin\AmbulanceMaintenanceController;
-use App\Http\Controllers\Admin\AmbulanceTypeController;
+use App\Http\Controllers\Admin\PemadamMaintenanceController;
+use App\Http\Controllers\Admin\PemadamTypeController;
 use App\Http\Controllers\Admin\PletonController;
 use App\Http\Controllers\Api\DriverLocationController;
 
@@ -33,11 +33,11 @@ Route::get('/privacy', function () {
     return view('privacy');
 })->name('privacy');
 
-// Public Patient Request Form
-Route::get('/request', [PatientRequestController::class, 'create'])
-    ->name('patient-request.create');
-Route::post('/request', [PatientRequestController::class, 'store'])
-    ->name('patient-request.store');
+// Public Laporan Pemadam Form
+Route::get('/laporan-pemadam', [PublicLaporanPemadamController::class, 'create'])
+    ->name('laporan-pemadam.create');
+Route::post('/laporan-pemadam', [PublicLaporanPemadamController::class, 'store'])
+    ->name('laporan-pemadam.store');
 
 // Public Monitoring (No Auth Required)
 Route::get('/monitoring', [\App\Http\Controllers\MonitoringController::class, 'index'])
@@ -180,7 +180,7 @@ Route::get('/preview-report', function () {
 });
 
 // Activity Photo Routes (API)
-Route::prefix('api')->middleware(['auth:web,ambulance'])->group(function () {
+Route::prefix('api')->middleware(['auth:web,pemadam'])->group(function () {
     // Photo Management Routes
     Route::post('/activities/{activity_id}/photos', [\App\Http\Controllers\Api\ActivityPhotoController::class, 'store'])
         ->name('activity-photos.store');
@@ -238,14 +238,14 @@ Route::middleware(['auth'])->group(function () {
             Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
 
             // Resource Routes
-            Route::resource('ambulances', AmbulanceController::class);
-            Route::resource('armada-types', AmbulanceTypeController::class)->parameters([
-                'armada-types' => 'ambulance_type'
-            ])->names('ambulance-types');
-            Route::get('ambulances/{ambulance}/maintenance', [AmbulanceMaintenanceController::class, 'index'])->name('ambulances.maintenance.index');
-            Route::post('ambulances/{ambulance}/maintenance', [AmbulanceMaintenanceController::class, 'store'])->name('ambulances.maintenance.store');
-            Route::put('maintenance/{maintenance}', [AmbulanceMaintenanceController::class, 'update'])->name('maintenance.update');
-            Route::delete('maintenance/{maintenance}', [AmbulanceMaintenanceController::class, 'destroy'])->name('maintenance.destroy');
+            Route::resource('pemadam', PemadamController::class);
+            Route::resource('tipe-pemadam', PemadamTypeController::class)->parameters([
+                'tipe-pemadam' => 'pemadam_type'
+            ])->names('pemadam-types');
+            Route::get('pemadam/{pemadam}/maintenance', [PemadamMaintenanceController::class, 'index'])->name('pemadam.maintenance.index');
+            Route::post('pemadam/{pemadam}/maintenance', [PemadamMaintenanceController::class, 'store'])->name('pemadam.maintenance.store');
+            Route::put('maintenance/{maintenance}', [PemadamMaintenanceController::class, 'update'])->name('maintenance.update');
+            Route::delete('maintenance/{maintenance}', [PemadamMaintenanceController::class, 'destroy'])->name('maintenance.destroy');
 
             Route::resource('drivers', DriverController::class);
             Route::resource('pletons', PletonController::class);
@@ -271,8 +271,8 @@ Route::middleware(['auth'])->group(function () {
             // ✅ MAPS (INI YANG SEBELUMNYA HILANG)
             Route::get('maps', [MapController::class, 'index'])
                 ->name('maps');
-            Route::get('maps/ambulances', [MapController::class, 'getAmbulances'])
-                ->name('maps.ambulances');
+            Route::get('maps/pemadam', [MapController::class, 'getPemadam'])
+                ->name('maps.pemadam');
 
             Route::get('schedules', [\App\Http\Controllers\Admin\ScheduleController::class, 'index'])
                 ->name('schedules.index');

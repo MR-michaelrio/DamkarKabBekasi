@@ -204,7 +204,7 @@
                 <h3 class="text-base font-bold text-gray-800 mb-4">🚒 G. Operasional Pemadam</h3>
                 <div>
                     <label class="block text-sm font-bold text-gray-700 mb-1">Bantuan Unit Mobil</label>
-                    <textarea name="unit_assistance" rows="3" placeholder="Contoh: 2 Unit Damkar, 1 Ambulans, 1 Water Tanker"
+                    <textarea name="unit_assistance" rows="3" placeholder="Contoh: 2 Unit Damkar, 1 Water Tanker"
                               class="w-full border border-gray-300 rounded-lg shadow-sm">{{ old('unit_assistance', $patientRequest->unit_assistance) }}</textarea>
                 </div>
             </div>

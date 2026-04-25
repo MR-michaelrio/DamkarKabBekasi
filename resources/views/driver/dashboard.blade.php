@@ -51,7 +51,7 @@
                             @if($activeDispatch->event_request_id)
                             🎪 Event/Bencana
                             @else
-                            {{ $activeDispatch->patient_condition === 'jenazah' ? '⚰️ Jenazah' : '🚒 Penanganan' }}
+                            {{ $activeDispatch->patient_condition === 'rescue' ? '🚒 Rescue' : '🚒 Kebakaran' }}
                             @endif
                         </span>
                     </div>
@@ -76,8 +76,7 @@
                 </div>
 
                 <div class="border-t border-gray-50 pt-3">
-                    <span class="text-[10px] font-black text-gray-400 uppercase tracking-widest block mb-1">Alamat
-                        Jemput</span>
+                    <span class="text-[10px] font-black text-gray-400 uppercase tracking-widest block mb-1">Lokasi TKP</span>
                     <p class="font-medium text-gray-800 leading-snug">{{ $activeDispatch->pickup_address }}</p>
                 </div>
 

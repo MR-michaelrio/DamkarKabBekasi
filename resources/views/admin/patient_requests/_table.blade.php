@@ -41,16 +41,16 @@
                     @endif
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-gray-900">
-                    @if ($request->patient_condition === 'emergency')
+                    @if ($request->patient_condition === 'kebakaran')
                         <span class="px-2 py-1 bg-red-100 text-red-700 rounded text-xs font-bold">
-                            🚨 Emergency
+                            🔥 Kebakaran
                         </span>
-                    @elseif ($request->patient_condition === 'kontrol')
+                    @elseif ($request->patient_condition === 'rescue')
                         <span class="px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs font-bold">
-                            🏥 Kontrol
+                            🚒 Rescue
                         </span>
                     @else
-                        <span class="text-gray-400">-</span>
+                        <span class="text-gray-400">{{ strtoupper($request->patient_condition ?? '-') }}</span>
                     @endif
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm">
